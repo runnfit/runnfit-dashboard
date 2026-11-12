@@ -308,18 +308,23 @@
   .kpi.main.hoverable{ cursor:pointer; }
   .kpi.main.hoverable:hover, .kpi.main.hoverable:focus-visible{ border-color:transparent; box-shadow:0 0 0 3px rgba(31,47,138,.25); outline:none; }
   .left .monthcard{ flex:0 0 auto; min-height:0; margin-top:10px; }
-  .monthly{ height:150px; padding:4px 0 0; }
+  .monthly{ height:400px; padding:4px 0 0; display:flex; flex-direction:column; }
+  .monthly .mbars{ flex:1; }
+  .myears{ display:flex; flex-wrap:wrap; gap:6px 16px; font-size:13px; color:var(--muted); margin:2px 0 26px; }
+  .myears b{ color:var(--ink); font-weight:800; margin-right:4px; }
+  .mcol.ny::before{ content:''; position:absolute; left:-2px; top:0; bottom:-18px; border-left:1px dashed #dfe3ec; }
+  .kpi.hoverable.vtile:hover, .kpi.hoverable.vtile:focus-visible{ border-color:#1f2f8a; box-shadow:0 0 0 3px rgba(31,47,138,.12); }
   .monthly .mempty{ height:100%; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px; }
   .mbars{ position:relative; height:100%; display:flex; align-items:stretch; gap:4px; padding-bottom:18px; box-sizing:border-box; }
   .mcol{ flex:1; position:relative; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; min-width:0; }
   .mcol i{ display:block; width:72%; max-width:26px; background:#c9d3f0; border-radius:4px 4px 0 0; }
   .mcol.cur i{ background:#1f2f8a; }
-  .mcol .mv{ font-size:10.5px; font-weight:700; color:#4a5164; margin-bottom:3px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .mcol .mv{ font-size:9.5px; letter-spacing:-.3px; font-weight:700; color:#4a5164; margin-bottom:3px; font-variant-numeric:tabular-nums; white-space:nowrap; }
   .mcol.cur .mv{ color:#1f2f8a; font-weight:800; }
   .mcol .mm{ position:absolute; bottom:-17px; font-size:10.5px; color:#9aa1b2; white-space:nowrap; }
   .mcol .mm b{ font-weight:600; color:#b5bac6; margin-right:1px; }
   .mcol.cur .mm{ color:#1f2f8a; font-weight:800; }
-  .mgoal{ position:absolute; left:0; right:0; border-top:1.5px dashed #e08a2e; z-index:1; pointer-events:none; margin-bottom:18px; }
+  .mgoal{ position:absolute; left:0; right:0; border-top:1.5px dashed #e08a2e; z-index:1; pointer-events:none; }
   .mgoal span{ position:absolute; right:0; top:-15px; font-size:10px; font-weight:700; color:#c2410c; background:#fff; padding:0 3px; }
   .left .chartslot{ flex:1; min-height:240px; }   /* 비워둔 자리 (다음 내용 들어갈 곳) */
   .popchart{ padding:14px 18px 8px; }
@@ -339,7 +344,7 @@
     <section class="summary" id="summary" aria-label="출석 요약">
       <div class="kpis">
         <div class="kpi main hoverable" id="kTodayTile" tabindex="0" role="button" aria-haspopup="dialog"><div class="lbl">오늘 출석</div><div class="val" id="kToday">-</div><div class="sub" id="kTodaySub">어제와 비교 중…</div></div>
-        <div class="kpi"><div class="lbl">유효 회원</div><div class="val" id="kValid">-</div><div class="sub" id="kValidSub">지금 기준</div></div>
+        <div class="kpi hoverable vtile" id="kValidTile" tabindex="0" role="button" aria-haspopup="dialog" title="누르면 월별 유효 회원 그래프가 보여요"><div class="lbl">유효 회원 <span class="peek">📈</span></div><div class="val" id="kValid">-</div><div class="sub" id="kValidSub">지금 기준</div></div>
         
         <div class="kpi hoverable" id="kExpireTile" tabindex="0" role="button" aria-haspopup="dialog" title="마우스를 올리면 회원 카드가 보여요"><div class="lbl">오늘 만료 회원 <span class="peek">🖱️</span></div><div class="val" id="kExpire">-</div><div class="sub" id="kExpireSub">재등록 안내</div></div>
         <div class="kpi split">
@@ -353,6 +358,10 @@
     <div id="expPop" class="right exppop hidden" role="dialog" aria-label="오늘·내일 만료 회원"></div>
     <div id="rankPop" class="right exppop hidden" role="dialog" aria-label="최근 30일 출석왕"></div>
     <div id="absentPop" class="right exppop hidden" role="dialog" aria-label="7일 이상 미출석 회원"></div>
+    <div id="validPop" class="right exppop hidden" role="dialog" aria-label="월별 유효 회원">
+      <div class="pophead">📈 월별 유효 회원 <small>다짐 기록 전체 · 이번 달은 실시간</small><button class="popx" aria-label="닫기">✕</button></div>
+      <div class="chartcard popchart"><div id="monthly" class="monthly"></div></div>
+    </div>
     <div id="todayPop" class="right exppop hidden" role="dialog" aria-label="최근 30일 출석">
       <div class="pophead">📊 최근 30일 출석<button class="popx" aria-label="닫기">✕</button></div>
       <div class="chartcard popchart">
@@ -834,7 +843,6 @@
       monthDays.forEach((d)=>{ const v = dayCount.get(d); if(v == null) monthKnown = false; else monthSum += v; });
       $('kMonth').textContent = monthKnown ? fmt(monthSum) + '명' : NA;
       drawChart(days, today);
-      loadMonthly(today);   // 월별 유효 회원 그래프 (뒤에서)
     }catch(e){
       if(e instanceof AuthError) lockScreen();
     }finally{
@@ -907,6 +915,7 @@
     clearTimeout(expHideTimer);
     if($('rankPop')) $('rankPop').classList.add('hidden');
     if($('todayPop')) $('todayPop').classList.add('hidden');
+    if($('validPop')) $('validPop').classList.add('hidden');
     if($('absentPop')) $('absentPop').classList.add('hidden');
     if(!expPop.classList.contains('hidden')) return;
     const r = expTile.getBoundingClientRect(), L = $('summary').getBoundingClientRect();
@@ -1011,6 +1020,7 @@
     if(!rankPop.classList.contains('hidden')){ rankPop.classList.add('hidden'); return; }
     closeExpPop(true);
     if($('todayPop')) $('todayPop').classList.add('hidden');
+    if($('validPop')) $('validPop').classList.add('hidden');
     if($('absentPop')) $('absentPop').classList.add('hidden');
     const r = rankTile.getBoundingClientRect(), L = $('summary').getBoundingClientRect();
     rankPop.style.left = Math.round(L.right + 14) + 'px';
@@ -1120,6 +1130,7 @@
     closeExpPop(true);
     if(rankPop) rankPop.classList.add('hidden');
     if($('todayPop')) $('todayPop').classList.add('hidden');
+    if($('validPop')) $('validPop').classList.add('hidden');
     const L = $('summary').getBoundingClientRect();
     absPop.style.left = Math.round(L.right + 14) + 'px';
     absPop.style.top = '70px';
@@ -1154,17 +1165,19 @@
     absPop.addEventListener('error', (e)=>{ const img = e.target; if(img && img.tagName === 'IMG'){ const s = document.createElement('span'); s.className = 'ph'; s.innerHTML = PERSON; img.replaceWith(s); } }, true);
   }
 
-  // ================= 월별 유효 회원 그래프 (최근 12개월) =================
+  // ================= 월별 유효 회원 그래프 ('유효 회원'을 누르면, 다짐 기록이 있는 모든 달) =================
   // 지난 달 숫자는 바뀌지 않으니 이 컴퓨터에 저장해 두고 다시 묻지 않는다 (숫자만 저장)
   const MKEY = 'runfit_valid_month_';
   const monthValid = {};
   let monthlyAt = 0, monthlyBusy = false;
+  const FIRST_MONTH = '2024-06';   // 다짐매니저 기록이 시작된 달
   function readMonth(m){ if(m in monthValid) return monthValid[m]; try{ const v = localStorage.getItem(MKEY + m); if(v != null) return (monthValid[m] = Number(v)); }catch(e){} return null; }
   function saveMonth(m, v){ monthValid[m] = v; try{ localStorage.setItem(MKEY + m, String(v)); }catch(e){} }
   function lastMonths(today, n){ const out = []; let y = +today.slice(0, 4), mo = +today.slice(5, 7); for(let i = 0; i < n; i++){ out.unshift(y + '-' + String(mo).padStart(2, '0')); if(--mo === 0){ mo = 12; y--; } } return out; }
   async function loadMonthly(today){
     const box = $('monthly'); if(!box) return;
-    const months = lastMonths(today, 12), cur = today.slice(0, 7);
+    const cur = today.slice(0, 7), months = [];
+    for(let y = +FIRST_MONTH.slice(0, 4), mo = +FIRST_MONTH.slice(5, 7); ; ){ const m = y + '-' + String(mo).padStart(2, '0'); months.push(m); if(m >= cur) break; if(++mo === 13){ mo = 1; y++; } }
     drawMonthly(months, cur);
     if(monthlyBusy || Date.now() - monthlyAt < 10 * 60e3) return;
     monthlyBusy = true;
@@ -1172,7 +1185,7 @@
       Object.keys(dashMonths).forEach((m)=>{ const d = dashMonths[m]; if(m !== cur && d && d.validMemberCount != null && readMonth(m) == null) saveMonth(m, d.validMemberCount); });
       const need = months.filter((m)=> m !== cur && readMonth(m) == null);
       let k = 0;
-      await Promise.all(Array.from({ length: 2 }, async ()=>{ while(k < need.length){ const m = need[k++];
+      await Promise.all(Array.from({ length: 3 }, async ()=>{ while(k < need.length){ const m = need[k++];
         const d = await safe(()=> fetchDash(m + '-01', gql));
         if(d && d.validMemberCount != null){ saveMonth(m, d.validMemberCount); drawMonthly(months, cur); }
       } }));
@@ -1182,23 +1195,49 @@
   }
   function drawMonthly(months, cur){
     const box = $('monthly'); if(!box) return;
-    const vals = months.map((m)=> m === cur ? liveValid : readMonth(m));
-    const known = vals.filter((v)=> v != null);
+    let vals = months.map((m)=> m === cur ? liveValid : readMonth(m));
+    // 기록이 없는(0명) 앞쪽 달은 빼고 시작
+    let st = 0; while(st < vals.length - 1 && !(vals[st] > 0) && vals[st] != null) st++;
+    months = months.slice(st); vals = vals.slice(st);
+    const known = vals.filter((v)=> v > 0);
     if(!known.length){ box.innerHTML = '<div class="mempty">불러오는 중…</div>'; return; }
     const goal = validGoal || 0;
-    const top = Math.max(goal, ...known) * 1.08, low = Math.max(0, Math.min(...known) * 0.8);
-    const W = 100 / months.length;
-    let s = '<div class="mbars" role="list" aria-label="최근 12개월 월별 유효 회원">';
-    if(goal) s += '<div class="mgoal" style="bottom:' + ((goal - low) / (top - low) * 100).toFixed(1) + '%"><span>목표 ' + fmt(goal) + '</span></div>';
+    const top = Math.max(goal, ...known) * 1.1, low = Math.max(0, Math.min(...known) * 0.75);
+    // 연도별 평균
+    const ys = {}; months.forEach((m, i)=>{ const v = vals[i]; if(v > 0){ const y = m.slice(0, 4); (ys[y] = ys[y] || []).push(v); } });
+    let sum = '<div class="myears">' + Object.keys(ys).sort().map((y)=>{ const a = ys[y]; return '<span><b>' + y + '년</b> 평균 ' + fmt(Math.round(a.reduce((p, q)=> p + q, 0) / a.length)) + '명' + (y === cur.slice(0, 4) ? '' : '') + '</span>'; }).join('') +
+      (known.length ? '<span><b>최고</b> ' + fmt(Math.max(...known)) + '명 (' + months[vals.indexOf(Math.max(...known))].replace('-', '.') + ')</span>' : '') + '</div>';
+    let s = sum + '<div class="mbars" role="list" aria-label="월별 유효 회원">';
+    if(goal) s += '<div class="mgoal" style="bottom:calc(18px + ' + ((goal - low) / (top - low)).toFixed(4) + ' * (100% - 18px))"><span>목표 ' + fmt(goal) + '</span></div>';
     months.forEach((m, i)=>{
       const v = vals[i], h = v == null ? 0 : (v - low) / (top - low) * 100;
       const isCur = m === cur, mm = +m.slice(5, 7);
-      s += '<div class="mcol' + (isCur ? ' cur' : '') + '" role="listitem" title="' + m.replace('-', '.') + ' · 유효 회원 ' + (v == null ? NA : fmt(v) + '명') + (isCur ? ' (지금)' : '') + '">' +
+      s += '<div class="mcol' + (isCur ? ' cur' : '') + (mm === 1 ? ' ny' : '') + '" role="listitem" title="' + m.replace('-', '.') + ' · 유효 회원 ' + (v == null ? NA : fmt(v) + '명') + (isCur ? ' (지금)' : '') + '">' +
         '<span class="mv">' + (v == null ? '·' : fmt(v)) + '</span>' +
         '<i style="height:' + Math.max(2, h).toFixed(1) + '%"></i>' +
-        '<span class="mm">' + (mm === 1 || i === 0 ? '<b>' + m.slice(2, 4) + '.</b>' : '') + mm + '월</span></div>';
+        '<span class="mm">' + (mm === 1 || i === 0 ? '<b>' + m.slice(2, 4) + '년</b>' : '') + mm + '월</span></div>';
     });
     box.innerHTML = s + '</div>';
+  }
+
+  // ================= 유효 회원 (누르면 월별 유효 회원 그래프 창) =================
+  const validTile = $('kValidTile'), validPop = $('validPop');
+  function openValidPop(){
+    if(!validPop.classList.contains('hidden')){ validPop.classList.add('hidden'); return; }
+    closeExpPop(true);
+    ['rankPop', 'absentPop', 'todayPop'].forEach((id)=>{ if($(id)) $(id).classList.add('hidden'); });
+    const L = $('summary').getBoundingClientRect();
+    validPop.style.left = Math.round(L.right + 14) + 'px';
+    validPop.style.top = '70px';
+    validPop.classList.remove('hidden');
+    loadMonthly(todayKst());
+  }
+  if(validTile && validPop){
+    validTile.addEventListener('click', openValidPop);
+    validTile.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openValidPop(); } });
+    validPop.addEventListener('click', (e)=>{ if(e.target.closest('.popx')) validPop.classList.add('hidden'); });
+    document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && !validPop.classList.contains('hidden')){ e.stopPropagation(); validPop.classList.add('hidden'); } }, true);
+    document.addEventListener('mousedown', (e)=>{ if(!validPop.classList.contains('hidden') && !validPop.contains(e.target) && !validTile.contains(e.target)) validPop.classList.add('hidden'); });
   }
 
   // ================= 오늘 출석 (누르면 최근 30일 출석 그래프 창) =================
@@ -1208,6 +1247,7 @@
     closeExpPop(true);
     if($('rankPop')) $('rankPop').classList.add('hidden');
     if($('absentPop')) $('absentPop').classList.add('hidden');
+    if($('validPop')) $('validPop').classList.add('hidden');
     const L = $('summary').getBoundingClientRect();
     todayPop.style.left = Math.round(L.right + 14) + 'px';
     todayPop.style.top = '70px';
