@@ -1189,7 +1189,7 @@
         let d = null; try{ d = await fetchDash(m + '-01', gql); }catch(e){ if(e instanceof AuthError) throw e; }
         if(d && d.validMemberCount != null){ saveMonth(m, d.validMemberCount); drawMonthly(months, cur); }
       } }));
-      monthlyAt = Date.now();
+      if(months.every((m)=> m === cur || readMonth(m) != null)) monthlyAt = Date.now();   // 빠진 달이 있으면 다음에 열 때 다시 시도
     }catch(e){ if(e instanceof AuthError) lockScreen(); }
     finally{ monthlyBusy = false; drawMonthly(months, cur); }
   }
