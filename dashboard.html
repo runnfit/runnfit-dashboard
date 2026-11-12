@@ -377,9 +377,9 @@
   .beltsec.w{ border-left:6px solid #e3e8f0; padding-left:8px; }
   .beltsec.y{ border-left:6px solid #FFD54A; padding-left:8px; }
   .beltsec b{ color:#1f2f8a !important; }
-  .left .beltcard{ flex:0 0 auto; padding:12px 12px 10px; border-radius:14px; margin-bottom:10px; }
+  .left .beltcard{ flex:0 0 auto; min-height:0; padding:8px; border-radius:14px; margin-bottom:10px; }
   .left .beltcard h2{ font-size:16px; }
-  .belttiles{ display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; margin-top:6px; }
+  .belttiles{ display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; }
   .belttiles .mempty{ grid-column:1 / -1; text-align:center; color:var(--muted); font-size:13px; padding:14px 0; }
   .bt{ font:inherit; background:#fff; border:1px solid var(--line); border-radius:12px; padding:6px 2px 6px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:1px; color:var(--ink); transition:box-shadow .15s, border-color .15s; }
   .bt:hover, .bt:focus-visible{ border-color:#1f2f8a; box-shadow:0 0 0 3px rgba(31,47,138,.12); outline:none; }
@@ -414,8 +414,7 @@
         </div>
       </div>
       <div class="chartcard beltcard">
-        <div class="ch"><h2>🥋 띠별 회원</h2></div>
-        <div id="beltTiles" class="belttiles"><div class="mempty">불러오는 중…</div></div>
+        <div id="beltTiles" class="belttiles" role="group" aria-label="띠별 회원 수"><div class="mempty">불러오는 중…</div></div>
       </div>
       <div class="chartcard chartslot nbcard" id="chartSlot">
         <div class="ch nbhead" tabindex="0"><h2>🌱 신규회원 첫 30일</h2><span class="nbinfo">ⓘ 기준 보기</span>
