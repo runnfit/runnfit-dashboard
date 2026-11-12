@@ -1494,7 +1494,7 @@
       const sec = (title, cls, arr)=> '<div class="pophead sub beltsec ' + cls + '">' + title + ' <b>' + arr.length + '명</b><small>오래 안 나온 순서</small></div>' +
         (arr.length ? '<div class="grid">' + arr.map((m, i)=> absentCardHtml(m, i, { head: (i + 1) + '. ' + lastText(m) })).join('') + '</div>' : '<div class="popempty">없어요</div>');
       beltPop.innerHTML = head('<b>' + beltCache.list.length + '명</b><small>집중관리 · 누적 30회 전까지 · 유효 회원만</small>') +
-        sec('⬜ 흰 띠 (1~9회)', 'w', white) + sec('🟨 노란 띠 (10~29회)', 'y', yellow);
+        sec('⬜ 흰 띠 (0~9회)', 'w', white) + sec('🟨 노란 띠 (10~29회)', 'y', yellow);
     }catch(e){
       if(e instanceof AuthError){ lockScreen(); beltPop.classList.add('hidden'); return; }
       beltPop.innerHTML = head('') + '<div class="popempty">' + NA + ' · 잠시 후 다시 눌러주세요</div>';
