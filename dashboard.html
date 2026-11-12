@@ -169,11 +169,7 @@
 
   /* 좁은 칸용 가로 막대 (최근 날짜가 위) */
   .hbars{ height:100%; display:grid; grid-template-rows: repeat(30, minmax(11px, 1fr)); gap:1px; }
-  .hr, .hhead{ display:grid; grid-template-columns: 56px 1fr 40px 30px 32px; align-items:center; gap:7px; font-size:12px; line-height:1; color:#3b4560; font-variant-numeric:tabular-nums; }
-  .hhead{ font-size:10.5px; color:#9aa1b2; font-weight:700; margin-bottom:4px; }
-  .hhead span:nth-child(n+3){ text-align:right; }
-  .hr .v{ text-align:right; color:#9aa1b2; font-weight:600; }
-  .hr.today .v{ color:#4a5164; font-weight:800; }
+  .hr{ display:grid; grid-template-columns: 58px 1fr 44px 34px; align-items:center; gap:8px; font-size:12px; line-height:1; color:#3b4560; font-variant-numeric:tabular-nums; }
   .hr .d{ color:#7a849c; } .hr .d em{ font-style:normal; font-size:11px; }
   .hr.we .d em{ color:#c2410c; }
   .hr .track{ height:70%; min-height:8px; background:#f1f4fa; border-radius:4px; overflow:hidden; }
@@ -309,6 +305,25 @@
   .notice a{ display:inline-block; margin-top:16px; background:var(--navy); color:#fff; text-decoration:none; font-weight:700; padding:12px 20px; border-radius:12px; }
   .hidden{ display:none !important; }
   .sr{ position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(0 0 0 0); }
+  .kpi.main.hoverable{ cursor:pointer; }
+  .kpi.main.hoverable:hover, .kpi.main.hoverable:focus-visible{ border-color:transparent; box-shadow:0 0 0 3px rgba(31,47,138,.25); outline:none; }
+  .left .monthcard{ flex:0 0 auto; min-height:0; margin-top:10px; }
+  .monthly{ height:150px; padding:4px 0 0; }
+  .monthly .mempty{ height:100%; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px; }
+  .mbars{ position:relative; height:100%; display:flex; align-items:stretch; gap:4px; padding-bottom:18px; box-sizing:border-box; }
+  .mcol{ flex:1; position:relative; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; min-width:0; }
+  .mcol i{ display:block; width:72%; max-width:26px; background:#c9d3f0; border-radius:4px 4px 0 0; }
+  .mcol.cur i{ background:#1f2f8a; }
+  .mcol .mv{ font-size:10.5px; font-weight:700; color:#4a5164; margin-bottom:3px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .mcol.cur .mv{ color:#1f2f8a; font-weight:800; }
+  .mcol .mm{ position:absolute; bottom:-17px; font-size:10.5px; color:#9aa1b2; white-space:nowrap; }
+  .mcol .mm b{ font-weight:600; color:#b5bac6; margin-right:1px; }
+  .mcol.cur .mm{ color:#1f2f8a; font-weight:800; }
+  .mgoal{ position:absolute; left:0; right:0; border-top:1.5px dashed #e08a2e; z-index:1; pointer-events:none; margin-bottom:18px; }
+  .mgoal span{ position:absolute; right:0; top:-15px; font-size:10px; font-weight:700; color:#c2410c; background:#fff; padding:0 3px; }
+  .left .chartslot{ flex:1; min-height:240px; }   /* 비워둔 자리 (다음 내용 들어갈 곳) */
+  .popchart{ padding:14px 18px 8px; }
+  .popchart .chart{ height:380px; }
 </style>
 </head>
 <body>
@@ -323,7 +338,7 @@
     <aside class="left">
     <section class="summary" id="summary" aria-label="출석 요약">
       <div class="kpis">
-        <div class="kpi main"><div class="lbl">오늘 출석</div><div class="val" id="kToday">-</div><div class="sub" id="kTodaySub">어제와 비교 중…</div></div>
+        <div class="kpi main hoverable" id="kTodayTile" tabindex="0" role="button" aria-haspopup="dialog"><div class="lbl">오늘 출석</div><div class="val" id="kToday">-</div><div class="sub" id="kTodaySub">어제와 비교 중…</div></div>
         <div class="kpi"><div class="lbl">유효 회원</div><div class="val" id="kValid">-</div><div class="sub" id="kValidSub">지금 기준</div></div>
         
         <div class="kpi hoverable" id="kExpireTile" tabindex="0" role="button" aria-haspopup="dialog" title="마우스를 올리면 회원 카드가 보여요"><div class="lbl">오늘 만료 회원 <span class="peek">🖱️</span></div><div class="val" id="kExpire">-</div><div class="sub" id="kExpireSub">재등록 안내</div></div>
@@ -332,17 +347,21 @@
           <div class="half hoverable" id="kActiveHalf" tabindex="0" role="button" aria-haspopup="dialog" title="누르면 최근 30일 출석왕 카드가 보여요"><div class="lbl">주 1회 이상 출석 회원 <span class="peek">🏆</span></div><div class="val goodv"><span id="kActive">-</span><em id="kActivePct"></em></div><div class="sub">유효 회원 − 7일 이상 미출석</div></div>
         </div>
       </div>
-      <div class="chartcard">
-        <div class="ch"><h2>최근 30일 출석</h2>
-          <span class="legend"><span class="lb"><i></i>출석 인원(명)</span><span class="ll"><i></i>유효 회원 대비(%)</span></span>
-          <span class="total">이번 달 누적 출석 <b id="kMonth">-</b></span></div>
-        <div class="chart" id="chart"></div>
-      </div>
+      <div class="chartslot" id="chartSlot" aria-hidden="true"></div>
     </section>
     </aside>
     <div id="expPop" class="right exppop hidden" role="dialog" aria-label="오늘·내일 만료 회원"></div>
     <div id="rankPop" class="right exppop hidden" role="dialog" aria-label="최근 30일 출석왕"></div>
     <div id="absentPop" class="right exppop hidden" role="dialog" aria-label="7일 이상 미출석 회원"></div>
+    <div id="todayPop" class="right exppop hidden" role="dialog" aria-label="최근 30일 출석">
+      <div class="pophead">📊 최근 30일 출석<button class="popx" aria-label="닫기">✕</button></div>
+      <div class="chartcard popchart">
+        <div class="ch"><h2>최근 30일 출석</h2>
+          <span class="legend"><span class="lb"><i></i>출석 인원(명)</span><span class="ll"><i></i>유효 회원 대비(%)</span></span>
+          <span class="total">이번 달 누적 출석 <b id="kMonth">-</b></span></div>
+        <div class="chart" id="chart"></div>
+      </div>
+    </div>
     <section class="right" aria-label="오늘 출석 회원">
 
 
@@ -779,7 +798,6 @@
       if(yNow != null && tCount != null){
         const diff = tCount - yNow;
         $('kTodaySub').innerHTML = '어제보다 ' + (diff === 0 ? '같아요' : '<span class="' + (diff > 0 ? 'up' : 'down') + '">' + (diff > 0 ? '▲' : '▼') + Math.abs(diff) + '명</span>');
-        $('kTodaySub').title = '어제 이 시간 ' + fmt(yNow) + '명';
       }
 
       // 2) 유효 회원 목표 (한 곳에 저장된 목표를 5분마다 다시 읽어서 모두 같은 목표를 봄)
@@ -816,6 +834,7 @@
       monthDays.forEach((d)=>{ const v = dayCount.get(d); if(v == null) monthKnown = false; else monthSum += v; });
       $('kMonth').textContent = monthKnown ? fmt(monthSum) + '명' : NA;
       drawChart(days, today);
+      loadMonthly(today);   // 월별 유효 회원 그래프 (뒤에서)
     }catch(e){
       if(e instanceof AuthError) lockScreen();
     }finally{
@@ -887,6 +906,7 @@
   async function openExpPop(){
     clearTimeout(expHideTimer);
     if($('rankPop')) $('rankPop').classList.add('hidden');
+    if($('todayPop')) $('todayPop').classList.add('hidden');
     if($('absentPop')) $('absentPop').classList.add('hidden');
     if(!expPop.classList.contains('hidden')) return;
     const r = expTile.getBoundingClientRect(), L = $('summary').getBoundingClientRect();
@@ -990,6 +1010,7 @@
   async function openRankPop(){
     if(!rankPop.classList.contains('hidden')){ rankPop.classList.add('hidden'); return; }
     closeExpPop(true);
+    if($('todayPop')) $('todayPop').classList.add('hidden');
     if($('absentPop')) $('absentPop').classList.add('hidden');
     const r = rankTile.getBoundingClientRect(), L = $('summary').getBoundingClientRect();
     rankPop.style.left = Math.round(L.right + 14) + 'px';
@@ -1098,6 +1119,7 @@
     if(!absPop.classList.contains('hidden')){ absPop.classList.add('hidden'); return; }
     closeExpPop(true);
     if(rankPop) rankPop.classList.add('hidden');
+    if($('todayPop')) $('todayPop').classList.add('hidden');
     const L = $('summary').getBoundingClientRect();
     absPop.style.left = Math.round(L.right + 14) + 'px';
     absPop.style.top = '70px';
@@ -1132,6 +1154,74 @@
     absPop.addEventListener('error', (e)=>{ const img = e.target; if(img && img.tagName === 'IMG'){ const s = document.createElement('span'); s.className = 'ph'; s.innerHTML = PERSON; img.replaceWith(s); } }, true);
   }
 
+  // ================= 월별 유효 회원 그래프 (최근 12개월) =================
+  // 지난 달 숫자는 바뀌지 않으니 이 컴퓨터에 저장해 두고 다시 묻지 않는다 (숫자만 저장)
+  const MKEY = 'runfit_valid_month_';
+  const monthValid = {};
+  let monthlyAt = 0, monthlyBusy = false;
+  function readMonth(m){ if(m in monthValid) return monthValid[m]; try{ const v = localStorage.getItem(MKEY + m); if(v != null) return (monthValid[m] = Number(v)); }catch(e){} return null; }
+  function saveMonth(m, v){ monthValid[m] = v; try{ localStorage.setItem(MKEY + m, String(v)); }catch(e){} }
+  function lastMonths(today, n){ const out = []; let y = +today.slice(0, 4), mo = +today.slice(5, 7); for(let i = 0; i < n; i++){ out.unshift(y + '-' + String(mo).padStart(2, '0')); if(--mo === 0){ mo = 12; y--; } } return out; }
+  async function loadMonthly(today){
+    const box = $('monthly'); if(!box) return;
+    const months = lastMonths(today, 12), cur = today.slice(0, 7);
+    drawMonthly(months, cur);
+    if(monthlyBusy || Date.now() - monthlyAt < 10 * 60e3) return;
+    monthlyBusy = true;
+    try{
+      Object.keys(dashMonths).forEach((m)=>{ const d = dashMonths[m]; if(m !== cur && d && d.validMemberCount != null && readMonth(m) == null) saveMonth(m, d.validMemberCount); });
+      const need = months.filter((m)=> m !== cur && readMonth(m) == null);
+      let k = 0;
+      await Promise.all(Array.from({ length: 2 }, async ()=>{ while(k < need.length){ const m = need[k++];
+        const d = await safe(()=> fetchDash(m + '-01', gql));
+        if(d && d.validMemberCount != null){ saveMonth(m, d.validMemberCount); drawMonthly(months, cur); }
+      } }));
+      monthlyAt = Date.now();
+    }catch(e){ if(e instanceof AuthError) lockScreen(); }
+    finally{ monthlyBusy = false; drawMonthly(months, cur); }
+  }
+  function drawMonthly(months, cur){
+    const box = $('monthly'); if(!box) return;
+    const vals = months.map((m)=> m === cur ? liveValid : readMonth(m));
+    const known = vals.filter((v)=> v != null);
+    if(!known.length){ box.innerHTML = '<div class="mempty">불러오는 중…</div>'; return; }
+    const goal = validGoal || 0;
+    const top = Math.max(goal, ...known) * 1.08, low = Math.max(0, Math.min(...known) * 0.8);
+    const W = 100 / months.length;
+    let s = '<div class="mbars" role="list" aria-label="최근 12개월 월별 유효 회원">';
+    if(goal) s += '<div class="mgoal" style="bottom:' + ((goal - low) / (top - low) * 100).toFixed(1) + '%"><span>목표 ' + fmt(goal) + '</span></div>';
+    months.forEach((m, i)=>{
+      const v = vals[i], h = v == null ? 0 : (v - low) / (top - low) * 100;
+      const isCur = m === cur, mm = +m.slice(5, 7);
+      s += '<div class="mcol' + (isCur ? ' cur' : '') + '" role="listitem" title="' + m.replace('-', '.') + ' · 유효 회원 ' + (v == null ? NA : fmt(v) + '명') + (isCur ? ' (지금)' : '') + '">' +
+        '<span class="mv">' + (v == null ? '·' : fmt(v)) + '</span>' +
+        '<i style="height:' + Math.max(2, h).toFixed(1) + '%"></i>' +
+        '<span class="mm">' + (mm === 1 || i === 0 ? '<b>' + m.slice(2, 4) + '.</b>' : '') + mm + '월</span></div>';
+    });
+    box.innerHTML = s + '</div>';
+  }
+
+  // ================= 오늘 출석 (누르면 최근 30일 출석 그래프 창) =================
+  const todayTile = $('kTodayTile'), todayPop = $('todayPop');
+  function openTodayPop(){
+    if(!todayPop.classList.contains('hidden')){ todayPop.classList.add('hidden'); return; }
+    closeExpPop(true);
+    if($('rankPop')) $('rankPop').classList.add('hidden');
+    if($('absentPop')) $('absentPop').classList.add('hidden');
+    const L = $('summary').getBoundingClientRect();
+    todayPop.style.left = Math.round(L.right + 14) + 'px';
+    todayPop.style.top = '70px';
+    todayPop.classList.remove('hidden');
+    if(lastChart) drawChart(lastChart[0], lastChart[1]);   // 창 크기에 맞춰 다시 그림
+  }
+  if(todayTile && todayPop){
+    todayTile.addEventListener('click', openTodayPop);
+    todayTile.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openTodayPop(); } });
+    todayPop.addEventListener('click', (e)=>{ if(e.target.closest('.popx')) todayPop.classList.add('hidden'); });
+    document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && !todayPop.classList.contains('hidden')){ e.stopPropagation(); todayPop.classList.add('hidden'); } }, true);
+    document.addEventListener('mousedown', (e)=>{ if(!todayPop.classList.contains('hidden') && !todayPop.contains(e.target) && !todayTile.contains(e.target)) todayPop.classList.add('hidden'); });
+  }
+
   let lastChart = null;
   window.addEventListener('resize', ()=>{ if(lastChart) drawChart(lastChart[0], lastChart[1]); });
   // 월별 유효 회원: 이번 달은 실시간, 지난달은 다짐 대시보드의 그 달 유효 회원
@@ -1153,18 +1243,16 @@
   function drawBarsList(days, today){
     const box = $('chart');
     const max = Math.max(10, ...days.map((d)=> dayCount.get(d) || 0));
-    let s = '<div class="hhead" aria-hidden="true"><span>날짜</span><span></span><span>출석</span><span>비율</span><span>유효</span></div>' +
-      '<div class="hbars" role="list" aria-label="최근 30일 날짜별 출석 인원, 유효 회원 대비 비율, 그날 유효 회원">';
+    let s = '<div class="hbars" role="list" aria-label="최근 30일 날짜별 출석 인원과 유효 회원 대비 비율">';
     days.slice().reverse().forEach((d)=>{
       const c = dayCount.get(d), p = pctOf(d), isT = d === today;
       const wd = WK[new Date(d + 'T12:00:00+09:00').getUTCDay()];
       const we = wd === '토' || wd === '일';
-      s += '<div class="hr' + (isT ? ' today' : '') + (we ? ' we' : '') + '" role="listitem" title="' + dot(d) + ' (' + wd + ') · ' + (c == null ? NA : c + '명') + (p != null ? ' · 유효 회원의 ' + p + '%' : '') + (validOf(d) != null ? ' · 유효 회원 ' + validOf(d) + '명' : '') + '">' +
+      s += '<div class="hr' + (isT ? ' today' : '') + (we ? ' we' : '') + '" role="listitem" title="' + dot(d) + ' (' + wd + ') · ' + (c == null ? NA : c + '명') + (p != null ? ' · 유효 회원의 ' + p + '%' : '') + '">' +
         '<span class="d">' + (isT ? '오늘' : d.slice(5).replace('-', '.')) + ' <em>' + wd + '</em></span>' +
         '<span class="track"><i style="width:' + (c == null ? 0 : Math.max(1.5, c * 100 / max)) + '%"></i></span>' +
         '<span class="n">' + (c == null ? '-' : c + '명') + '</span>' +
-        '<span class="p">' + (p == null ? '' : p + '%') + '</span>' +
-        '<span class="v">' + (validOf(d) != null ? fmt(validOf(d)) : '·') + '</span></div>';
+        '<span class="p">' + (p == null ? '' : p + '%') + '</span></div>';
     });
     box.innerHTML = s + '</div>';
   }
