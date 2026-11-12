@@ -1186,7 +1186,7 @@
       const need = months.filter((m)=> m !== cur && readMonth(m) == null);
       let k = 0;
       await Promise.all(Array.from({ length: 3 }, async ()=>{ while(k < need.length){ const m = need[k++];
-        const d = await safe(()=> fetchDash(m + '-01', gql));
+        let d = null; try{ d = await fetchDash(m + '-01', gql); }catch(e){ if(e instanceof AuthError) throw e; }
         if(d && d.validMemberCount != null){ saveMonth(m, d.validMemberCount); drawMonthly(months, cur); }
       } }));
       monthlyAt = Date.now();
