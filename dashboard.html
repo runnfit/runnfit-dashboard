@@ -284,6 +284,20 @@
   .side.light .stat{ opacity:.38; }
   .right .side{ padding-left:6px; padding-right:6px; }
 
+
+  /* 7일 이상 미출석 회원 */
+  .kpi.split .half.hoverable.abs{ border-radius:14px 0 0 14px; }
+  .kpi.split .half.hoverable.abs:hover, .kpi.split .half.hoverable.abs:focus-visible{ background:#fff6ef; box-shadow: inset 0 0 0 2px #c2410c; }
+  #absentPop .pophead b{ color:#c2410c; }
+  .time.absent{ color:#c2410c; font-size:20px; }
+
+
+  /* 미출석 카드 전화번호 (누르면 복사) */
+  .msgs p.phone{ padding:2px 4px 2px 2px; display:inline-flex; align-items:center; gap:8px; }
+  .msgs .tel{ font:inherit; font-size:17px; font-weight:900; color:#0b1f4d; background:none; border:0; padding:2px 6px; cursor:pointer; letter-spacing:.02em; font-variant-numeric:tabular-nums; }
+  .msgs .tel:hover{ text-decoration:underline; }
+  .msgs .copied{ font-size:12px; color:#0a7d3c; font-weight:800; }
+
   /* 안내 화면 */
   .notice{ background:#fff; border:1px solid var(--line); border-radius:18px; padding:48px 28px; text-align:center; color:var(--muted); font-size:18px; }
   .notice b{ color:var(--ink); }
@@ -309,7 +323,7 @@
         
         <div class="kpi hoverable" id="kExpireTile" tabindex="0" role="button" aria-haspopup="dialog" title="마우스를 올리면 회원 카드가 보여요"><div class="lbl">오늘 만료 회원 <span class="peek">🖱️</span></div><div class="val" id="kExpire">-</div><div class="sub" id="kExpireSub">재등록 안내</div></div>
         <div class="kpi split">
-          <div class="half"><div class="lbl" id="kAbsentLbl">7일 이상 미출석 회원</div><div class="val alertv"><span id="kAbsent">-</span><em id="kAbsentPct"></em></div><div class="sub">유효 회원 대비 · 연락해 보세요</div></div>
+          <div class="half hoverable abs" id="kAbsentHalf" tabindex="0" role="button" aria-haspopup="dialog" title="누르면 오래 안 나온 순서로 회원 카드가 보여요"><div class="lbl" id="kAbsentLbl">7일 이상 미출석 회원 <span class="peek">📞</span></div><div class="val alertv"><span id="kAbsent">-</span><em id="kAbsentPct"></em></div><div class="sub">유효 회원 대비 · 연락이 필요해요!</div></div>
           <div class="half hoverable" id="kActiveHalf" tabindex="0" role="button" aria-haspopup="dialog" title="누르면 최근 30일 출석왕 카드가 보여요"><div class="lbl">주 1회 이상 출석 회원 <span class="peek">🏆</span></div><div class="val goodv"><span id="kActive">-</span><em id="kActivePct"></em></div><div class="sub">유효 회원 − 7일 이상 미출석</div></div>
         </div>
       </div>
@@ -323,6 +337,7 @@
     </aside>
     <div id="expPop" class="right exppop hidden" role="dialog" aria-label="오늘·내일 만료 회원"></div>
     <div id="rankPop" class="right exppop hidden" role="dialog" aria-label="최근 30일 출석왕"></div>
+    <div id="absentPop" class="right exppop hidden" role="dialog" aria-label="7일 이상 미출석 회원"></div>
     <section class="right" aria-label="오늘 출석 회원">
 
 
@@ -867,6 +882,7 @@
   async function openExpPop(){
     clearTimeout(expHideTimer);
     if($('rankPop')) $('rankPop').classList.add('hidden');
+    if($('absentPop')) $('absentPop').classList.add('hidden');
     if(!expPop.classList.contains('hidden')) return;
     const r = expTile.getBoundingClientRect(), L = $('summary').getBoundingClientRect();
     expPop.style.left = Math.round(L.right + 14) + 'px';
@@ -959,7 +975,7 @@
         '<div class="head2"><div class="time rank">' + medal + m.rank + '위</div><div class="regbox">' + lights + '<span class="reg">' + regText + '</span></div></div>' +
         '<div class="msgs"><p class="cele">' + esc(msg) + '</p></div>' +
         '<div class="boxes"><div class="box"><span>30일 <b>' + m.n30 + '</b>회</span><span class="sep"></span><span>누적 ' + (m.total != null ? '<b>' + m.total + '</b>회' : na) + '</span></div></div>' +
-        '<div class="foot"><span>최근 30일 출석 횟수 기준</span><span>다짐 출석왕</span></div>' +
+        '<div class="foot"><span>최근 30일 출석 횟수 기준</span></div>' +
       '</div>' +
     '</article>';
   }
@@ -969,6 +985,7 @@
   async function openRankPop(){
     if(!rankPop.classList.contains('hidden')){ rankPop.classList.add('hidden'); return; }
     closeExpPop(true);
+    if($('absentPop')) $('absentPop').classList.add('hidden');
     const r = rankTile.getBoundingClientRect(), L = $('summary').getBoundingClientRect();
     rankPop.style.left = Math.round(L.right + 14) + 'px';
     rankPop.style.top = '70px';
@@ -992,6 +1009,122 @@
     document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && !rankPop.classList.contains('hidden')){ e.stopPropagation(); rankPop.classList.add('hidden'); } }, true);
     document.addEventListener('mousedown', (e)=>{ if(!rankPop.classList.contains('hidden') && !rankPop.contains(e.target) && !rankTile.contains(e.target)) rankPop.classList.add('hidden'); });
     rankPop.addEventListener('error', (e)=>{ const img = e.target; if(img && img.tagName === 'IMG'){ const s = document.createElement('span'); s.className = 'ph'; s.innerHTML = PERSON; img.replaceWith(s); } }, true);
+  }
+
+  // ================= 7일 이상 미출석 회원 카드 ('7일 이상 미출석 회원'을 누르면, 오래 안 나온 순서) =================
+  const ABSENT_LIST_Q = 'query RunFitStaffAbsentList($filter: ManagerMemberListFilterInput!, $paging: PagingInput!) { managerMembers { list(filter: $filter, paging: $paging) { count data { id name phone profilePhoto expiredAt recentAttendAt purchasedProducts { name expiredAt category } } } } }';
+  let absentCache = null;   // { at, list }
+  async function loadAbsentList(){
+    if(absentCache && Date.now() - absentCache.at < 10 * 60e3) return absentCache.list;
+    let all = [];
+    for(let off = 0; off < 2000; off += 200){
+      const d = await gql(ABSENT_LIST_Q, { filter: { notAttendDay: ABSENT_DAYS }, paging: { limit: 200, offset: off } });
+      const page = (d && d.managerMembers && d.managerMembers.list && d.managerMembers.list.data) || [];
+      all = all.concat(page);
+      if(page.length < 200) break;
+    }
+    const now = Date.now(), today = todayKst();
+    const list = all.map((m)=>{
+      const pp = m.purchasedProducts || [];
+      const live = (cat)=> pp.some((p)=> p.category === cat && p.expiredAt && Date.parse(p.expiredAt) >= now);
+      const gym = pp.filter((p)=> p.category === 'general' && p.expiredAt).sort((a, b)=> Date.parse(b.expiredAt) - Date.parse(a.expiredAt))[0];
+      const recent = m.recentAttendAt ? Date.parse(m.recentAttendAt) : null;
+      return { id: m.id, name: (m.name || '').trim(), phone: m.phone || '', photo: m.profilePhoto || null, recent,
+        days: recent != null ? daysBetween(today, kstDate(recent)) : null,
+        gymExp: gym ? kstDate(Date.parse(gym.expiredAt)) : (m.expiredAt ? kstDate(Date.parse(m.expiredAt)) : null),
+        wear: live('rentalSportsWear'), locker: live('rentalLocker'), total: null, belt: null, reg: { kind: 'na' } };
+    });
+    // 제일 오래 안 나온 회원이 맨 위 (출석 기록이 아예 없으면 가장 위)
+    list.sort((a, b)=> (a.recent == null ? -Infinity : a.recent) - (b.recent == null ? -Infinity : b.recent));
+    let k = 0;
+    await Promise.all(Array.from({ length: 6 }, async ()=>{ while(k < list.length){ const m = list[k++];
+      try{
+        const r = await gql(RANK_DETAIL_Q, { id: m.id });
+        const mm = r.managerMembers || {};
+        if(!m.photo && mm.by) m.photo = mm.by.profilePhoto;
+        m.total = mm.by ? mm.by.totalAttendCount : null;
+        m.belt = getBelt(m.total);
+        const gymP = (mm.purchasedProducts || []).filter((p)=> p && p.__typename === 'Membership' && p.category === 'general' && !(p.sale && p.sale.hasRefund));
+        m.reg = gymP.length === 1 ? { kind: 'first' } : gymP.length > 1 ? { kind: 'nth', n: gymP.length - 1 } : { kind: 'na' };
+      }catch(e){ if(e instanceof AuthError) throw e; }
+    } }));
+    absentCache = { at: Date.now(), list };
+    return list;
+  }
+
+  function absentCardHtml(m, i){
+    const belt = m.belt;
+    const light = belt ? belt.text === 'dark' : true;
+    const panel = belt ? belt.bg : '#c9cfdb';
+    const ink = belt ? (light ? '#0b1f4d' : '#fff') : '#0b1f4d';
+    const FOCUS = Array.isArray(CFG.STAFF_FOCUS_BELTS) ? CFG.STAFF_FOCUS_BELTS : ['흰 띠', '노란 띠'];
+    const focus = !!(belt && FOCUS.indexOf(belt.name) >= 0);
+    const na = '<span class="na">' + NA + '</span>';
+    let lamp = -1, regText = na;
+    if(m.reg.kind === 'first'){ lamp = 0; regText = '첫 등록'; }
+    else if(m.reg.kind === 'nth'){ lamp = m.reg.n >= 2 ? 2 : 1; regText = m.reg.n + '번째 재등록'; }
+    const lights = '<span class="lights" aria-hidden="true">' + ['r', 'y', 'g'].map((k, x)=> '<i class="' + k + (x === lamp ? ' on' : '') + '"></i>').join('') + '</span>';
+    const daysText = m.days == null ? '출석 기록 없음' : m.days + '일째 미출석';
+    // 전화번호 010-1234-5678 형태로
+    const digits = String(m.phone || '').replace(/\D/g, '');
+    const tel = digits.length === 11 ? digits.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3') : digits.length === 10 ? digits.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3') : (m.phone || '');
+    const msg = m.days == null ? '등록 후 한 번도 안 나왔어요! 먼저 연락해 주세요!' : m.days + '일째 안 나왔어요! 연락해서 안부를 물어주세요!';
+    const photo = m.photo ? '<img src="' + esc(m.photo) + '" alt="" loading="lazy" referrerpolicy="no-referrer">' : '<span class="ph">' + PERSON + '</span>';
+    return '<article class="card">' +
+      '<div class="side' + (light ? ' light' : '') + '" style="--belt:' + esc(panel) + ';--belt-ink:' + ink + '">' +
+        (focus ? '<span class="focus" title="집중관리 회원 (흰 띠·노란 띠)" aria-label="집중관리 회원">★</span>' : '') +
+        '<div class="beltname">' + (belt ? esc(belt.name) : NA) + '</div>' +
+        '<div class="avatar">' + photo + '</div>' +
+        '<div class="who">' + esc(m.name || '이름 확인 불가') + '</div>' +
+      '</div>' +
+      '<div class="main">' +
+        '<div class="head2"><div class="time absent">' + (i + 1) + '. ' + daysText + '</div><div class="regbox">' + lights + '<span class="reg">' + regText + '</span></div></div>' +
+        '<div class="msgs">' + (tel ? '<p class="care phone"><button class="tel" data-tel="' + esc(tel) + '" title="누르면 번호가 복사돼요">📞 ' + esc(tel) + '</button><span class="copied"></span></p>' : '<p class="care">' + esc(msg) + '</p>') + '</div>' +
+        '<div class="boxes"><div class="box"><span>누적 ' + (m.total != null ? '<b>' + m.total + '</b>회' : na) + '</span><span class="sep"></span><span>마지막 출석 <b>' + (m.recent != null ? dot(kstDate(m.recent)).slice(5) : '-') + '</b></span></div></div>' +
+        '<div class="foot"><span class="wl"><span>운동복 ' + (m.wear ? 'O' : 'X') + '</span><span>사물함 ' + (m.locker ? 'O' : 'X') + '</span></span>' +
+          '<span>헬스 만료 ' + (m.gymExp ? dot(m.gymExp) : NA) + '</span></div>' +
+      '</div>' +
+    '</article>';
+  }
+
+  const absTile = $('kAbsentHalf'), absPop = $('absentPop');
+  let absReq = 0;
+  async function openAbsentPop(){
+    if(!absPop.classList.contains('hidden')){ absPop.classList.add('hidden'); return; }
+    closeExpPop(true);
+    if(rankPop) rankPop.classList.add('hidden');
+    const L = $('summary').getBoundingClientRect();
+    absPop.style.left = Math.round(L.right + 14) + 'px';
+    absPop.style.top = '70px';
+    absPop.classList.remove('hidden');
+    const my = ++absReq;
+    absPop.innerHTML = '<div class="pophead">' + ABSENT_DAYS + '일 이상 미출석 회원 <small>불러오는 중… (인원이 많아 몇 초 걸려요)</small><button class="popx" aria-label="닫기">✕</button></div>';
+    try{
+      const list = await loadAbsentList();
+      if(my !== absReq) return;
+      absPop.innerHTML = '<div class="pophead">📞 ' + ABSENT_DAYS + '일 이상 미출석 회원 <b>' + list.length + '명</b><small>오래 안 나온 순서 · 연락해서 안부를 물어주세요</small><button class="popx" aria-label="닫기">✕</button></div>' +
+        (list.length ? '<div class="grid">' + list.map(absentCardHtml).join('') + '</div>' : '<div class="popempty">' + ABSENT_DAYS + '일 넘게 안 나온 회원이 없어요 🙂</div>');
+    }catch(e){
+      if(e instanceof AuthError){ lockScreen(); absPop.classList.add('hidden'); return; }
+      absPop.innerHTML = '<div class="pophead">' + ABSENT_DAYS + '일 이상 미출석 회원<button class="popx" aria-label="닫기">✕</button></div><div class="popempty">' + NA + ' · 잠시 후 다시 눌러주세요</div>';
+    }
+  }
+  if(absTile && absPop){
+    absTile.addEventListener('click', openAbsentPop);
+    absTile.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openAbsentPop(); } });
+    absPop.addEventListener('click', (e)=>{
+      if(e.target.closest('.popx')){ absPop.classList.add('hidden'); return; }
+      const b = e.target.closest('.tel');
+      if(!b) return;
+      // 번호 복사 (iframe 안에서도 되도록 예비 방법 포함)
+      const num = b.getAttribute('data-tel');
+      const done = (ok)=>{ const s = b.parentElement.querySelector('.copied'); if(s){ s.textContent = ok ? '복사됐어요!' : '길게 눌러 복사해 주세요'; setTimeout(()=>{ s.textContent = ''; }, 1800); } };
+      const fallback = ()=>{ try{ const t = document.createElement('textarea'); t.value = num; t.style.position = 'fixed'; t.style.opacity = '0'; document.body.appendChild(t); t.select(); const ok = document.execCommand('copy'); t.remove(); done(ok); }catch(err){ done(false); } };
+      try{ navigator.clipboard.writeText(num).then(()=> done(true), fallback); }catch(err){ fallback(); }
+    });
+    document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && !absPop.classList.contains('hidden')){ e.stopPropagation(); absPop.classList.add('hidden'); } }, true);
+    document.addEventListener('mousedown', (e)=>{ if(!absPop.classList.contains('hidden') && !absPop.contains(e.target) && !absTile.contains(e.target)) absPop.classList.add('hidden'); });
+    absPop.addEventListener('error', (e)=>{ const img = e.target; if(img && img.tagName === 'IMG'){ const s = document.createElement('span'); s.className = 'ph'; s.innerHTML = PERSON; img.replaceWith(s); } }, true);
   }
 
   let lastChart = null;
