@@ -244,6 +244,16 @@
   .exppop .card{ min-height:150px; }
   .time.exp{ color:#b4232f; font-size:20px; }
 
+
+  /* 위쪽 세 칸: 제목 · 큰 숫자 · 작은 글자 줄을 같은 높이에 맞춤 */
+  .left .kpis > .kpi:not(.split){ display:flex; flex-direction:column; }
+  .left .kpis > .kpi:not(.split) .lbl{ height:18px; line-height:18px; font-size:13px; white-space:nowrap; }
+  .left .kpis > .kpi:not(.split) .val{ height:34px; line-height:34px; margin-top:6px; font-size:26px; white-space:nowrap; }
+  .left .kpis > .kpi:not(.split) .val small{ font-size:14px; }
+  .left .kpis > .kpi:not(.split) .sub{ height:16px; line-height:16px; margin-top:6px; font-size:12px; display:flex; align-items:center; gap:0; }
+  .left .kpis > .kpi:not(.split) .sub .goalbar{ flex:none; }
+  .left .kpis > .kpi.main{ gap:0; }   /* 카드 안쪽(.main)과 이름이 겹쳐 생기던 간격 제거 */
+
   /* 안내 화면 */
   .notice{ background:#fff; border:1px solid var(--line); border-radius:18px; padding:48px 28px; text-align:center; color:var(--muted); font-size:18px; }
   .notice b{ color:var(--ink); }
