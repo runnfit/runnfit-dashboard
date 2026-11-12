@@ -278,11 +278,10 @@
 
   /* 사진 원 양옆 반투명 큰 숫자 (왼쪽 누적 · 오른쪽 N일 만) */
   .side .avwrap{ display:flex; align-items:center; justify-content:center; gap:8px; width:100%; }
-  .side .stat{ flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; opacity:.42; line-height:1; font-variant-numeric:tabular-nums; }
-  .side .stat b{ font-size:30px; font-weight:900; letter-spacing:-.02em; }
-  .side .stat em{ font-style:normal; font-size:11px; font-weight:700; margin-top:4px; }
-  .side.light .stat{ opacity:.5; }
-  .side .stat.long b{ font-size:23px; }   /* 세 자리 숫자는 살짝 작게 */
+  .side .stat{ flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; opacity:.3; line-height:1; font-variant-numeric:tabular-nums; }
+  .side .stat b{ font-size:23px; font-weight:900; letter-spacing:-.02em; }   /* 세 자리(180) 기준으로 모든 숫자 같은 크기 */
+  .side .stat em{ font-style:normal; font-size:11px; font-weight:700; margin-top:4px; opacity:.6; }   /* '누적'·'일 만'은 숫자보다 더 흐리게 */
+  .side.light .stat{ opacity:.38; }
   .right .side{ padding-left:6px; padding-right:6px; }
 
   /* 안내 화면 */
