@@ -383,7 +383,12 @@
   .belttiles .mempty{ grid-column:1 / -1; text-align:center; color:var(--muted); font-size:13px; padding:14px 0; }
   .bt{ font:inherit; background:#fff; border:1px solid var(--line); border-radius:12px; padding:6px 2px 6px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:1px; color:var(--ink); transition:box-shadow .15s, border-color .15s; }
   .bt:hover, .bt:focus-visible{ border-color:#1f2f8a; box-shadow:0 0 0 3px rgba(31,47,138,.12); outline:none; }
-  .bt.focus{ background:#f6f8fe; }
+  /* 띠 색 파스텔 배경 */
+  .bt[data-b="0"]{ background:#f8fafd; border-color:#e3e7ef; }
+  .bt[data-b="1"]{ background:#fff7da; border-color:#f6e6a6; }
+  .bt[data-b="2"]{ background:#e6edfb; border-color:#c9d6f3; }
+  .bt[data-b="3"]{ background:#fbe7ea; border-color:#f1c8cf; }
+  .bt[data-b="4"]{ background:#e8e9ed; border-color:#cfd2da; }
   .bt svg{ width:38px; height:24px; }
   .bt b{ font-size:22px; font-weight:800; line-height:1.1; font-variant-numeric:tabular-nums; }
   .bt b small{ font-size:11px; font-weight:700; color:var(--muted); margin-left:1px; }
