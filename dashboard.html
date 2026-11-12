@@ -370,7 +370,7 @@
   .beltbtn:hover{ background:#1f2f8a; color:#fff; }
   .nbn{ cursor:pointer; text-decoration:underline dotted #c3c8d4; text-underline-offset:3px; }
   .nbn:hover{ color:#1f2f8a; }
-  .hovercard{ width:460px; padding:10px; z-index:70; }
+  .hovercard{ width:min(760px, calc(100vw - 520px)); padding:14px; z-index:70; }
   .hovercard .card{ min-height:150px; }
   .beltsec.w{ border-left:6px solid #e3e8f0; padding-left:8px; }
   .beltsec.y{ border-left:6px solid #FFD54A; padding-left:8px; }
@@ -1394,8 +1394,9 @@
   async function showHoverCard(el, m, head){
     clearTimeout(hcTimer);
     const r = el.getBoundingClientRect();
-    hoverCard.style.left = Math.round(Math.min(r.right + 12, innerWidth - 480)) + 'px';
-    hoverCard.style.top = Math.round(Math.max(10, Math.min(r.top - 60, innerHeight - 260))) + 'px';
+    const L = $('summary').getBoundingClientRect();
+    hoverCard.style.left = Math.round(L.right + 14) + 'px';   // 다른 카드 창과 같은 자리·같은 크기
+    hoverCard.style.top = Math.round(Math.max(70, Math.min(r.top - 80, innerHeight - 320))) + 'px';
     const my = ++hcReq;
     if(m.total == null && !m._loading){ m._loading = true; hoverCard.innerHTML = '<div class="popempty">불러오는 중…</div>'; hoverCard.classList.remove('hidden');
       try{ await enrichMembers([m], true); }catch(e){ if(e instanceof AuthError){ lockScreen(); return; } } m._loading = false; if(my !== hcReq) return; }
