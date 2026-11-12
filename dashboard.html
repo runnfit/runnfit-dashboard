@@ -228,6 +228,22 @@
   .goalbar{ display:inline-block; width:46px; height:7px; background:#e7ebf3; border-radius:99px; overflow:hidden; vertical-align:1px; margin-right:6px; }
   .goalbar i{ display:block; height:100%; background:#18338c; border-radius:99px; }
 
+
+  /* 오늘 만료 회원: 마우스를 올리면 카드 창 */
+  .kpi.hoverable{ cursor:pointer; transition: box-shadow .15s, border-color .15s; }
+  .kpi.hoverable:hover, .kpi.hoverable:focus-visible{ border-color:#b4232f; box-shadow:0 0 0 3px rgba(180,35,47,.12); outline:none; }
+  .kpi .peek{ font-size:12px; }
+  .exppop{ position:fixed; z-index:50; width:min(760px, calc(100vw - 520px)); max-height:calc(100vh - 90px); overflow:auto;
+    background:#f3f5f9; border:1px solid var(--line); border-radius:18px; padding:14px; box-shadow:0 18px 50px rgba(11,31,77,.28); }
+  .exppop.hidden{ display:none; }
+  .exppop .pophead{ font-size:18px; font-weight:800; margin:2px 4px 10px; display:flex; align-items:baseline; gap:8px; }
+  .exppop .pophead b{ color:#b4232f; }
+  .exppop .pophead small{ font-size:13px; color:var(--muted); font-weight:600; }
+  .exppop .pophead.sub{ margin-top:16px; font-size:16px; } .exppop .pophead.sub b{ color:#c2410c; }
+  .exppop .popempty{ background:#fff; border:1px dashed var(--line); border-radius:14px; padding:18px; color:var(--muted); font-size:15px; text-align:center; }
+  .exppop .card{ min-height:150px; }
+  .time.exp{ color:#b4232f; font-size:20px; }
+
   /* 안내 화면 */
   .notice{ background:#fff; border:1px solid var(--line); border-radius:18px; padding:48px 28px; text-align:center; color:var(--muted); font-size:18px; }
   .notice b{ color:var(--ink); }
@@ -251,7 +267,7 @@
         <div class="kpi main"><div class="lbl">오늘 출석</div><div class="val" id="kToday">-</div><div class="sub" id="kTodaySub">어제와 비교 중…</div></div>
         <div class="kpi"><div class="lbl">유효 회원</div><div class="val" id="kValid">-</div><div class="sub" id="kValidSub">지금 기준</div></div>
         
-        <div class="kpi"><div class="lbl">오늘 만료 회원</div><div class="val" id="kExpire">-</div><div class="sub" id="kExpireSub">재등록 안내</div></div>
+        <div class="kpi hoverable" id="kExpireTile" tabindex="0" role="button" aria-haspopup="dialog" title="마우스를 올리면 회원 카드가 보여요"><div class="lbl">오늘 만료 회원 <span class="peek">👀</span></div><div class="val" id="kExpire">-</div><div class="sub" id="kExpireSub">재등록 안내</div></div>
         <div class="kpi split">
           <div class="half"><div class="lbl" id="kAbsentLbl">7일 이상 미출석 회원</div><div class="val alertv"><span id="kAbsent">-</span><em id="kAbsentPct"></em></div><div class="sub">유효 회원 대비 · 연락해 보세요</div></div>
           <div class="half"><div class="lbl">주 1회 이상 출석 회원</div><div class="val goodv"><span id="kActive">-</span><em id="kActivePct"></em></div><div class="sub">유효 회원 − 7일 이상 미출석</div></div>
@@ -265,6 +281,7 @@
       </div>
     </section>
     </aside>
+    <div id="expPop" class="right exppop hidden" role="dialog" aria-label="오늘·내일 만료 회원"></div>
     <section class="right" aria-label="오늘 출석 회원">
 
 
@@ -731,6 +748,107 @@
     }finally{
       summaryBusy = false;
     }
+  }
+
+  // ================= 오늘 만료 회원 카드 (마우스를 올리면 보임) =================
+  const EXP_Q = 'query RunFitStaffExpiring($filter: ManagerMemberListFilterInput!, $paging: PagingInput!) { managerMembers { list(filter: $filter, paging: $paging) { count data { id name profilePhoto expiredAt recentAttendAt purchasedProducts { name expiredAt category } } } } }';
+  const expCache = {};   // 'YYYY-MM-DD' → { at, list }
+  async function loadExpiring(date){
+    const c = expCache[date];
+    if(c && Date.now() - c.at < 5 * 60e3) return c.list;
+    const d = await gql(EXP_Q, { filter: { expiredAt: { gte: date, lte: date } }, paging: { limit: 100, offset: 0 } });
+    const now = Date.now();
+    const list = ((d && d.managerMembers && d.managerMembers.list && d.managerMembers.list.data) || []).map((m)=>{
+      const pp = m.purchasedProducts || [];
+      const live = (cat)=> pp.some((p)=> p.category === cat && p.expiredAt && Date.parse(p.expiredAt) >= now);
+      const gym = pp.filter((p)=> p.category === 'general' && p.expiredAt).sort((a, b)=> Date.parse(b.expiredAt) - Date.parse(a.expiredAt))[0];
+      return { id: m.id, name: (m.name || '').trim(), photo: m.profilePhoto || null, date: todayKst(),
+        recent: m.recentAttendAt ? Date.parse(m.recentAttendAt) : null,
+        gymExp: gym ? kstDate(Date.parse(gym.expiredAt)) : (m.expiredAt ? kstDate(Date.parse(m.expiredAt)) : null),
+        wear: live('rentalSportsWear'), locker: live('rentalLocker'), detail: null };
+    });
+    // 띠·누적·재등록은 출석 카드와 같은 방법으로 (동시에 4명씩)
+    let k = 0;
+    await Promise.all(Array.from({ length: 4 }, async ()=>{ while(k < list.length){ const m = list[k++];
+      try{ m.detail = await fetchDetail(m, gql); }catch(e){ if(e instanceof AuthError) throw e; m.detail = { count: null, belt: null, gap: { kind: 'na' }, reg: { kind: 'na' } }; } } }));
+    expCache[date] = { at: Date.now(), list };
+    return list;
+  }
+
+  function expCardHtml(c, whenLabel){
+    const d = c.detail || { count: null, belt: null, reg: { kind: 'na' } };
+    const belt = d.belt;
+    const light = belt ? belt.text === 'dark' : true;
+    const panel = belt ? belt.bg : '#c9cfdb';
+    const ink = belt ? (light ? '#0b1f4d' : '#fff') : '#0b1f4d';
+    const FOCUS = Array.isArray(CFG.STAFF_FOCUS_BELTS) ? CFG.STAFF_FOCUS_BELTS : ['흰 띠', '노란 띠'];
+    const focus = !!(belt && FOCUS.indexOf(belt.name) >= 0);
+    const na = '<span class="na">' + NA + '</span>';
+    let lamp = -1, regText = na;
+    if(d.reg.kind === 'first'){ lamp = 0; regText = '첫 등록'; }
+    else if(d.reg.kind === 'nth'){ lamp = d.reg.n >= 2 ? 2 : 1; regText = d.reg.n + '번째 재등록'; }
+    const lights = '<span class="lights" aria-hidden="true">' + ['r', 'y', 'g'].map((k, i)=> '<i class="' + k + (i === lamp ? ' on' : '') + '"></i>').join('') + '</span>';
+    const ago = c.recent != null ? daysBetween(todayKst(), kstDate(c.recent)) : null;
+    const agoText = ago == null ? NA : ago === 0 ? '오늘' : ago + '일 전';
+    const msg = ago != null && ago >= ABSENT_DAYS ? '마지막 출석 ' + ago + '일 전! 연락해서 재등록 안내해 주세요!' : '재등록 안내해 주세요!';
+    const photo = c.photo ? '<img src="' + esc(c.photo) + '" alt="" loading="lazy" referrerpolicy="no-referrer">' : '<span class="ph">' + PERSON + '</span>';
+    return '<article class="card">' +
+      '<div class="side' + (light ? ' light' : '') + '" style="--belt:' + esc(panel) + ';--belt-ink:' + ink + '">' +
+        (focus ? '<span class="focus" title="집중관리 회원 (흰 띠·노란 띠)" aria-label="집중관리 회원">★</span>' : '') +
+        '<div class="beltname">' + (belt ? esc(belt.name) : NA) + '</div>' +
+        '<div class="avatar">' + photo + '</div>' +
+        '<div class="who">' + esc(c.name || '이름 확인 불가') + '</div>' +
+      '</div>' +
+      '<div class="main">' +
+        '<div class="head2"><div class="time exp">' + whenLabel + ' 만료</div><div class="regbox">' + lights + '<span class="reg">' + regText + '</span></div></div>' +
+        '<div class="msgs"><p>' + esc(msg) + '</p></div>' +
+        '<div class="boxes"><div class="box"><span>누적 ' + (d.count != null ? '<b>' + d.count + '</b>회' : na) + '</span><span class="sep"></span><span>마지막 출석 <b>' + agoText + '</b></span></div></div>' +
+        '<div class="foot"><span class="wl"><span>운동복 ' + (c.wear ? 'O' : 'X') + '</span><span>사물함 ' + (c.locker ? 'O' : 'X') + '</span></span>' +
+          '<span>헬스 만료 ' + (c.gymExp ? dot(c.gymExp) : NA) + '</span></div>' +
+      '</div>' +
+    '</article>';
+  }
+
+  const expTile = $('kExpireTile'), expPop = $('expPop');
+  let expHideTimer = null, expPinned = false, expReq = 0;
+  async function openExpPop(){
+    clearTimeout(expHideTimer);
+    if(!expPop.classList.contains('hidden')) return;
+    const r = expTile.getBoundingClientRect(), L = $('summary').getBoundingClientRect();
+    expPop.style.left = Math.round(L.right + 14) + 'px';
+    expPop.style.top = Math.round(Math.max(70, r.top)) + 'px';
+    expPop.classList.remove('hidden');
+    const my = ++expReq;
+    expPop.innerHTML = '<div class="pophead">오늘 만료 회원 <small>불러오는 중…</small></div>';
+    try{
+      const today = todayKst(), tmr = addDays(today, 1);
+      const [t, n] = await Promise.all([loadExpiring(today), loadExpiring(tmr)]);
+      if(my !== expReq) return;
+      let html = '<div class="pophead">오늘 만료 회원 <b>' + t.length + '명</b><small>재등록 안내해 주세요</small></div>';
+      html += t.length ? '<div class="grid">' + t.map((c)=> expCardHtml(c, '오늘')).join('') + '</div>' : '<div class="popempty">오늘 만료되는 회원은 없어요 🙂</div>';
+      if(n.length) html += '<div class="pophead sub">내일 만료 회원 <b>' + n.length + '명</b></div><div class="grid">' + n.map((c)=> expCardHtml(c, '내일')).join('') + '</div>';
+      expPop.innerHTML = html;
+    }catch(e){
+      if(e instanceof AuthError){ lockScreen(); closeExpPop(true); return; }
+      expPop.innerHTML = '<div class="pophead">오늘 만료 회원</div><div class="popempty">' + NA + ' · 잠시 후 다시 올려주세요</div>';
+    }
+  }
+  function closeExpPop(now){
+    clearTimeout(expHideTimer);
+    const go = ()=>{ if(expPinned && !now) return; expPinned = false; expPop.classList.add('hidden'); };
+    if(now) go(); else expHideTimer = setTimeout(go, 250);
+  }
+  if(expTile && expPop){
+    expTile.addEventListener('mouseenter', openExpPop);
+    expTile.addEventListener('mouseleave', ()=> closeExpPop());
+    expTile.addEventListener('focus', openExpPop);
+    expTile.addEventListener('blur', ()=> closeExpPop());
+    expTile.addEventListener('click', ()=>{ expPinned = !expPinned; if(expPinned) openExpPop(); else closeExpPop(true); });
+    expPop.addEventListener('mouseenter', ()=> clearTimeout(expHideTimer));
+    expPop.addEventListener('mouseleave', ()=> closeExpPop());
+    document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && !expPop.classList.contains('hidden')){ e.stopPropagation(); closeExpPop(true); } }, true);
+    grid.addEventListener('error', ()=>{}, true);
+    expPop.addEventListener('error', (e)=>{ const img = e.target; if(img && img.tagName === 'IMG'){ const s = document.createElement('span'); s.className = 'ph'; s.innerHTML = PERSON; img.replaceWith(s); } }, true);
   }
 
   let lastChart = null;
