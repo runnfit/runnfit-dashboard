@@ -354,7 +354,7 @@
   .nbs.warn{ background:#fdf5e1; } .nbs.warn b{ color:#a16207; }
   .nbs.ok{ background:#e9f7ef; } .nbs.ok b{ color:#0a7d3c; }
   .nblist{ flex:1; overflow:auto; display:flex; flex-direction:column; gap:3px; }
-  .nbr{ display:grid; grid-template-columns: 54px 38px 1fr 30px 34px; align-items:center; gap:6px; font-size:12px; padding:4px 2px; border-bottom:1px solid #f1f3f8; }
+  .nbr{ display:grid; grid-template-columns: 70px 38px 1fr 30px 34px; align-items:center; gap:6px; font-size:12px; padding:4px 2px; border-bottom:1px solid #f1f3f8; }
   .nbn{ font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
   .nbd{ color:#9aa1b2; font-size:11px; }
   .nbb{ position:relative; height:8px; background:#f1f3f8; border-radius:4px; }
@@ -370,6 +370,7 @@
   .beltbtn:hover{ background:#1f2f8a; color:#fff; }
   .nbn{ cursor:pointer; text-decoration:underline dotted #c3c8d4; text-underline-offset:3px; }
   .nbn:hover{ color:#1f2f8a; }
+  .nbn .bd{ display:inline-block; width:10px; height:10px; border-radius:50%; margin-right:5px; vertical-align:-1px; box-shadow:0 0 0 1px rgba(11,31,77,.25); }
   .hovercard{ width:min(760px, calc(100vw - 520px)); padding:14px; z-index:70; }
   .hovercard .card{ min-height:150px; }
   .beltsec.w{ border-left:6px solid #e3e8f0; padding-left:8px; }
@@ -1426,6 +1427,7 @@
           c.visits = new Set(((r.managerMembers && r.managerMembers.attendances) || []).filter((a)=> a.status === 'ATTEND').map((a)=> kstDate(Date.parse(a.attendAt)))).size;
         }catch(e){ if(e instanceof AuthError) throw e; c.visits = null; }
       } }));
+      try{ await enrichMembers(list, true); }catch(e){ if(e instanceof AuthError) throw e; }   // 누적 출석 → 띠 색 동그라미
       list.forEach((c)=>{
         c.day = daysBetween(today, c.start) + 1;                       // 첫 30일 중 며칠째
         c.pace = c.visits == null ? null : Math.round(c.visits * 30 / Math.max(c.day, 10));   // 지금 속도로 30일을 채우면 (처음 열흘은 여유를 둠)
@@ -1452,7 +1454,7 @@
       const v = c.visits == null ? '-' : c.visits;
       const w = c.visits == null ? 0 : Math.min(100, c.visits / 16 * 100);
       return '<div class="nbr ' + c.st + '" role="listitem">' +
-        '<span class="nbn" data-i="' + i + '">' + esc(c.name) + '</span>' +
+        '<span class="nbn" data-i="' + i + '">' + '<i class="bd" style="background:' + esc(c.belt ? c.belt.bg : '#d3d7e0') + '" title="' + esc(c.belt ? c.belt.name + ' · 누적 ' + c.total + '회' : '띠 확인 불가') + '"></i>' + esc(c.name) + '</span>' +
         '<span class="nbd">' + c.day + '일째</span>' +
         '<span class="nbb"><i style="width:' + w.toFixed(0) + '%"></i><em style="left:' + (NB_WARN / 16 * 100) + '%"></em><em style="left:' + (NB_SETTLE / 16 * 100) + '%"></em></span>' +
         '<span class="nbv">' + v + '회</span>' +
