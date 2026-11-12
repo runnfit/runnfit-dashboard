@@ -332,7 +332,7 @@
   .left .nbcard h2{ font-size:16px; }
   .nbinfo{ font-size:12px; color:#9aa1b2; font-weight:700; }
   .nbhead:hover .nbinfo, .nbhead:focus .nbinfo{ color:#1f2f8a; }
-  .nbtip{ display:none; position:absolute; left:0; top:100%; margin-top:2px; z-index:60; width:320px; max-height:calc(100vh - 140px); overflow:auto; background:#fff; border:1px solid var(--line); border-radius:16px; box-shadow:0 12px 32px rgba(15,23,60,.18); padding:16px 16px 12px; color:var(--ink); }
+  .nbtip{ display:none; position:fixed; left:0; top:70px; z-index:60; width:340px; max-height:calc(100vh - 90px); overflow:auto; background:#fff; border:1px solid var(--line); border-radius:16px; box-shadow:0 12px 32px rgba(15,23,60,.18); padding:16px 16px 12px; color:var(--ink); }
   .nbhead h2:hover ~ .nbtip, .nbinfo:hover ~ .nbtip, .nbhead:focus .nbtip, .nbtip:hover{ display:block; }
   .nbtip .t1{ margin:0 0 12px; font-size:16px; font-weight:800; line-height:1.4; }
   .nbtip .t1 b{ color:#1f2f8a; }
@@ -1503,6 +1503,11 @@
     }).join('') + '</div>';
     box.innerHTML = s;
   }
+  // 기준 설명은 다른 카드 창처럼 왼쪽 판 바로 오른쪽에 띄운다 (왼쪽 판 안에 두면 잘림)
+  (function(){ const hd = document.querySelector('.nbhead'), tip = document.querySelector('.nbtip'); if(!hd || !tip) return;
+    const place = ()=>{ const L = $('summary').getBoundingClientRect(); tip.style.left = Math.round(L.right + 14) + 'px'; tip.style.top = '70px'; };
+    hd.addEventListener('mouseover', place); hd.addEventListener('focus', place);
+  })();
   (function(){ const box = $('newbies'); if(!box) return;
     box.addEventListener('mouseover', (e)=>{ const n = e.target.closest('.nbn'); if(!n) return; const c = nbList[+n.getAttribute('data-i')]; if(c) showHoverCard(n, c, '🌱 ' + c.day + '일째 · 첫 30일 ' + (c.visits == null ? '-' : c.visits) + '회 출석'); });
     box.addEventListener('mouseout', (e)=>{ if(e.target.closest('.nbn')) hcHide(); });
