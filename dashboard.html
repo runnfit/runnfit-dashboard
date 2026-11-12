@@ -893,8 +893,8 @@
         const [valid, absent, expT, expN] = await Promise.all([
           safe(()=> countMembers({ memberStatus: ['VALID'] }, gql)),
           safe(()=> countMembers({ notAttendDay: ABSENT_DAYS }, gql)),
-          safe(()=> countMembers({ expiredAt: { gte: today, lte: today } }, gql)),
-          safe(()=> countMembers({ expiredAt: { gte: tmr, lte: tmr } }, gql)),
+          safe(async ()=> (await gymExpiringRaw(today)).length),
+          safe(async ()=> (await gymExpiringRaw(tmr)).length),
         ]);
         absentAt = Date.now();
         liveValid = valid; liveValidNow = valid;
@@ -970,12 +970,22 @@
   // ================= 오늘 만료 회원 카드 (마우스를 올리면 보임) =================
   const EXP_Q = 'query RunFitStaffExpiring($filter: ManagerMemberListFilterInput!, $paging: PagingInput!) { managerMembers { list(filter: $filter, paging: $paging) { count data { id name profilePhoto expiredAt recentAttendAt purchasedProducts { name expiredAt category } } } } }';
   const expCache = {};   // 'YYYY-MM-DD' → { at, list }
+  // 헬스 이용권(일반)이 그날 끝나는 회원만. 다짐의 회원 만료일은 PT·락커가 끝나도 바뀌어서 그대로 쓰면 안 됨
+  const gymRawCache = {};
+  async function gymExpiringRaw(date){
+    const c = gymRawCache[date];
+    if(c && Date.now() - c.at < 60e3) return c.list;
+    const d = await gql(EXP_Q, { filter: { expiredAt: { gte: date, lte: date } }, paging: { limit: 200, offset: 0 } });
+    const all = (d && d.managerMembers && d.managerMembers.list && d.managerMembers.list.data) || [];
+    const list = all.filter((m)=> (m.purchasedProducts || []).some((p)=> p && p.category === 'general' && p.expiredAt && kstDate(Date.parse(p.expiredAt)) === date));
+    gymRawCache[date] = { at: Date.now(), list };
+    return list;
+  }
   async function loadExpiring(date){
     const c = expCache[date];
     if(c && Date.now() - c.at < 5 * 60e3) return c.list;
-    const d = await gql(EXP_Q, { filter: { expiredAt: { gte: date, lte: date } }, paging: { limit: 100, offset: 0 } });
     const now = Date.now();
-    const list = ((d && d.managerMembers && d.managerMembers.list && d.managerMembers.list.data) || []).map((m)=>{
+    const list = (await gymExpiringRaw(date)).map((m)=>{
       const pp = m.purchasedProducts || [];
       const live = (cat)=> pp.some((p)=> p.category === cat && p.expiredAt && Date.parse(p.expiredAt) >= now);
       const gym = pp.filter((p)=> p.category === 'general' && p.expiredAt).sort((a, b)=> Date.parse(b.expiredAt) - Date.parse(a.expiredAt))[0];
