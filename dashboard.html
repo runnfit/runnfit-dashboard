@@ -197,6 +197,13 @@
 
 
   /* 집중관리(흰 띠·노란 띠) 파란 별 */
+  .side .nblight{ position:absolute; top:8px; left:9px; width:24px; height:24px; border-radius:50%; z-index:2;
+    box-shadow:0 0 0 3px #fff, 0 0 10px 2px var(--glow); background:radial-gradient(circle at 35% 30%, #fff8 0 18%, transparent 40%), var(--lamp); }
+  .side .nblight.risk{ --lamp:#e5484d; --glow:rgba(229,72,77,.6); animation: nbpulse 1.6s ease-in-out infinite; }
+  .side .nblight.warn{ --lamp:#f5b82e; --glow:rgba(245,184,46,.55); }
+  .side .nblight.ok{ --lamp:#2fb36b; --glow:rgba(47,179,107,.5); }
+  @keyframes nbpulse{ 0%,100%{ box-shadow:0 0 0 3px #fff, 0 0 6px 1px var(--glow); } 50%{ box-shadow:0 0 0 3px #fff, 0 0 16px 5px var(--glow); } }
+  @media (prefers-reduced-motion: reduce){ .side .nblight.risk{ animation:none; } }
   .side .focus{ position:absolute; top:7px; left:8px; width:26px; height:26px; border-radius:50%;
     display:flex; align-items:center; justify-content:center; background:#fff; color:#1d4ed8;
     font-size:17px; line-height:1; box-shadow:0 0 0 1.5px #1d4ed8, 0 2px 6px rgba(29,78,216,.25); }
@@ -716,6 +723,13 @@
 
   // ================= 화면 =================
   const $ = (id)=> document.getElementById(id);
+  // 신규회원(등록 30일 안) 상태: 카드 왼쪽 위 별 자리에 🔴🟡🟢 불로 표시
+  const nbStatus = new Map();
+  function nbBadge(id){
+    const s = id && nbStatus.get(id); if(!s || s.st === 'na') return '';
+    const L = { risk: '위험', warn: '주의', ok: '정착' }[s.st];
+    return '<span class="nblight ' + s.st + '" title="신규회원 ' + L + ' · ' + s.day + '일째 · 첫 30일 ' + s.visits + '회 출석" aria-label="신규회원 ' + L + '"></span>';
+  }
   const grid = $('grid'), notice = $('notice');
   let viewDate = todayKst();
   let cards = [];
@@ -774,7 +788,7 @@
           '<div class="avatar">' + photo + '</div>' +
           '<span class="stat r' + (d && d.gap.kind === 'days' && d.gap.days >= 100 ? ' long' : '') + '">' + (!d ? '' : d.gap.kind === 'days' ? '<b>' + d.gap.days + '</b><em>일 만</em>' : d.gap.kind === 'first' ? '<b>첫</b><em>출석</em>' : '') + '</span>' +
         '</div>' +
-        (focus ? '<span class="focus" title="집중관리 회원 (흰 띠·노란 띠)" aria-label="집중관리 회원">★</span>' : '') +
+        (nbBadge(c.id) || (focus ? '<span class="focus" title="집중관리 회원 (흰 띠·노란 띠)" aria-label="집중관리 회원">★</span>' : '')) +
         '<div class="beltname">' + (!d ? '확인 중…' : belt ? esc(belt.name) : NA) + '</div>' +
         '<div class="who">' + (milestone ? '🎉' : '') + esc(c.name || '이름 확인 불가') + '</div>' +
       '</div>' +
@@ -1026,7 +1040,7 @@
     const photo = c.photo ? '<img src="' + esc(c.photo) + '" alt="" loading="lazy" referrerpolicy="no-referrer">' : '<span class="ph">' + PERSON + '</span>';
     return '<article class="card">' +
       '<div class="side' + (light ? ' light' : '') + '" style="--belt:' + esc(panel) + ';--belt-ink:' + ink + '">' +
-        (focus ? '<span class="focus" title="집중관리 회원 (흰 띠·노란 띠)" aria-label="집중관리 회원">★</span>' : '') +
+        (nbBadge(c.id) || (focus ? '<span class="focus" title="집중관리 회원 (흰 띠·노란 띠)" aria-label="집중관리 회원">★</span>' : '')) +
         '<div class="beltname">' + (belt ? esc(belt.name) : NA) + '</div>' +
         '<div class="avatar">' + photo + '</div>' +
         '<div class="who">' + esc(c.name || '이름 확인 불가') + '</div>' +
@@ -1133,7 +1147,7 @@
     const photo = m.photo ? '<img src="' + esc(m.photo) + '" alt="" loading="lazy" referrerpolicy="no-referrer">' : '<span class="ph">' + PERSON + '</span>';
     return '<article class="card' + (m.rank <= 3 ? ' top3' : '') + '">' +
       '<div class="side' + (light ? ' light' : '') + '" style="--belt:' + esc(panel) + ';--belt-ink:' + ink + '">' +
-        (focus ? '<span class="focus" title="집중관리 회원 (흰 띠·노란 띠)" aria-label="집중관리 회원">★</span>' : '') +
+        (nbBadge(m.id) || (focus ? '<span class="focus" title="집중관리 회원 (흰 띠·노란 띠)" aria-label="집중관리 회원">★</span>' : '')) +
         '<div class="beltname">' + (belt ? esc(belt.name) : NA) + '</div>' +
         '<div class="avatar">' + photo + '</div>' +
         '<div class="who">' + esc(m.name || '이름 확인 불가') + '</div>' +
@@ -1243,7 +1257,7 @@
     const photo = m.photo ? '<img src="' + esc(m.photo) + '" alt="" loading="lazy" referrerpolicy="no-referrer">' : '<span class="ph">' + PERSON + '</span>';
     return '<article class="card">' +
       '<div class="side' + (light ? ' light' : '') + '" style="--belt:' + esc(panel) + ';--belt-ink:' + ink + '">' +
-        (focus ? '<span class="focus" title="집중관리 회원 (흰 띠·노란 띠)" aria-label="집중관리 회원">★</span>' : '') +
+        (nbBadge(m.id) || (focus ? '<span class="focus" title="집중관리 회원 (흰 띠·노란 띠)" aria-label="집중관리 회원">★</span>' : '')) +
         '<div class="beltname">' + (belt ? esc(belt.name) : NA) + '</div>' +
         '<div class="avatar">' + photo + '</div>' +
         '<div class="who">' + esc(m.name || '이름 확인 불가') + '</div>' +
@@ -1499,6 +1513,8 @@
       const ord = { risk: 0, warn: 1, ok: 2, na: 3 };
       list.sort((a, b)=> ord[a.st] - ord[b.st] || (a.pace || 0) - (b.pace || 0) || b.day - a.day);
       nbList = list;
+      nbStatus.clear(); list.forEach((c)=> nbStatus.set(c.id, { st: c.st, day: c.day, visits: c.visits }));
+      render();   // 출석 카드에 신규회원 불 반영
       drawNewbies(list);
       nbAt = Date.now();
     }catch(e){ if(e instanceof AuthError) lockScreen(); else if(!nbAt) box.innerHTML = '<div class="mempty">' + NA + '</div>'; }
