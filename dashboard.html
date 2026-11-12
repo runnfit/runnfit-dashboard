@@ -327,12 +327,12 @@
   .mgoal{ position:absolute; left:0; right:0; border-top:1.5px dashed #e08a2e; z-index:1; pointer-events:none; }
   .mgoal span{ position:absolute; right:0; top:-15px; font-size:10px; font-weight:700; color:#c2410c; background:#fff; padding:0 3px; }
   .left .chartslot{ flex:1; min-height:240px; display:flex; flex-direction:column; padding:12px 12px 8px; border-radius:14px; }
-  .nbhead{ position:relative; cursor:help; outline:none; }
+  .nbhead{ position:relative; outline:none; } .nbhead h2, .nbinfo{ cursor:help; }
   .left .nbcard h2{ font-size:16px; }
   .nbinfo{ font-size:12px; color:#9aa1b2; font-weight:700; }
   .nbhead:hover .nbinfo, .nbhead:focus .nbinfo{ color:#1f2f8a; }
   .nbtip{ display:none; position:absolute; left:0; top:calc(100% + 6px); z-index:60; width:300px; background:#fff; border:1px solid var(--line); border-radius:16px; box-shadow:0 12px 32px rgba(15,23,60,.18); padding:16px 16px 12px; color:var(--ink); }
-  .nbhead:hover .nbtip, .nbhead:focus .nbtip{ display:block; }
+  .nbhead h2:hover ~ .nbtip, .nbinfo:hover ~ .nbtip, .nbhead:focus .nbtip{ display:block; }
   .nbtip .t1{ margin:0 0 12px; font-size:16px; font-weight:800; line-height:1.4; }
   .nbtip .t1 b{ color:#1f2f8a; }
   .nbt-bars div{ display:grid; grid-template-columns:62px 1fr 38px; align-items:center; gap:8px; font-size:12.5px; margin:5px 0; }
@@ -366,6 +366,15 @@
   .nbr.ok .nbt{ color:#0a7d3c; background:#e9f7ef; } .nbr.warn .nbt{ color:#a16207; background:#fdf5e1; } .nbr.risk .nbt{ color:#b4232f; background:#fdecec; } .nbr.na .nbt{ color:#9aa1b2; background:#f1f3f8; }
   .popchart{ padding:14px 18px 8px; }
   .popchart .chart{ height:380px; }
+  .beltbtn{ margin-left:auto; font:inherit; font-size:12px; font-weight:800; color:#1f2f8a; background:#eef1fb; border:1px solid #d6dcf3; border-radius:999px; padding:4px 10px; cursor:pointer; }
+  .beltbtn:hover{ background:#1f2f8a; color:#fff; }
+  .nbn{ cursor:pointer; text-decoration:underline dotted #c3c8d4; text-underline-offset:3px; }
+  .nbn:hover{ color:#1f2f8a; }
+  .hovercard{ width:460px; padding:10px; z-index:70; }
+  .hovercard .card{ min-height:150px; }
+  .beltsec.w{ border-left:6px solid #e3e8f0; padding-left:8px; }
+  .beltsec.y{ border-left:6px solid #FFD54A; padding-left:8px; }
+  .beltsec b{ color:#1f2f8a !important; }
 </style>
 </head>
 <body>
@@ -390,7 +399,7 @@
         </div>
       </div>
       <div class="chartcard chartslot nbcard" id="chartSlot">
-        <div class="ch nbhead" tabindex="0"><h2>🌱 신규회원 첫 30일</h2><span class="nbinfo">ⓘ 기준 보기</span>
+        <div class="ch nbhead" tabindex="0"><h2>🌱 신규회원 첫 30일</h2><span class="nbinfo">ⓘ 기준 보기</span><button class="beltbtn" id="beltBtn" type="button">🥋 흰·노란 띠 모아보기</button>
           <div class="nbtip" role="tooltip">
             <p class="t1">첫 30일에 <b>6번</b> 넘게 오면<br>재등록이 <b>2배</b> 늘어요!</p>
             <div class="nbt-bars">
@@ -419,6 +428,7 @@
       <div class="pophead">📈 월별 유효 회원 <small>다짐 기록 전체 · 이번 달은 실시간</small><button class="popx" aria-label="닫기">✕</button></div>
       <div class="chartcard popchart"><div id="monthly" class="monthly"></div></div>
     </div>
+    <div id="beltPop" class="right exppop hidden" role="dialog" aria-label="흰 띠·노란 띠 회원"></div>
     <div id="todayPop" class="right exppop hidden" role="dialog" aria-label="최근 30일 출석">
       <div class="pophead">📊 최근 30일 출석<button class="popx" aria-label="닫기">✕</button></div>
       <div class="chartcard popchart">
@@ -974,6 +984,7 @@
     if($('rankPop')) $('rankPop').classList.add('hidden');
     if($('todayPop')) $('todayPop').classList.add('hidden');
     if($('validPop')) $('validPop').classList.add('hidden');
+    if($('beltPop')) $('beltPop').classList.add('hidden');
     if($('absentPop')) $('absentPop').classList.add('hidden');
     if(!expPop.classList.contains('hidden')) return;
     const r = expTile.getBoundingClientRect(), L = $('summary').getBoundingClientRect();
@@ -1079,6 +1090,7 @@
     closeExpPop(true);
     if($('todayPop')) $('todayPop').classList.add('hidden');
     if($('validPop')) $('validPop').classList.add('hidden');
+    if($('beltPop')) $('beltPop').classList.add('hidden');
     if($('absentPop')) $('absentPop').classList.add('hidden');
     const r = rankTile.getBoundingClientRect(), L = $('summary').getBoundingClientRect();
     rankPop.style.left = Math.round(L.right + 14) + 'px';
@@ -1146,7 +1158,8 @@
     return list;
   }
 
-  function absentCardHtml(m, i){
+  function absentCardHtml(m, i, opt){
+    opt = opt || {};
     const belt = m.belt;
     const light = belt ? belt.text === 'dark' : true;
     const panel = belt ? belt.bg : '#c9cfdb';
@@ -1172,7 +1185,7 @@
         '<div class="who">' + esc(m.name || '이름 확인 불가') + '</div>' +
       '</div>' +
       '<div class="main">' +
-        '<div class="head2"><div class="time absent">' + (i + 1) + '. ' + daysText + '</div><div class="regbox">' + lights + '<span class="reg">' + regText + '</span></div></div>' +
+        '<div class="head2"><div class="time absent">' + (opt.head != null ? opt.head : (i + 1) + '. ' + daysText) + '</div><div class="regbox">' + lights + '<span class="reg">' + regText + '</span></div></div>' +
         '<div class="msgs">' + (tel ? '<p class="care phone"><button class="tel" data-tel="' + esc(tel) + '" title="누르면 번호가 복사돼요">📞 ' + esc(tel) + '</button><span class="copied"></span></p>' : '<p class="care">' + esc(msg) + '</p>') + '</div>' +
         '<div class="boxes"><div class="box"><span>누적 ' + (m.total != null ? '<b>' + m.total + '</b>회' : na) + '</span><span class="sep"></span><span>마지막 출석 <b>' + (m.recent != null ? dot(kstDate(m.recent)).slice(5) : '-') + '</b></span></div></div>' +
         '<div class="foot"><span class="wl"><span>운동복 ' + (m.wear ? 'O' : 'X') + '</span><span>사물함 ' + (m.locker ? 'O' : 'X') + '</span></span>' +
@@ -1189,6 +1202,7 @@
     if(rankPop) rankPop.classList.add('hidden');
     if($('todayPop')) $('todayPop').classList.add('hidden');
     if($('validPop')) $('validPop').classList.add('hidden');
+    if($('beltPop')) $('beltPop').classList.add('hidden');
     const L = $('summary').getBoundingClientRect();
     absPop.style.left = Math.round(L.right + 14) + 'px';
     absPop.style.top = '70px';
@@ -1199,7 +1213,7 @@
       const list = await loadAbsentList();
       if(my !== absReq) return;
       absPop.innerHTML = '<div class="pophead">📞 ' + ABSENT_DAYS + '일 이상 미출석 회원 <b>' + list.length + '명</b><small>오래 안 나온 순서 · 연락해서 안부를 물어주세요</small><button class="popx" aria-label="닫기">✕</button></div>' +
-        (list.length ? '<div class="grid">' + list.map(absentCardHtml).join('') + '</div>' : '<div class="popempty">' + ABSENT_DAYS + '일 넘게 안 나온 회원이 없어요 🙂</div>');
+        (list.length ? '<div class="grid">' + list.map((m, i)=> absentCardHtml(m, i)).join('') + '</div>' : '<div class="popempty">' + ABSENT_DAYS + '일 넘게 안 나온 회원이 없어요 🙂</div>');
     }catch(e){
       if(e instanceof AuthError){ lockScreen(); absPop.classList.add('hidden'); return; }
       absPop.innerHTML = '<div class="pophead">' + ABSENT_DAYS + '일 이상 미출석 회원<button class="popx" aria-label="닫기">✕</button></div><div class="popempty">' + NA + ' · 잠시 후 다시 눌러주세요</div>';
@@ -1210,6 +1224,14 @@
     absTile.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openAbsentPop(); } });
     absPop.addEventListener('click', (e)=>{
       if(e.target.closest('.popx')){ absPop.classList.add('hidden'); return; }
+      copyTel(e);
+    });
+    document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && !absPop.classList.contains('hidden')){ e.stopPropagation(); absPop.classList.add('hidden'); } }, true);
+    document.addEventListener('mousedown', (e)=>{ if(!absPop.classList.contains('hidden') && !absPop.contains(e.target) && !absTile.contains(e.target)) absPop.classList.add('hidden'); });
+    absPop.addEventListener('error', imgFallback, true);
+  }
+  function imgFallback(e){ const img = e.target; if(img && img.tagName === 'IMG'){ const s = document.createElement('span'); s.className = 'ph'; s.innerHTML = PERSON; img.replaceWith(s); } }
+  function copyTel(e){
       const b = e.target.closest('.tel');
       if(!b) return;
       // 번호 복사 (iframe 안에서도 되도록 예비 방법 포함)
@@ -1217,10 +1239,6 @@
       const done = (ok)=>{ const s = b.parentElement.querySelector('.copied'); if(s){ s.textContent = ok ? '복사됐어요!' : '길게 눌러 복사해 주세요'; setTimeout(()=>{ s.textContent = ''; }, 1800); } };
       const fallback = ()=>{ try{ const t = document.createElement('textarea'); t.value = num; t.style.position = 'fixed'; t.style.opacity = '0'; document.body.appendChild(t); t.select(); const ok = document.execCommand('copy'); t.remove(); done(ok); }catch(err){ done(false); } };
       try{ navigator.clipboard.writeText(num).then(()=> done(true), fallback); }catch(err){ fallback(); }
-    });
-    document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && !absPop.classList.contains('hidden')){ e.stopPropagation(); absPop.classList.add('hidden'); } }, true);
-    document.addEventListener('mousedown', (e)=>{ if(!absPop.classList.contains('hidden') && !absPop.contains(e.target) && !absTile.contains(e.target)) absPop.classList.add('hidden'); });
-    absPop.addEventListener('error', (e)=>{ const img = e.target; if(img && img.tagName === 'IMG'){ const s = document.createElement('span'); s.className = 'ph'; s.innerHTML = PERSON; img.replaceWith(s); } }, true);
   }
 
   // ================= 월별 유효 회원 그래프 ('유효 회원'을 누르면, 다짐 기록이 있는 모든 달) =================
@@ -1283,7 +1301,7 @@
   function openValidPop(){
     if(!validPop.classList.contains('hidden')){ validPop.classList.add('hidden'); return; }
     closeExpPop(true);
-    ['rankPop', 'absentPop', 'todayPop'].forEach((id)=>{ if($(id)) $(id).classList.add('hidden'); });
+    ['rankPop', 'absentPop', 'todayPop', 'beltPop'].forEach((id)=>{ if($(id)) $(id).classList.add('hidden'); });
     const L = $('summary').getBoundingClientRect();
     validPop.style.left = Math.round(L.right + 14) + 'px';
     validPop.style.top = '70px';
@@ -1306,6 +1324,7 @@
     if($('rankPop')) $('rankPop').classList.add('hidden');
     if($('absentPop')) $('absentPop').classList.add('hidden');
     if($('validPop')) $('validPop').classList.add('hidden');
+    if($('beltPop')) $('beltPop').classList.add('hidden');
     const L = $('summary').getBoundingClientRect();
     todayPop.style.left = Math.round(L.right + 14) + 'px';
     todayPop.style.top = '70px';
@@ -1320,26 +1339,84 @@
     document.addEventListener('mousedown', (e)=>{ if(!todayPop.classList.contains('hidden') && !todayPop.contains(e.target) && !todayTile.contains(e.target)) todayPop.classList.add('hidden'); });
   }
 
+  // ================= 회원 카드 공용 (목록 → 카드, 누적·재등록은 한 번에 묶어서) =================
+  const MEM_FIELDS = 'id name phone profilePhoto expiredAt recentAttendAt purchasedProducts { category startDate expiredAt }';
+  function toMember(m, today){
+    const now = Date.now(), pp = m.purchasedProducts || [];
+    const live = (cat)=> pp.some((p)=> p.category === cat && p.expiredAt && Date.parse(p.expiredAt) >= now);
+    const gym = pp.filter((p)=> p.category === 'general' && p.expiredAt).sort((a, b)=> Date.parse(b.expiredAt) - Date.parse(a.expiredAt))[0];
+    const recent = m.recentAttendAt ? Date.parse(m.recentAttendAt) : null;
+    return { id: m.id, name: (m.name || '').trim(), phone: m.phone || '', photo: m.profilePhoto || null, recent,
+      days: recent != null ? daysBetween(today, kstDate(recent)) : null,
+      gymExp: gym ? kstDate(Date.parse(gym.expiredAt)) : (m.expiredAt ? kstDate(Date.parse(m.expiredAt)) : null),
+      wear: live('rentalSportsWear'), locker: live('rentalLocker'), total: null, belt: null, reg: { kind: 'na' }, _pp: pp };
+  }
+  async function enrichMembers(list, withReg){
+    for(let i = 0; i < list.length; i += 80){
+      const part = list.slice(i, i + 80);
+      const q = 'query RunFitStaffBatch { ' + part.map((m, x)=> 'a' + x + ': managerMembers { by(id: "' + String(m.id).replace(/[^\w-]/g, '') + '") { totalAttendCount profilePhoto }' +
+        (withReg ? ' purchasedProducts(memberId: "' + String(m.id).replace(/[^\w-]/g, '') + '") { __typename ... on Membership { category sale { hasRefund } } }' : '') + ' }').join(' ') + ' }';
+      const r = await gql(q, {});
+      part.forEach((m, x)=>{
+        const mm = r && r['a' + x]; if(!mm) return;
+        if(mm.by){ m.total = mm.by.totalAttendCount; if(!m.photo) m.photo = mm.by.profilePhoto; }
+        m.belt = getBelt(m.total);
+        if(withReg){ const g = (mm.purchasedProducts || []).filter((p)=> p && p.__typename === 'Membership' && p.category === 'general' && !(p.sale && p.sale.hasRefund));
+          m.reg = g.length === 1 ? { kind: 'first' } : g.length > 1 ? { kind: 'nth', n: g.length - 1 } : { kind: 'na' }; }
+      });
+    }
+    return list;
+  }
+  let validCache = null;   // 유효 회원 목록 (10분)
+  async function loadValidMembers(){
+    if(validCache && Date.now() - validCache.at < 10 * 60e3) return validCache.raw;
+    const all = [];
+    for(let off = 0; off < 3000; off += 200){
+      const d = await gql('query RunFitStaffValidList($filter: ManagerMemberListFilterInput!, $paging: PagingInput!) { managerMembers { list(filter: $filter, paging: $paging) { count data { ' + MEM_FIELDS + ' } } } }', { filter: { memberStatus: ['VALID'] }, paging: { limit: 200, offset: off } });
+      const L = d.managerMembers.list; all.push(...(L.data || []));
+      if(all.length >= L.count || !(L.data || []).length) break;
+    }
+    validCache = { at: Date.now(), raw: all };
+    return all;
+  }
+  const lastText = (m)=> m.days == null ? '출석 기록 없음' : m.days === 0 ? '오늘 출석' : m.days + '일 전 출석';
+
+  // ---------- 이름에 마우스를 올리면 회원 카드 ----------
+  const hoverCard = document.createElement('div');
+  hoverCard.className = 'exppop hovercard hidden'; hoverCard.setAttribute('role', 'tooltip');
+  document.body.appendChild(hoverCard);
+  hoverCard.addEventListener('error', imgFallback, true);
+  hoverCard.addEventListener('click', copyTel);
+  let hcTimer = null, hcReq = 0;
+  const hcHide = ()=>{ clearTimeout(hcTimer); hcTimer = setTimeout(()=> hoverCard.classList.add('hidden'), 220); };
+  hoverCard.addEventListener('mouseenter', ()=> clearTimeout(hcTimer));
+  hoverCard.addEventListener('mouseleave', hcHide);
+  async function showHoverCard(el, m, head){
+    clearTimeout(hcTimer);
+    const r = el.getBoundingClientRect();
+    hoverCard.style.left = Math.round(Math.min(r.right + 12, innerWidth - 480)) + 'px';
+    hoverCard.style.top = Math.round(Math.max(10, Math.min(r.top - 60, innerHeight - 260))) + 'px';
+    const my = ++hcReq;
+    if(m.total == null && !m._loading){ m._loading = true; hoverCard.innerHTML = '<div class="popempty">불러오는 중…</div>'; hoverCard.classList.remove('hidden');
+      try{ await enrichMembers([m], true); }catch(e){ if(e instanceof AuthError){ lockScreen(); return; } } m._loading = false; if(my !== hcReq) return; }
+    hoverCard.innerHTML = absentCardHtml(m, 0, { head: head });
+    hoverCard.classList.remove('hidden');
+  }
+
   // ================= 신규회원 첫 30일 (비워둔 왼쪽 아래 자리) =================
   // 기준(2025.4 이후 첫 등록 750명 분석): 첫 30일 출석 0~5회 재등록 13% · 6~11회 31% · 12~15회 38% · 16회+ 51%
   const NB_SETTLE = 12, NB_WARN = 6;
-  const NB_LIST_Q = 'query RunFitStaffNew($filter: ManagerMemberListFilterInput!, $paging: PagingInput!) { managerMembers { list(filter: $filter, paging: $paging) { count data { id name profilePhoto purchasedProducts { category startDate } } } } }';
-  const NB_ATT_Q = 'query RunFitStaffNewAtt($id: String!, $d: DateFilterInput!) { managerMembers { attendances(memberId: $id, date: $d, paging: {limit: 300, offset: 0}) { status attendAt } } }';
-  let nbAt = 0, nbBusy = false;
+    const NB_ATT_Q = 'query RunFitStaffNewAtt($id: String!, $d: DateFilterInput!) { managerMembers { attendances(memberId: $id, date: $d, paging: {limit: 300, offset: 0}) { status attendAt } } }';
+  let nbAt = 0, nbBusy = false, nbList = [];
   async function loadNewbies(today){
     const box = $('newbies'); if(!box || nbBusy || Date.now() - nbAt < 10 * 60e3) return;
     nbBusy = true;
     try{
-      const all = [];
-      for(let off = 0; off < 3000; off += 200){
-        const d = await gql(NB_LIST_Q, { filter: { memberStatus: ['VALID'] }, paging: { limit: 200, offset: off } });
-        const L = d.managerMembers.list; all.push(...(L.data || []));
-        if(all.length >= L.count || !(L.data || []).length) break;
-      }
+      const all = await loadValidMembers();
       const from = addDays(today, -29), list = [];
       all.forEach((m)=>{
         const g = (m.purchasedProducts || []).filter((p)=> p && p.category === 'general' && p.startDate).map((p)=> kstDate(Date.parse(p.startDate))).sort();
-        if(g.length && g[0] >= from && g[0] <= today) list.push({ id: m.id, name: m.name, photo: m.profilePhoto, start: g[0] });
+        if(g.length && g[0] >= from && g[0] <= today) list.push(Object.assign(toMember(m, today), { start: g[0] }));
       });
       let k = 0;
       await Promise.all(Array.from({ length: 3 }, async ()=>{ while(k < list.length){ const c = list[k++];
@@ -1355,6 +1432,7 @@
       });
       const ord = { risk: 0, warn: 1, ok: 2, na: 3 };
       list.sort((a, b)=> ord[a.st] - ord[b.st] || (a.pace || 0) - (b.pace || 0) || b.day - a.day);
+      nbList = list;
       drawNewbies(list);
       nbAt = Date.now();
     }catch(e){ if(e instanceof AuthError) lockScreen(); else if(!nbAt) box.innerHTML = '<div class="mempty">' + NA + '</div>'; }
@@ -1369,17 +1447,65 @@
       '<div class="nbs warn"><b>' + n('warn') + '</b><span>🟡 주의</span></div>' +
       '<div class="nbs ok"><b>' + n('ok') + '</b><span>🟢 정착</span></div></div>';
     if(!list.length) s += '<div class="mempty">첫 30일 신규회원이 없어요</div>';
-    else s += '<div class="nblist" role="list">' + list.map((c)=>{
+    else s += '<div class="nblist" role="list">' + list.map((c, i)=>{
       const v = c.visits == null ? '-' : c.visits;
       const w = c.visits == null ? 0 : Math.min(100, c.visits / 16 * 100);
-      return '<div class="nbr ' + c.st + '" role="listitem" title="' + esc(c.name) + ' · ' + c.day + '일째 · ' + v + '회 출석 · 지금 속도면 30일에 약 ' + (c.pace == null ? '-' : c.pace) + '회">' +
-        '<span class="nbn">' + esc(c.name) + '</span>' +
+      return '<div class="nbr ' + c.st + '" role="listitem">' +
+        '<span class="nbn" data-i="' + i + '">' + esc(c.name) + '</span>' +
         '<span class="nbd">' + c.day + '일째</span>' +
         '<span class="nbb"><i style="width:' + w.toFixed(0) + '%"></i><em style="left:' + (NB_WARN / 16 * 100) + '%"></em><em style="left:' + (NB_SETTLE / 16 * 100) + '%"></em></span>' +
         '<span class="nbv">' + v + '회</span>' +
         '<span class="nbt">' + LBL[c.st] + '</span></div>';
     }).join('') + '</div>';
     box.innerHTML = s;
+  }
+  (function(){ const box = $('newbies'); if(!box) return;
+    box.addEventListener('mouseover', (e)=>{ const n = e.target.closest('.nbn'); if(!n) return; const c = nbList[+n.getAttribute('data-i')]; if(c) showHoverCard(n, c, '🌱 ' + c.day + '일째 · 첫 30일 ' + (c.visits == null ? '-' : c.visits) + '회 출석'); });
+    box.addEventListener('mouseout', (e)=>{ if(e.target.closest('.nbn')) hcHide(); });
+  })();
+
+  // ================= 흰 띠·노란 띠 모아보기 (누적 1~29회 유효 회원) =================
+  const beltBtn = $('beltBtn'), beltPop = $('beltPop');
+  let beltReq = 0, beltCache = null;
+  async function openBeltPop(){
+    if(!beltPop.classList.contains('hidden')){ beltPop.classList.add('hidden'); return; }
+    closeExpPop(true);
+    ['rankPop', 'absentPop', 'todayPop', 'validPop'].forEach((id)=>{ if($(id)) $(id).classList.add('hidden'); });
+    const L = $('summary').getBoundingClientRect();
+    beltPop.style.left = Math.round(L.right + 14) + 'px';
+    beltPop.style.top = '70px';
+    beltPop.classList.remove('hidden');
+    const my = ++beltReq;
+    const head = (extra)=> '<div class="pophead">🥋 흰 띠·노란 띠 회원 ' + extra + '<button class="popx" aria-label="닫기">✕</button></div>';
+    beltPop.innerHTML = head('<small>불러오는 중… (몇 초 걸려요)</small>');
+    try{
+      if(!beltCache || Date.now() - beltCache.at > 10 * 60e3){
+        const today = todayKst();
+        const all = (await loadValidMembers()).map((m)=> toMember(m, today));
+        await enrichMembers(all, false);
+        const pick = all.filter((m)=> m.total != null && m.total < 30);
+        await enrichMembers(pick, true);   // 재등록 신호등
+        beltCache = { at: Date.now(), list: pick };
+      }
+      if(my !== beltReq) return;
+      const byLong = (a, b)=> (b.days == null ? 1e9 : b.days) - (a.days == null ? 1e9 : a.days);
+      const white = beltCache.list.filter((m)=> m.total < 10).sort(byLong);
+      const yellow = beltCache.list.filter((m)=> m.total >= 10).sort(byLong);
+      const sec = (title, cls, arr)=> '<div class="pophead sub beltsec ' + cls + '">' + title + ' <b>' + arr.length + '명</b><small>오래 안 나온 순서</small></div>' +
+        (arr.length ? '<div class="grid">' + arr.map((m, i)=> absentCardHtml(m, i, { head: (i + 1) + '. ' + lastText(m) })).join('') + '</div>' : '<div class="popempty">없어요</div>');
+      beltPop.innerHTML = head('<b>' + beltCache.list.length + '명</b><small>집중관리 · 누적 30회 전까지 · 유효 회원만</small>') +
+        sec('⬜ 흰 띠 (1~9회)', 'w', white) + sec('🟨 노란 띠 (10~29회)', 'y', yellow);
+    }catch(e){
+      if(e instanceof AuthError){ lockScreen(); beltPop.classList.add('hidden'); return; }
+      beltPop.innerHTML = head('') + '<div class="popempty">' + NA + ' · 잠시 후 다시 눌러주세요</div>';
+    }
+  }
+  if(beltBtn && beltPop){
+    beltBtn.addEventListener('click', (e)=>{ e.stopPropagation(); openBeltPop(); });
+    beltPop.addEventListener('click', (e)=>{ if(e.target.closest('.popx')){ beltPop.classList.add('hidden'); return; } copyTel(e); });
+    beltPop.addEventListener('error', imgFallback, true);
+    document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && !beltPop.classList.contains('hidden')){ e.stopPropagation(); beltPop.classList.add('hidden'); } }, true);
+    document.addEventListener('mousedown', (e)=>{ if(!beltPop.classList.contains('hidden') && !beltPop.contains(e.target) && !beltBtn.contains(e.target)) beltPop.classList.add('hidden'); });
   }
 
   let lastChart = null;
