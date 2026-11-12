@@ -275,6 +275,9 @@
   .left .kpis > .kpi{ position:relative; overflow:hidden; }
   .goalline{ position:absolute; left:0; right:0; bottom:0; height:5px; background:#e7ebf3; }
   .goalline i{ display:block; height:100%; background:#18338c; }
+  .kpi.split .half{ position:relative; }
+  .goalline.good i{ background:#0a7d3c; }
+  .goalline.bad i{ background:#c2410c; }
 
 
   /* 사진 원 양옆 반투명 큰 숫자 (왼쪽 누적 · 오른쪽 N일 만) */
@@ -902,6 +905,10 @@
         const pct = (v)=> v != null && valid ? Math.round(v * 100 / valid) + '%' : '';
         $('kAbsentPct').textContent = pct(absent);
         $('kActivePct').textContent = pct(active);
+        // 아래 진행 바: 주 1회 이상은 100%를 향해, 미출석은 0%를 향해
+        const bar = (half, v, cls)=>{ const h = $(half); if(!h) return; let g = h.querySelector('.goalline'); if(!g){ g = document.createElement('span'); g.className = 'goalline ' + cls; g.innerHTML = '<i></i>'; h.appendChild(g); }
+          g.firstChild.style.width = (v != null && valid ? Math.min(100, v * 100 / valid) : 0).toFixed(1) + '%'; };
+        bar('kAbsentHalf', absent, 'bad'); bar('kActiveHalf', active, 'good');
         $('kExpireSub').textContent = '내일 만료 ' + (expN == null ? NA : fmt(expN) + '명');
       }
       const nowMs = Date.now();
