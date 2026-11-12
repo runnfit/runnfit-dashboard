@@ -326,7 +326,8 @@
   .mcol.cur .mm{ color:#1f2f8a; font-weight:800; }
   .mgoal{ position:absolute; left:0; right:0; border-top:1.5px dashed #e08a2e; z-index:1; pointer-events:none; }
   .mgoal span{ position:absolute; right:0; top:-15px; font-size:10px; font-weight:700; color:#c2410c; background:#fff; padding:0 3px; }
-  .left .chartslot{ flex:1; min-height:240px; display:flex; flex-direction:column; padding:12px 12px 8px; border-radius:14px; }
+  .left .chartslot{ flex:1 1 0; min-height:220px; display:flex; flex-direction:column; padding:12px 12px 8px; border-radius:14px; }   /* 남는 높이만 쓰고 목록은 안에서 스크롤 */
+  .left .chartslot .nblist{ min-height:0; }
   .nbhead{ position:relative; outline:none; } .nbhead h2, .nbinfo{ cursor:help; }
   .left .nbcard h2{ font-size:16px; }
   .nbinfo{ font-size:12px; color:#9aa1b2; font-weight:700; }
@@ -413,7 +414,7 @@
         </div>
       </div>
       <div class="chartcard beltcard">
-        <div class="ch"><h2>🥋 띠별 회원</h2><span class="total">유효 회원 · 누르면 안 나온 순서로 카드</span></div>
+        <div class="ch"><h2>🥋 띠별 회원</h2></div>
         <div id="beltTiles" class="belttiles"><div class="mempty">불러오는 중…</div></div>
       </div>
       <div class="chartcard chartslot nbcard" id="chartSlot">
