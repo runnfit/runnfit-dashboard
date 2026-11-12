@@ -118,7 +118,8 @@
   .left .chartcard .ch{ gap:6px 10px; }
   .left .legend{ font-size:12px; gap:10px; }
   .left .total{ margin-left:0; width:100%; font-size:13px; } .left .total b{ font-size:18px; }
-  .left .chart{ flex:1; min-height:180px; overflow:auto; }
+  .left .chart{ flex:1; min-height:180px; overflow:auto; display:flex; flex-direction:column; }
+  .left .chart .hbars{ flex:1; }
   .right .head{ margin-bottom:12px; gap:10px; align-items:center; position:sticky; top:0; z-index:2; background:var(--bg); padding-bottom:8px; }
   .right .head h1{ font-size:28px; } .right .head .date{ font-size:15px; margin-top:2px; }
   .right .tools{ gap:8px; }
@@ -168,7 +169,11 @@
 
   /* 좁은 칸용 가로 막대 (최근 날짜가 위) */
   .hbars{ height:100%; display:grid; grid-template-rows: repeat(30, minmax(11px, 1fr)); gap:1px; }
-  .hr{ display:grid; grid-template-columns: 58px 1fr 44px 34px; align-items:center; gap:8px; font-size:12px; line-height:1; color:#3b4560; font-variant-numeric:tabular-nums; }
+  .hr, .hhead{ display:grid; grid-template-columns: 56px 1fr 40px 30px 32px; align-items:center; gap:7px; font-size:12px; line-height:1; color:#3b4560; font-variant-numeric:tabular-nums; }
+  .hhead{ font-size:10.5px; color:#9aa1b2; font-weight:700; margin-bottom:4px; }
+  .hhead span:nth-child(n+3){ text-align:right; }
+  .hr .v{ text-align:right; color:#9aa1b2; font-weight:600; }
+  .hr.today .v{ color:#4a5164; font-weight:800; }
   .hr .d{ color:#7a849c; } .hr .d em{ font-style:normal; font-size:11px; }
   .hr.we .d em{ color:#c2410c; }
   .hr .track{ height:70%; min-height:8px; background:#f1f4fa; border-radius:4px; overflow:hidden; }
@@ -1129,11 +1134,18 @@
 
   let lastChart = null;
   window.addEventListener('resize', ()=>{ if(lastChart) drawChart(lastChart[0], lastChart[1]); });
+  // 월별 유효 회원: 이번 달은 실시간, 지난달은 다짐 대시보드의 그 달 유효 회원
+  function validOf(d){
+    const m = dashMonths[d.slice(0, 7)];
+    if(d.slice(0, 7) === todayKst().slice(0, 7) && liveValid) return liveValid;
+    return m && m.validMemberCount != null ? m.validMemberCount : null;
+  }
+
   // 유효 회원 대비 출석 비율 (그날 출석 인원 ÷ 그 달 유효 회원)
   function pctOf(d){
     // 이번 달은 지금 유효 회원(실시간), 지난달은 다짐 대시보드의 그 달 유효 회원으로 나눈다
     const c = dayCount.get(d), m = dashMonths[d.slice(0, 7)];
-    const base = d.slice(0, 7) === todayKst().slice(0, 7) && liveValid ? liveValid : (m && m.validMemberCount);
+    const base = validOf(d);
     if(c == null || !base) return null;
     return Math.round(c * 100 / base);
   }
@@ -1141,16 +1153,18 @@
   function drawBarsList(days, today){
     const box = $('chart');
     const max = Math.max(10, ...days.map((d)=> dayCount.get(d) || 0));
-    let s = '<div class="hbars" role="list" aria-label="최근 30일 날짜별 출석 인원과 유효 회원 대비 비율">';
+    let s = '<div class="hhead" aria-hidden="true"><span>날짜</span><span></span><span>출석</span><span>비율</span><span>유효</span></div>' +
+      '<div class="hbars" role="list" aria-label="최근 30일 날짜별 출석 인원, 유효 회원 대비 비율, 그날 유효 회원">';
     days.slice().reverse().forEach((d)=>{
       const c = dayCount.get(d), p = pctOf(d), isT = d === today;
       const wd = WK[new Date(d + 'T12:00:00+09:00').getUTCDay()];
       const we = wd === '토' || wd === '일';
-      s += '<div class="hr' + (isT ? ' today' : '') + (we ? ' we' : '') + '" role="listitem" title="' + dot(d) + ' (' + wd + ') · ' + (c == null ? NA : c + '명') + (p != null ? ' · 유효 회원의 ' + p + '%' : '') + '">' +
+      s += '<div class="hr' + (isT ? ' today' : '') + (we ? ' we' : '') + '" role="listitem" title="' + dot(d) + ' (' + wd + ') · ' + (c == null ? NA : c + '명') + (p != null ? ' · 유효 회원의 ' + p + '%' : '') + (validOf(d) != null ? ' · 유효 회원 ' + validOf(d) + '명' : '') + '">' +
         '<span class="d">' + (isT ? '오늘' : d.slice(5).replace('-', '.')) + ' <em>' + wd + '</em></span>' +
         '<span class="track"><i style="width:' + (c == null ? 0 : Math.max(1.5, c * 100 / max)) + '%"></i></span>' +
         '<span class="n">' + (c == null ? '-' : c + '명') + '</span>' +
-        '<span class="p">' + (p == null ? '' : p + '%') + '</span></div>';
+        '<span class="p">' + (p == null ? '' : p + '%') + '</span>' +
+        '<span class="v">' + (validOf(d) != null ? fmt(validOf(d)) : '·') + '</span></div>';
     });
     box.innerHTML = s + '</div>';
   }
