@@ -376,6 +376,19 @@
   .beltsec.w{ border-left:6px solid #e3e8f0; padding-left:8px; }
   .beltsec.y{ border-left:6px solid #FFD54A; padding-left:8px; }
   .beltsec b{ color:#1f2f8a !important; }
+  .left .beltcard{ flex:0 0 auto; padding:12px 12px 10px; border-radius:14px; margin-bottom:10px; }
+  .left .beltcard h2{ font-size:16px; }
+  .belttiles{ display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; margin-top:6px; }
+  .belttiles .mempty{ grid-column:1 / -1; text-align:center; color:var(--muted); font-size:13px; padding:14px 0; }
+  .bt{ font:inherit; background:#fff; border:1px solid var(--line); border-radius:12px; padding:6px 2px 6px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:1px; color:var(--ink); transition:box-shadow .15s, border-color .15s; }
+  .bt:hover, .bt:focus-visible{ border-color:#1f2f8a; box-shadow:0 0 0 3px rgba(31,47,138,.12); outline:none; }
+  .bt.focus{ background:#f6f8fe; }
+  .bt svg{ width:38px; height:24px; }
+  .bt b{ font-size:22px; font-weight:800; line-height:1.1; font-variant-numeric:tabular-nums; }
+  .bt b small{ font-size:11px; font-weight:700; color:var(--muted); margin-left:1px; }
+  .bt span{ font-size:12px; font-weight:800; }
+  .bt em{ font-style:normal; font-size:10.5px; color:#9aa1b2; }
+  .pbelt svg{ width:34px; height:22px; vertical-align:-4px; margin-right:6px; }
 </style>
 </head>
 <body>
@@ -399,8 +412,12 @@
           <div class="half hoverable" id="kActiveHalf" tabindex="0" role="button" aria-haspopup="dialog" title="누르면 최근 30일 출석왕 카드가 보여요"><div class="lbl">주 1회 이상 출석 회원 <span class="peek">🏆</span></div><div class="val goodv"><span id="kActive">-</span><em id="kActivePct"></em></div><div class="sub">유효 회원 − 7일 이상 미출석</div></div>
         </div>
       </div>
+      <div class="chartcard beltcard">
+        <div class="ch"><h2>🥋 띠별 회원</h2><span class="total">유효 회원 · 누르면 안 나온 순서로 카드</span></div>
+        <div id="beltTiles" class="belttiles"><div class="mempty">불러오는 중…</div></div>
+      </div>
       <div class="chartcard chartslot nbcard" id="chartSlot">
-        <div class="ch nbhead" tabindex="0"><h2>🌱 신규회원 첫 30일</h2><span class="nbinfo">ⓘ 기준 보기</span><button class="beltbtn" id="beltBtn" type="button">🥋 흰·노란 띠 모아보기</button>
+        <div class="ch nbhead" tabindex="0"><h2>🌱 신규회원 첫 30일</h2><span class="nbinfo">ⓘ 기준 보기</span>
           <div class="nbtip" role="tooltip">
             <p class="t1">첫 30일에 <b>6번</b> 넘게 오면<br>재등록이 <b>2배</b> 늘어요!</p>
             <div class="nbt-bars">
@@ -912,6 +929,7 @@
       $('kMonth').textContent = monthKnown ? fmt(monthSum) + '명' : NA;
       drawChart(days, today);
       loadNewbies(today);   // 신규회원 첫 30일 (뒤에서)
+      loadBeltCounts();     // 띠별 회원 수 (뒤에서)
     }catch(e){
       if(e instanceof AuthError) lockScreen();
     }finally{
@@ -1467,48 +1485,66 @@
     box.addEventListener('mouseout', (e)=>{ if(e.target.closest('.nbn')) hcHide(); });
   })();
 
-  // ================= 흰 띠·노란 띠 모아보기 (누적 1~29회 유효 회원) =================
-  const beltBtn = $('beltBtn'), beltPop = $('beltPop');
-  let beltReq = 0, beltCache = null;
-  async function openBeltPop(){
-    if(!beltPop.classList.contains('hidden')){ beltPop.classList.add('hidden'); return; }
+  // ================= 띠별 회원 (유효 회원을 누적 출석으로 나눔 · 누르면 안 나온 순서 카드) =================
+  const beltPop = $('beltPop');
+  let beltAll = null, beltAt = 0, beltBusy = false, beltReq = 0;
+  const beltIdx = (m)=> { const b = getBelt(m.total); return b ? BELTS.indexOf(b) : 0; };   // 0회도 흰 띠로
+  const beltRange = (i)=> (i === 0 ? 0 : BELTS[i].from) + (BELTS[i + 1] ? '~' + (BELTS[i + 1].from - 1) + '회' : '회 이상');
+  const BELT_SVG = (bg)=> '<svg viewBox="0 0 64 40" aria-hidden="true"><g stroke="rgba(11,31,77,.55)" stroke-width="1.6" stroke-linejoin="round" fill="' + bg + '">' +
+    '<path d="M24 20 L15 37 L22 38 L29 22 Z"/><path d="M40 20 L49 37 L42 38 L35 22 Z"/>' +
+    '<rect x="3" y="7" width="58" height="11" rx="4"/><rect x="25" y="4" width="14" height="17" rx="3"/></g></svg>';
+  async function loadBeltCounts(force){
+    const box = $('beltTiles'); if(!box || beltBusy || (!force && Date.now() - beltAt < 10 * 60e3)) return;
+    beltBusy = true;
+    try{
+      const today = todayKst();
+      const all = (await loadValidMembers()).map((m)=> toMember(m, today));
+      await enrichMembers(all, false);
+      beltAll = all.filter((m)=> m.total != null);
+      beltAt = Date.now();
+      drawBeltTiles();
+    }catch(e){ if(e instanceof AuthError) lockScreen(); else if(!beltAll) box.innerHTML = '<div class="mempty">' + NA + '</div>'; }
+    finally{ beltBusy = false; }
+  }
+  function drawBeltTiles(){
+    const box = $('beltTiles'); if(!box || !beltAll) return;
+    const cnt = BELTS.map(()=> 0); beltAll.forEach((m)=> cnt[beltIdx(m)]++);
+    box.innerHTML = BELTS.map((b, i)=> '<button type="button" class="bt' + (i < 2 ? ' focus' : '') + '" data-b="' + i + '" title="' + esc(b.name) + ' ' + beltRange(i) + ' · 누르면 안 나온 순서로 회원 카드">' +
+      BELT_SVG(b.bg) + '<b>' + fmt(cnt[i]) + '<small>명</small></b><span>' + esc(b.name) + '</span><em>' + beltRange(i) + '</em></button>').join('');
+  }
+  async function openBeltPop(i){
+    if(!beltPop.classList.contains('hidden') && beltPop.getAttribute('data-b') === String(i)){ beltPop.classList.add('hidden'); return; }
     closeExpPop(true);
     ['rankPop', 'absentPop', 'todayPop', 'validPop'].forEach((id)=>{ if($(id)) $(id).classList.add('hidden'); });
     const L = $('summary').getBoundingClientRect();
     beltPop.style.left = Math.round(L.right + 14) + 'px';
     beltPop.style.top = '70px';
+    beltPop.setAttribute('data-b', String(i));
     beltPop.classList.remove('hidden');
-    const my = ++beltReq;
-    const head = (extra)=> '<div class="pophead">🥋 흰 띠·노란 띠 회원 ' + extra + '<button class="popx" aria-label="닫기">✕</button></div>';
-    beltPop.innerHTML = head('<small>불러오는 중… (몇 초 걸려요)</small>');
+    const my = ++beltReq, b = BELTS[i];
+    const head = (extra)=> '<div class="pophead"><span class="pbelt">' + BELT_SVG(b.bg) + '</span>' + esc(b.name) + ' 회원 ' + extra + '<button class="popx" aria-label="닫기">✕</button></div>';
+    beltPop.innerHTML = head('<small>불러오는 중…</small>');
     try{
-      if(!beltCache || Date.now() - beltCache.at > 10 * 60e3){
-        const today = todayKst();
-        const all = (await loadValidMembers()).map((m)=> toMember(m, today));
-        await enrichMembers(all, false);
-        const pick = all.filter((m)=> m.total != null && m.total < 30);
-        await enrichMembers(pick, true);   // 재등록 신호등
-        beltCache = { at: Date.now(), list: pick };
-      }
+      if(!beltAll) await loadBeltCounts(true);
+      const arr = (beltAll || []).filter((m)=> beltIdx(m) === i);
+      const need = arr.filter((m)=> m.reg.kind === 'na' && !m._regDone);
+      if(need.length){ await enrichMembers(need, true); need.forEach((m)=> m._regDone = true); }
       if(my !== beltReq) return;
-      const byLong = (a, b)=> (b.days == null ? 1e9 : b.days) - (a.days == null ? 1e9 : a.days);
-      const white = beltCache.list.filter((m)=> m.total < 10).sort(byLong);
-      const yellow = beltCache.list.filter((m)=> m.total >= 10).sort(byLong);
-      const sec = (title, cls, arr)=> '<div class="pophead sub beltsec ' + cls + '">' + title + ' <b>' + arr.length + '명</b><small>오래 안 나온 순서</small></div>' +
-        (arr.length ? '<div class="grid">' + arr.map((m, i)=> absentCardHtml(m, i, { head: (i + 1) + '. ' + lastText(m) })).join('') + '</div>' : '<div class="popempty">없어요</div>');
-      beltPop.innerHTML = head('<b>' + beltCache.list.length + '명</b><small>집중관리 · 누적 30회 전까지 · 유효 회원만</small>') +
-        sec('⬜ 흰 띠 (0~9회)', 'w', white) + sec('🟨 노란 띠 (10~29회)', 'y', yellow);
+      // 제일 오래 안 나온 회원이 맨 위, 출석 기록이 없는 회원은 맨 아래
+      arr.sort((a, c)=> (a.recent == null ? Infinity : a.recent) - (c.recent == null ? Infinity : c.recent));
+      beltPop.innerHTML = head('<b>' + arr.length + '명</b><small>' + beltRange(i) + ' · 오래 안 나온 순서 · 번호 누르면 복사</small>') +
+        (arr.length ? '<div class="grid">' + arr.map((m, x)=> absentCardHtml(m, x, { head: (x + 1) + '. ' + lastText(m) })).join('') + '</div>' : '<div class="popempty">없어요</div>');
     }catch(e){
       if(e instanceof AuthError){ lockScreen(); beltPop.classList.add('hidden'); return; }
       beltPop.innerHTML = head('') + '<div class="popempty">' + NA + ' · 잠시 후 다시 눌러주세요</div>';
     }
   }
-  if(beltBtn && beltPop){
-    beltBtn.addEventListener('click', (e)=>{ e.stopPropagation(); openBeltPop(); });
+  if($('beltTiles') && beltPop){
+    $('beltTiles').addEventListener('click', (e)=>{ const t = e.target.closest('.bt'); if(t){ e.stopPropagation(); openBeltPop(+t.getAttribute('data-b')); } });
     beltPop.addEventListener('click', (e)=>{ if(e.target.closest('.popx')){ beltPop.classList.add('hidden'); return; } copyTel(e); });
     beltPop.addEventListener('error', imgFallback, true);
     document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && !beltPop.classList.contains('hidden')){ e.stopPropagation(); beltPop.classList.add('hidden'); } }, true);
-    document.addEventListener('mousedown', (e)=>{ if(!beltPop.classList.contains('hidden') && !beltPop.contains(e.target) && !beltBtn.contains(e.target)) beltPop.classList.add('hidden'); });
+    document.addEventListener('mousedown', (e)=>{ if(!beltPop.classList.contains('hidden') && !beltPop.contains(e.target) && !$('beltTiles').contains(e.target)) beltPop.classList.add('hidden'); });
   }
 
   let lastChart = null;
