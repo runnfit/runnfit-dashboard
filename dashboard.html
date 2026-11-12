@@ -326,7 +326,44 @@
   .mcol.cur .mm{ color:#1f2f8a; font-weight:800; }
   .mgoal{ position:absolute; left:0; right:0; border-top:1.5px dashed #e08a2e; z-index:1; pointer-events:none; }
   .mgoal span{ position:absolute; right:0; top:-15px; font-size:10px; font-weight:700; color:#c2410c; background:#fff; padding:0 3px; }
-  .left .chartslot{ flex:1; min-height:240px; }   /* 비워둔 자리 (다음 내용 들어갈 곳) */
+  .left .chartslot{ flex:1; min-height:240px; display:flex; flex-direction:column; padding:12px 12px 8px; border-radius:14px; }
+  .nbhead{ position:relative; cursor:help; outline:none; }
+  .left .nbcard h2{ font-size:16px; }
+  .nbinfo{ font-size:12px; color:#9aa1b2; font-weight:700; }
+  .nbhead:hover .nbinfo, .nbhead:focus .nbinfo{ color:#1f2f8a; }
+  .nbtip{ display:none; position:absolute; left:0; top:calc(100% + 6px); z-index:60; width:300px; background:#fff; border:1px solid var(--line); border-radius:16px; box-shadow:0 12px 32px rgba(15,23,60,.18); padding:16px 16px 12px; color:var(--ink); }
+  .nbhead:hover .nbtip, .nbhead:focus .nbtip{ display:block; }
+  .nbtip .t1{ margin:0 0 12px; font-size:16px; font-weight:800; line-height:1.4; }
+  .nbtip .t1 b{ color:#1f2f8a; }
+  .nbt-bars div{ display:grid; grid-template-columns:62px 1fr 38px; align-items:center; gap:8px; font-size:12.5px; margin:5px 0; }
+  .nbt-bars span{ color:#4a5164; font-weight:600; }
+  .nbt-bars i{ display:block; height:12px; border-radius:6px; background:#c9d3f0; }
+  .nbt-bars div:nth-child(1) i{ background:#f3b4b4; } .nbt-bars div:nth-child(2) i{ background:#f5d68a; }
+  .nbt-bars div:nth-child(3) i, .nbt-bars div:nth-child(4) i{ background:#86d3a3; }
+  .nbt-bars b{ text-align:right; font-weight:800; }
+  .nbtip .cap{ margin:4px 0 10px; font-size:11px; color:#9aa1b2; text-align:right; }
+  .nbt-legend{ display:flex; flex-direction:column; gap:4px; font-size:13px; padding:10px 0; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
+  .nbt-legend small{ color:#9aa1b2; }
+  .nbtip .note{ margin:8px 0 0; font-size:11.5px; color:#7a8295; line-height:1.5; }
+  .newbies{ flex:1; display:flex; flex-direction:column; min-height:0; margin-top:8px; }
+  .newbies .mempty{ flex:1; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px; }
+  .nbsum{ display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin-bottom:8px; }
+  .nbs{ border-radius:10px; padding:7px 8px; display:flex; align-items:baseline; gap:6px; }
+  .nbs b{ font-size:22px; font-weight:800; line-height:1; } .nbs span{ font-size:12px; font-weight:700; color:#4a5164; }
+  .nbs.risk{ background:#fdecec; } .nbs.risk b{ color:#b4232f; }
+  .nbs.warn{ background:#fdf5e1; } .nbs.warn b{ color:#a16207; }
+  .nbs.ok{ background:#e9f7ef; } .nbs.ok b{ color:#0a7d3c; }
+  .nblist{ flex:1; overflow:auto; display:flex; flex-direction:column; gap:3px; }
+  .nbr{ display:grid; grid-template-columns: 54px 38px 1fr 30px 34px; align-items:center; gap:6px; font-size:12px; padding:4px 2px; border-bottom:1px solid #f1f3f8; }
+  .nbn{ font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .nbd{ color:#9aa1b2; font-size:11px; }
+  .nbb{ position:relative; height:8px; background:#f1f3f8; border-radius:4px; }
+  .nbb i{ position:absolute; left:0; top:0; bottom:0; border-radius:4px; background:#86d3a3; }
+  .nbb em{ position:absolute; top:-2px; bottom:-2px; border-left:1.5px dashed #c3c8d4; }
+  .nbr.warn .nbb i{ background:#f2c14e; } .nbr.risk .nbb i{ background:#e57373; } .nbr.na .nbb i{ background:#d3d7e0; }
+  .nbv{ text-align:right; font-weight:800; font-variant-numeric:tabular-nums; }
+  .nbt{ text-align:center; font-size:11px; font-weight:800; border-radius:6px; padding:3px 0; }
+  .nbr.ok .nbt{ color:#0a7d3c; background:#e9f7ef; } .nbr.warn .nbt{ color:#a16207; background:#fdf5e1; } .nbr.risk .nbt{ color:#b4232f; background:#fdecec; } .nbr.na .nbt{ color:#9aa1b2; background:#f1f3f8; }
   .popchart{ padding:14px 18px 8px; }
   .popchart .chart{ height:380px; }
 </style>
@@ -352,7 +389,27 @@
           <div class="half hoverable" id="kActiveHalf" tabindex="0" role="button" aria-haspopup="dialog" title="누르면 최근 30일 출석왕 카드가 보여요"><div class="lbl">주 1회 이상 출석 회원 <span class="peek">🏆</span></div><div class="val goodv"><span id="kActive">-</span><em id="kActivePct"></em></div><div class="sub">유효 회원 − 7일 이상 미출석</div></div>
         </div>
       </div>
-      <div class="chartslot" id="chartSlot" aria-hidden="true"></div>
+      <div class="chartcard chartslot nbcard" id="chartSlot">
+        <div class="ch nbhead" tabindex="0"><h2>🌱 신규회원 첫 30일</h2><span class="nbinfo">ⓘ 기준 보기</span>
+          <div class="nbtip" role="tooltip">
+            <p class="t1">첫 30일에 <b>6번</b> 넘게 오면<br>재등록이 <b>2배</b> 늘어요!</p>
+            <div class="nbt-bars">
+              <div><span>0~5회</span><i style="width:25%"></i><b>13%</b></div>
+              <div><span>6~11회</span><i style="width:61%"></i><b>31%</b></div>
+              <div><span>12~15회</span><i style="width:75%"></i><b>38%</b></div>
+              <div><span>16회 이상</span><i style="width:100%"></i><b>51%</b></div>
+            </div>
+            <p class="cap">첫 30일 출석 횟수별 재등록률</p>
+            <div class="nbt-legend">
+              <span>🟢 <b>정착</b> 12회 이상 <small>(주 3회)</small></span>
+              <span>🟡 <b>주의</b> 6~11회</span>
+              <span>🔴 <b>위험</b> 5회 이하 → 먼저 연락!</span>
+            </div>
+            <p class="note">아직 30일이 안 된 회원은 <b>지금 속도로 30일을 채웠을 때</b> 몇 번 올지로 판단해요.<br>2025년 4월 이후 처음 등록한 회원 750명 분석</p>
+          </div>
+        </div>
+        <div id="newbies" class="newbies"><div class="mempty">불러오는 중…</div></div>
+      </div>
     </section>
     </aside>
     <div id="expPop" class="right exppop hidden" role="dialog" aria-label="오늘·내일 만료 회원"></div>
@@ -843,6 +900,7 @@
       monthDays.forEach((d)=>{ const v = dayCount.get(d); if(v == null) monthKnown = false; else monthSum += v; });
       $('kMonth').textContent = monthKnown ? fmt(monthSum) + '명' : NA;
       drawChart(days, today);
+      loadNewbies(today);   // 신규회원 첫 30일 (뒤에서)
     }catch(e){
       if(e instanceof AuthError) lockScreen();
     }finally{
@@ -1260,6 +1318,68 @@
     todayPop.addEventListener('click', (e)=>{ if(e.target.closest('.popx')) todayPop.classList.add('hidden'); });
     document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && !todayPop.classList.contains('hidden')){ e.stopPropagation(); todayPop.classList.add('hidden'); } }, true);
     document.addEventListener('mousedown', (e)=>{ if(!todayPop.classList.contains('hidden') && !todayPop.contains(e.target) && !todayTile.contains(e.target)) todayPop.classList.add('hidden'); });
+  }
+
+  // ================= 신규회원 첫 30일 (비워둔 왼쪽 아래 자리) =================
+  // 기준(2025.4 이후 첫 등록 750명 분석): 첫 30일 출석 0~5회 재등록 13% · 6~11회 31% · 12~15회 38% · 16회+ 51%
+  const NB_SETTLE = 12, NB_WARN = 6;
+  const NB_LIST_Q = 'query RunFitStaffNew($filter: ManagerMemberListFilterInput!, $paging: PagingInput!) { managerMembers { list(filter: $filter, paging: $paging) { count data { id name profilePhoto purchasedProducts { category startDate } } } } }';
+  const NB_ATT_Q = 'query RunFitStaffNewAtt($id: String!, $d: DateFilterInput!) { managerMembers { attendances(memberId: $id, date: $d, paging: {limit: 300, offset: 0}) { status attendAt } } }';
+  let nbAt = 0, nbBusy = false;
+  async function loadNewbies(today){
+    const box = $('newbies'); if(!box || nbBusy || Date.now() - nbAt < 10 * 60e3) return;
+    nbBusy = true;
+    try{
+      const all = [];
+      for(let off = 0; off < 3000; off += 200){
+        const d = await gql(NB_LIST_Q, { filter: { memberStatus: ['VALID'] }, paging: { limit: 200, offset: off } });
+        const L = d.managerMembers.list; all.push(...(L.data || []));
+        if(all.length >= L.count || !(L.data || []).length) break;
+      }
+      const from = addDays(today, -29), list = [];
+      all.forEach((m)=>{
+        const g = (m.purchasedProducts || []).filter((p)=> p && p.category === 'general' && p.startDate).map((p)=> kstDate(Date.parse(p.startDate))).sort();
+        if(g.length && g[0] >= from && g[0] <= today) list.push({ id: m.id, name: m.name, photo: m.profilePhoto, start: g[0] });
+      });
+      let k = 0;
+      await Promise.all(Array.from({ length: 3 }, async ()=>{ while(k < list.length){ const c = list[k++];
+        try{
+          const r = await gql(NB_ATT_Q, { id: c.id, d: { gte: new Date(dayStart(c.start)).toISOString(), lte: new Date(Date.now() + 36e5).toISOString() } });
+          c.visits = new Set(((r.managerMembers && r.managerMembers.attendances) || []).filter((a)=> a.status === 'ATTEND').map((a)=> kstDate(Date.parse(a.attendAt)))).size;
+        }catch(e){ if(e instanceof AuthError) throw e; c.visits = null; }
+      } }));
+      list.forEach((c)=>{
+        c.day = daysBetween(today, c.start) + 1;                       // 첫 30일 중 며칠째
+        c.pace = c.visits == null ? null : Math.round(c.visits * 30 / Math.max(c.day, 10));   // 지금 속도로 30일을 채우면 (처음 열흘은 여유를 둠)
+        c.st = c.pace == null ? 'na' : c.pace >= NB_SETTLE ? 'ok' : c.pace >= NB_WARN ? 'warn' : 'risk';
+      });
+      const ord = { risk: 0, warn: 1, ok: 2, na: 3 };
+      list.sort((a, b)=> ord[a.st] - ord[b.st] || (a.pace || 0) - (b.pace || 0) || b.day - a.day);
+      drawNewbies(list);
+      nbAt = Date.now();
+    }catch(e){ if(e instanceof AuthError) lockScreen(); else if(!nbAt) box.innerHTML = '<div class="mempty">' + NA + '</div>'; }
+    finally{ nbBusy = false; }
+  }
+  function drawNewbies(list){
+    const box = $('newbies'); if(!box) return;
+    const n = (s)=> list.filter((c)=> c.st === s).length;
+    const LBL = { ok: '정착', warn: '주의', risk: '위험', na: '확인 불가' };
+    let s = '<div class="nbsum">' +
+      '<div class="nbs risk"><b>' + n('risk') + '</b><span>🔴 위험</span></div>' +
+      '<div class="nbs warn"><b>' + n('warn') + '</b><span>🟡 주의</span></div>' +
+      '<div class="nbs ok"><b>' + n('ok') + '</b><span>🟢 정착</span></div></div>';
+    if(!list.length) s += '<div class="mempty">첫 30일 신규회원이 없어요</div>';
+    else s += '<div class="nblist" role="list">' + list.map((c)=>{
+      const v = c.visits == null ? '-' : c.visits;
+      const w = c.visits == null ? 0 : Math.min(100, c.visits / 16 * 100);
+      return '<div class="nbr ' + c.st + '" role="listitem" title="' + esc(c.name) + ' · ' + c.day + '일째 · ' + v + '회 출석 · 지금 속도면 30일에 약 ' + (c.pace == null ? '-' : c.pace) + '회">' +
+        '<span class="nbn">' + esc(c.name) + '</span>' +
+        '<span class="nbd">' + c.day + '일째</span>' +
+        '<span class="nbb"><i style="width:' + w.toFixed(0) + '%"></i><em style="left:' + (NB_WARN / 16 * 100) + '%"></em><em style="left:' + (NB_SETTLE / 16 * 100) + '%"></em></span>' +
+        '<span class="nbv">' + v + '회</span>' +
+        '<span class="nbt">' + LBL[c.st] + '</span></div>';
+    }).join('') + '</div>';
+    box.innerHTML = s;
   }
 
   let lastChart = null;
