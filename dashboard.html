@@ -516,7 +516,10 @@
       if(gym.length === 1) reg = { kind: 'first' };
       else if(gym.length > 1) reg = { kind: 'nth', n: gym.length - 1 };
     }
-    return { count, belt: getBelt(count), gap, reg };
+    // 최근 30일 출석 횟수 (그날 포함 30일, 출석왕과 같은 기준: 같은 날 재입장도 1회)
+    const from30 = dayStart(addDays(card.date, -29));
+    const n30 = attend.filter((x)=> x >= from30 && x <= end).length;
+    return { count, belt: getBelt(count), gap, reg, n30 };
   }
 
   // ---------- 요약판 데이터 (다짐 대시보드와 같은 숫자) ----------
@@ -614,7 +617,7 @@
       '<div class="main">' +
         '<div class="head2"><div class="time">' + hhmm(c.t) + '</div><div class="regbox">' + lights + '<span class="reg">' + regText + '</span></div></div>' +
         (msgs.length ? '<div class="msgs">' + msgs.map((m)=> '<p class="' + m.k + '">' + esc(m.t) + '</p>').join('') + '</div>' : '') +
-        '<div class="boxes"><div class="box"><span>' + count + '</span><span class="sep"></span><span>' + remain + '</span></div>' +
+        '<div class="boxes"><div class="box"><span>' + count + '</span><span class="sep"></span><span>' + (!d ? wait : '30일 <b>' + (d.n30 != null ? d.n30 : '-') + '</b>회') + '</span><span class="sep"></span><span>' + remain + '</span></div>' +
         '<div class="box"><span>' + gap + '</span></div></div>' +
         '<div class="foot"><span class="wl"><span>운동복 ' + (c.wear ? 'O' : 'X') + '</span><span>사물함 ' + (c.locker ? 'O' : 'X') + '</span></span>' +
           '<span>헬스 만료 ' + (c.expiry ? dot(c.expiry.date) : NA) + '</span></div>' +
