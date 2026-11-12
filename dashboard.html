@@ -1034,8 +1034,8 @@
         gymExp: gym ? kstDate(Date.parse(gym.expiredAt)) : (m.expiredAt ? kstDate(Date.parse(m.expiredAt)) : null),
         wear: live('rentalSportsWear'), locker: live('rentalLocker'), total: null, belt: null, reg: { kind: 'na' } };
     });
-    // 제일 오래 안 나온 회원이 맨 위 (출석 기록이 아예 없으면 가장 위)
-    list.sort((a, b)=> (a.recent == null ? -Infinity : a.recent) - (b.recent == null ? -Infinity : b.recent));
+    // 제일 오래 안 나온 회원이 맨 위, 출석 기록이 아예 없는 회원은 맨 아래
+    list.sort((a, b)=> (a.recent == null ? Infinity : a.recent) - (b.recent == null ? Infinity : b.recent));
     let k = 0;
     await Promise.all(Array.from({ length: 6 }, async ()=>{ while(k < list.length){ const m = list[k++];
       try{
