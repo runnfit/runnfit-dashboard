@@ -1188,7 +1188,7 @@
       '<div class="main">' +
         '<div class="head2"><div class="time absent">' + (opt.head != null ? opt.head : (i + 1) + '. ' + daysText) + '</div><div class="regbox">' + lights + '<span class="reg">' + regText + '</span></div></div>' +
         '<div class="msgs">' + (tel ? '<p class="care phone"><button class="tel" data-tel="' + esc(tel) + '" title="누르면 번호가 복사돼요">📞 ' + esc(tel) + '</button><span class="copied"></span></p>' : '<p class="care">' + esc(msg) + '</p>') + '</div>' +
-        '<div class="boxes"><div class="box"><span>누적 ' + (m.total != null ? '<b>' + m.total + '</b>회' : na) + '</span><span class="sep"></span><span>마지막 출석 <b>' + (m.recent != null ? dot(kstDate(m.recent)).slice(5) : '-') + '</b></span></div></div>' +
+        '<div class="boxes"><div class="box"><span>누적 ' + (m.total != null ? '<b>' + m.total + '</b>회' : na) + '</span><span class="sep"></span><span>마지막 출석 <b>' + (m.recent == null ? '-' : m.days === 0 ? '오늘' : m.days + '일 전') + '</b></span></div></div>' +
         '<div class="foot"><span class="wl"><span>운동복 ' + (m.wear ? 'O' : 'X') + '</span><span>사물함 ' + (m.locker ? 'O' : 'X') + '</span></span>' +
           '<span>헬스 만료 ' + (m.gymExp ? dot(m.gymExp) : NA) + '</span></div>' +
       '</div>' +
