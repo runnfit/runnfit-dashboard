@@ -170,6 +170,9 @@
   /* 좁은 칸용 가로 막대 (최근 날짜가 위) */
   .hbars{ height:100%; display:grid; grid-template-rows: repeat(30, minmax(11px, 1fr)); gap:1px; }
   .hr{ display:grid; grid-template-columns: 58px 1fr 44px 34px; align-items:center; gap:8px; font-size:12px; line-height:1; color:#3b4560; font-variant-numeric:tabular-nums; }
+  .hr{ border-radius:6px; padding:0 4px; margin:0 -4px; }
+  .hr.hi30{ background:#eef0f4; }
+  .hr.hi40{ background:#dff3e6; } .hr.hi40 .p{ color:#0a7d3c; }
   .hr .d{ color:#7a849c; } .hr .d em{ font-style:normal; font-size:11px; }
   .hr.we .d em{ color:#c2410c; }
   .hr .track{ height:70%; min-height:8px; background:#f1f4fa; border-radius:4px; overflow:hidden; }
@@ -406,6 +409,8 @@
   .nbtip .note.src{ color:#b0b6c3; font-size:10.5px; text-align:right; }
   .nbt-live{ margin-top:10px; background:#e9f7ef; color:#0a7d3c; font-weight:800; font-size:12.5px; border-radius:10px; padding:7px 10px; }
   .nbt-live small{ color:#5f9c78; font-weight:600; }
+  .lz{ font-size:12px; font-weight:700; color:#4a5164; border-radius:6px; padding:2px 8px; }
+  .lz.z30{ background:#eef0f4; } .lz.z40{ background:#dff3e6; color:#0a7d3c; }
 </style>
 </head>
 <body>
@@ -477,7 +482,7 @@
       <div class="pophead">📊 최근 30일 출석<button class="popx" aria-label="닫기">✕</button></div>
       <div class="chartcard popchart">
         <div class="ch"><h2>최근 30일 출석</h2>
-          <span class="legend"><span class="lb"><i></i>출석 인원(명)</span><span class="ll"><i></i>유효 회원 대비(%)</span></span>
+          <span class="legend"><span class="lb"><i></i>출석 인원(명)</span><span class="ll"><i></i>유효 회원 대비(%)</span><span class="lz z30">30% 이상</span><span class="lz z40">40% 이상</span></span>
           <span class="total">이번 달 누적 출석 <b id="kMonth">-</b></span></div>
         <div class="chart" id="chart"></div>
       </div>
@@ -1620,7 +1625,7 @@
       const c = dayCount.get(d), p = pctOf(d), isT = d === today;
       const wd = WK[new Date(d + 'T12:00:00+09:00').getUTCDay()];
       const we = wd === '토' || wd === '일';
-      s += '<div class="hr' + (isT ? ' today' : '') + (we ? ' we' : '') + '" role="listitem" title="' + dot(d) + ' (' + wd + ') · ' + (c == null ? NA : c + '명') + (p != null ? ' · 유효 회원의 ' + p + '%' : '') + '">' +
+      s += '<div class="hr' + (isT ? ' today' : '') + (we ? ' we' : '') + (p >= 40 ? ' hi40' : p >= 30 ? ' hi30' : '') + '" role="listitem" title="' + dot(d) + ' (' + wd + ') · ' + (c == null ? NA : c + '명') + (p != null ? ' · 유효 회원의 ' + p + '%' : '') + '">' +
         '<span class="d">' + (isT ? '오늘' : d.slice(5).replace('-', '.')) + ' <em>' + wd + '</em></span>' +
         '<span class="track"><i style="width:' + (c == null ? 0 : Math.max(1.5, c * 100 / max)) + '%"></i></span>' +
         '<span class="n">' + (c == null ? '-' : c + '명') + '</span>' +
@@ -1654,6 +1659,8 @@
       const x = L + i * bw, c = counts[i], isT = d === today;
       const md = d.slice(5).replace('-', '.');
       const tip = dot(d) + ' · ' + (c == null ? NA : c + '명') + (rates[i] != null ? ' · 유효 회원의 ' + rates[i] + '%' : '');
+      // 출석률 30% 이상 회색, 40% 이상 초록 배경 (위에서 아래까지)
+      if(rates[i] >= 30) s += '<rect x="' + (x + 1).toFixed(1) + '" y="' + T + '" width="' + (bw - 2).toFixed(1) + '" height="' + (ih + 2 * k * 20) + '" rx="' + (6 * k) + '" fill="' + (rates[i] >= 40 ? '#dff3e6' : '#eef0f4') + '"/>';
       if(c != null){
         const bh = ih * c / cMax, y = T + ih - bh;
         s += '<g><title>' + tip + '</title><rect x="' + (x + bw * 0.16) + '" y="' + y + '" width="' + (bw * 0.68) + '" height="' + Math.max(bh, 1) + '" rx="4" fill="' + (isT ? '#18338c' : '#c9d5f2') + '"/>' +
