@@ -332,8 +332,8 @@
   .left .nbcard h2{ font-size:16px; }
   .nbinfo{ font-size:12px; color:#9aa1b2; font-weight:700; }
   .nbhead:hover .nbinfo, .nbhead:focus .nbinfo{ color:#1f2f8a; }
-  .nbtip{ display:none; position:absolute; left:0; top:calc(100% + 6px); z-index:60; width:300px; background:#fff; border:1px solid var(--line); border-radius:16px; box-shadow:0 12px 32px rgba(15,23,60,.18); padding:16px 16px 12px; color:var(--ink); }
-  .nbhead h2:hover ~ .nbtip, .nbinfo:hover ~ .nbtip, .nbhead:focus .nbtip{ display:block; }
+  .nbtip{ display:none; position:absolute; left:0; top:100%; margin-top:2px; z-index:60; width:320px; max-height:calc(100vh - 140px); overflow:auto; background:#fff; border:1px solid var(--line); border-radius:16px; box-shadow:0 12px 32px rgba(15,23,60,.18); padding:16px 16px 12px; color:var(--ink); }
+  .nbhead h2:hover ~ .nbtip, .nbinfo:hover ~ .nbtip, .nbhead:focus .nbtip, .nbtip:hover{ display:block; }
   .nbtip .t1{ margin:0 0 12px; font-size:16px; font-weight:800; line-height:1.4; }
   .nbtip .t1 b{ color:#1f2f8a; }
   .nbt-bars div{ display:grid; grid-template-columns:62px 1fr 38px; align-items:center; gap:8px; font-size:12.5px; margin:5px 0; }
@@ -396,6 +396,11 @@
   .bt .bl i{ font-style:normal; color:#c3c8d4; font-weight:400; }
   .bt .bl strong{ color:#1f2f8a; }
   .pbelt svg{ width:34px; height:22px; vertical-align:-4px; margin-right:6px; }
+  .nbtip .sec{ margin:12px 0 6px; font-size:13px; font-weight:800; }
+  .nbt-order{ margin:0; padding-left:20px; font-size:12.5px; line-height:1.6; }
+  .nbt-order small{ color:#9aa1b2; margin-left:4px; }
+  .nbt-calc{ background:#eef1fb; color:#1f2f8a; font-weight:800; font-size:14px; text-align:center; border-radius:10px; padding:7px 0; }
+  .nbtip .note.src{ color:#b0b6c3; font-size:10.5px; text-align:right; }
 </style>
 </head>
 <body>
@@ -438,7 +443,16 @@
               <span>🟡 <b>주의</b> 6~11회</span>
               <span>🔴 <b>위험</b> 5회 이하 → 먼저 연락!</span>
             </div>
-            <p class="note">아직 30일이 안 된 회원은 <b>지금 속도로 30일을 채웠을 때</b> 몇 번 올지로 판단해요.<br>2025년 4월 이후 처음 등록한 회원 750명 분석</p>
+            <p class="sec">📋 정렬 순서</p>
+            <ol class="nbt-order">
+              <li>🔴 위험 → 🟡 주의 → 🟢 정착 <small>연락이 급한 회원이 위로</small></li>
+              <li>같은 상태면 <b>예상 횟수가 적은</b> 회원이 위로</li>
+              <li>그것도 같으면 <b>등록한 지 오래된</b> 회원이 위로</li>
+            </ol>
+            <p class="sec">🧮 예상 횟수 계산</p>
+            <div class="nbt-calc">온 날수 ÷ 지난 날수 × 30</div>
+            <p class="note">등록 <b>10일 전</b>까지는 하루이틀로 판단이 출렁이지 않게 <b>10일로 나눠요.</b><br>예) 3일째에 2번 → 2 ÷ 10 × 30 = <b>예상 6회 → 🟡 주의</b></p>
+            <p class="note src">2025년 4월 이후 처음 등록한 회원 750명 분석</p>
           </div>
         </div>
         <div id="newbies" class="newbies"><div class="mempty">불러오는 중…</div></div>
