@@ -275,6 +275,16 @@
   .goalline{ position:absolute; left:0; right:0; bottom:0; height:5px; background:#e7ebf3; }
   .goalline i{ display:block; height:100%; background:#18338c; }
 
+
+  /* 사진 원 양옆 반투명 큰 숫자 (왼쪽 누적 · 오른쪽 N일 만) */
+  .side .avwrap{ display:flex; align-items:center; justify-content:center; gap:8px; width:100%; }
+  .side .stat{ flex:1; min-width:0; display:flex; flex-direction:column; align-items:center; opacity:.42; line-height:1; font-variant-numeric:tabular-nums; }
+  .side .stat b{ font-size:30px; font-weight:900; letter-spacing:-.02em; }
+  .side .stat em{ font-style:normal; font-size:11px; font-weight:700; margin-top:4px; }
+  .side.light .stat{ opacity:.5; }
+  .side .stat.long b{ font-size:23px; }   /* 세 자리 숫자는 살짝 작게 */
+  .right .side{ padding-left:6px; padding-right:6px; }
+
   /* 안내 화면 */
   .notice{ background:#fff; border:1px solid var(--line); border-radius:18px; padding:48px 28px; text-align:center; color:var(--muted); font-size:18px; }
   .notice b{ color:var(--ink); }
@@ -592,7 +602,12 @@
 
     return '<article class="card" data-id="' + esc(c.id) + '">' +
       '<div class="side' + (light || !belt ? ' light' : '') + '" style="--belt:' + esc(panel) + ';--belt-ink:' + ink + '">' +
-        '<div class="avatar">' + photo + '</div>' +
+        // 사진 원 양옆: 왼쪽 누적 출석, 오른쪽 N일 만 (반투명 큰 숫자)
+        '<div class="avwrap">' +
+          '<span class="stat l' + (d && d.count >= 100 ? ' long' : '') + '">' + (d && d.count != null ? '<b>' + d.count + '</b><em>누적</em>' : '') + '</span>' +
+          '<div class="avatar">' + photo + '</div>' +
+          '<span class="stat r' + (d && d.gap.kind === 'days' && d.gap.days >= 100 ? ' long' : '') + '">' + (!d ? '' : d.gap.kind === 'days' ? '<b>' + d.gap.days + '</b><em>일 만</em>' : d.gap.kind === 'first' ? '<b>첫</b><em>출석</em>' : '') + '</span>' +
+        '</div>' +
         (focus ? '<span class="focus" title="집중관리 회원 (흰 띠·노란 띠)" aria-label="집중관리 회원">★</span>' : '') +
         '<div class="beltname">' + (!d ? '확인 중…' : belt ? esc(belt.name) : NA) + '</div>' +
         '<div class="who">' + (milestone ? '🎉' : '') + esc(c.name || '이름 확인 불가') + '</div>' +
