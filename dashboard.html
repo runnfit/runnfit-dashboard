@@ -418,6 +418,10 @@
   .nbt-live small{ color:#5f9c78; font-weight:600; }
   .lz{ font-size:12px; font-weight:700; color:#4a5164; border-radius:6px; padding:2px 8px; }
   .lz.z30{ background:#eef0f4; } .lz.z40{ background:#dff3e6; color:#0a7d3c; }
+  .exppop .split5{ margin:0 4px 12px; gap:8px; }
+  .split5 .bt{ padding:8px 4px; }
+  .split5 .bt[aria-pressed="true"]{ border-color:#1f2f8a; box-shadow:0 0 0 3px rgba(31,47,138,.25); }
+  .split5:has(.bt[aria-pressed="true"]) .bt[aria-pressed="false"]{ opacity:.45; }
 </style>
 </head>
 <body>
@@ -1297,7 +1301,7 @@
       const list = await loadAbsentList();
       if(my !== absReq) return;
       absPop.innerHTML = '<div class="pophead">📞 ' + ABSENT_DAYS + '일 이상 미출석 회원 <b>' + list.length + '명</b><small>오래 안 나온 순서 · 연락해서 안부를 물어주세요</small><button class="popx" aria-label="닫기">✕</button></div>' +
-        (list.length ? '<div class="grid">' + list.map((m, i)=> absentCardHtml(m, i)).join('') + '</div>' : '<div class="popempty">' + ABSENT_DAYS + '일 넘게 안 나온 회원이 없어요 🙂</div>');
+        (list.length ? beltSplitHtml(list) + '<div class="grid">' + list.map((m, i)=> absentCardHtml(m, i).replace('<article class="card"', '<article class="card" data-b="' + beltIdx(m) + '"')).join('') + '</div>' : '<div class="popempty">' + ABSENT_DAYS + '일 넘게 안 나온 회원이 없어요 🙂</div>');
     }catch(e){
       if(e instanceof AuthError){ lockScreen(); absPop.classList.add('hidden'); return; }
       absPop.innerHTML = '<div class="pophead">' + ABSENT_DAYS + '일 이상 미출석 회원<button class="popx" aria-label="닫기">✕</button></div><div class="popempty">' + NA + ' · 잠시 후 다시 눌러주세요</div>';
@@ -1313,6 +1317,7 @@
     document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && !absPop.classList.contains('hidden')){ e.stopPropagation(); absPop.classList.add('hidden'); } }, true);
     document.addEventListener('mousedown', (e)=>{ if(!absPop.classList.contains('hidden') && !absPop.contains(e.target) && !absTile.contains(e.target)) absPop.classList.add('hidden'); });
     absPop.addEventListener('error', imgFallback, true);
+    bindBeltFilter(absPop);
   }
   function imgFallback(e){ const img = e.target; if(img && img.tagName === 'IMG'){ const s = document.createElement('span'); s.className = 'ph'; s.innerHTML = PERSON; img.replaceWith(s); } }
   function copyTel(e){
@@ -1565,6 +1570,22 @@
   const BELT_SVG = (bg)=> '<svg viewBox="0 0 64 40" aria-hidden="true"><g stroke="rgba(11,31,77,.55)" stroke-width="1.6" stroke-linejoin="round" fill="' + bg + '">' +
     '<path d="M24 20 L15 37 L22 38 L29 22 Z"/><path d="M40 20 L49 37 L42 38 L35 22 Z"/>' +
     '<rect x="3" y="7" width="58" height="11" rx="4"/><rect x="25" y="4" width="14" height="17" rx="3"/></g></svg>';
+  // 목록을 띠별로 나눈 칸 (몇 명 · 몇 %) — 누르면 그 띠 카드만 보기
+  function beltSplitHtml(list){
+    const cnt = BELTS.map(()=> 0); list.forEach((m)=> cnt[beltIdx(m)]++);
+    return '<div class="belttiles split5" role="group" aria-label="띠별 인원">' + BELTS.map((b, i)=> '<button type="button" class="bt" data-b="' + i + '" aria-pressed="false">' +
+      BELT_SVG(b.bg) + '<b>' + fmt(cnt[i]) + '<small>명</small></b><span class="bl">' + esc(b.name) + '<i>|</i><strong>' + (list.length ? Math.round(cnt[i] * 100 / list.length) : 0) + '%</strong></span></button>').join('') + '</div>';
+  }
+  function bindBeltFilter(pop){
+    pop.addEventListener('click', (e)=>{
+      const t = e.target.closest('.split5 .bt'); if(!t) return;
+      const on = t.getAttribute('aria-pressed') !== 'true';
+      pop.querySelectorAll('.split5 .bt').forEach((x)=> x.setAttribute('aria-pressed', 'false'));
+      if(on) t.setAttribute('aria-pressed', 'true');
+      const b = on ? t.getAttribute('data-b') : null;
+      pop.querySelectorAll('.grid > .card').forEach((c)=>{ c.style.display = !b || c.getAttribute('data-b') === b ? '' : 'none'; });
+    });
+  }
   async function loadBeltCounts(force){
     const box = $('beltTiles'); if(!box || beltBusy || (!force && Date.now() - beltAt < 10 * 60e3)) return;
     beltBusy = true;
