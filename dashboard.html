@@ -460,6 +460,7 @@
               <span>🟡 <b>주의</b> 6~11회</span>
               <span>🔴 <b>위험</b> 5회 이하 → 집중관리 필요해요!</span>
             </div>
+            <p class="note">💡 <b>30일 지난 흰·노란 띠</b>도 같은 기준이에요. 등록 후 <b>한 달 평균 출석</b>으로 출석 카드에 🔴🟡🟢 불이 떠요.</p>
             <p class="sec">📋 정렬 순서</p>
             <ol class="nbt-order">
               <li>🔴 위험 → 🟡 주의 → 🟢 정착 <small>연락이 급한 회원이 위로</small></li>
@@ -724,11 +725,16 @@
   // ================= 화면 =================
   const $ = (id)=> document.getElementById(id);
   // 신규회원(등록 30일 안) 상태: 카드 왼쪽 위 별 자리에 🔴🟡🟢 불로 표시
-  const nbStatus = new Map();
+  // 30일 지난 흰·노란 띠도 같은 기준(한 달 평균 출석: 5회 이하 위험 · 6~11회 주의 · 12회 이상 정착)
+  const nbStatus = new Map(), oldStatus = new Map();
   function nbBadge(id){
-    const s = id && nbStatus.get(id); if(!s || s.st === 'na') return '';
-    const L = { risk: '위험', warn: '주의', ok: '정착' }[s.st];
-    return '<span class="nblight ' + s.st + '" title="신규회원 ' + L + ' · ' + s.day + '일째 · 첫 30일 ' + s.visits + '회 출석" aria-label="신규회원 ' + L + '"></span>';
+    if(!id) return '';
+    const L = { risk: '위험', warn: '주의', ok: '정착' };
+    const s = nbStatus.get(id);
+    if(s && s.st !== 'na') return '<span class="nblight ' + s.st + '" title="신규회원 ' + L[s.st] + ' · ' + s.day + '일째 · 첫 30일 ' + s.visits + '회 출석" aria-label="신규회원 ' + L[s.st] + '"></span>';
+    const o = oldStatus.get(id);
+    if(o) return '<span class="nblight ' + o.st + '" title="' + L[o.st] + ' · 등록 ' + o.day + '일째 · 누적 ' + o.total + '회 · 한 달 평균 ' + o.pace + '회" aria-label="' + L[o.st] + '"></span>';
+    return '';
   }
   const grid = $('grid'), notice = $('notice');
   let viewDate = todayKst();
@@ -1568,6 +1574,19 @@
       await enrichMembers(all, false);
       beltAll = all.filter((m)=> m.total != null);
       beltAt = Date.now();
+      // 흰·노란 띠 중 첫 헬스 등록 후 30일 지난 회원: 한 달 평균 출석으로 신호등 (출석 기록은 2025.03부터 있어서 그 전 등록은 2025.03.01부터 계산)
+      oldStatus.clear();
+      beltAll.forEach((m)=>{
+        if(beltIdx(m) > 1) return;
+        const g = (m._pp || []).filter((p)=> p && p.category === 'general' && p.startDate).map((p)=> kstDate(Date.parse(p.startDate))).sort();
+        if(!g.length) return;
+        const from = g[0] < '2025-03-01' ? '2025-03-01' : g[0];
+        const day = daysBetween(today, g[0]) + 1, span = daysBetween(today, from) + 1;
+        if(day <= 30 || span < 1) return;
+        const pace = Math.round(m.total * 30 / span);
+        oldStatus.set(m.id, { st: pace >= NB_SETTLE ? 'ok' : pace >= NB_WARN ? 'warn' : 'risk', day, total: m.total, pace });
+      });
+      render();
       drawBeltTiles();
     }catch(e){ if(e instanceof AuthError) lockScreen(); else if(!beltAll) box.innerHTML = '<div class="mempty">' + NA + '</div>'; }
     finally{ beltBusy = false; }
