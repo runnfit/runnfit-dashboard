@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>런앤핏 직원용 출석 대시보드 · 1분 설치</title>
+<style>
+  :root{ --navy:#18338c; --ink:#16213d; --muted:#5d6782; --line:#dfe4ee; --bg:#f3f5f9; }
+  *{ box-sizing:border-box; }
+  body{ margin:0; background:var(--bg); color:var(--ink); font:17px/1.6 "Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif; }
+  .top{ background:var(--navy); color:#fff; padding:22px 28px; }
+  .top b{ font-style:italic; letter-spacing:.06em; font-weight:900; margin-right:12px; }
+  .wrap{ max-width:760px; margin:0 auto; padding:30px 20px 60px; }
+  h1{ font-size:30px; margin:0 0 6px; letter-spacing:-.01em; }
+  .sub{ color:var(--muted); margin:0 0 26px; }
+  .step{ background:#fff; border:1px solid var(--line); border-radius:18px; padding:22px 24px; margin-bottom:16px; display:flex; gap:18px; }
+  .n{ flex:none; width:38px; height:38px; border-radius:50%; background:var(--navy); color:#fff; font-weight:900; display:flex; align-items:center; justify-content:center; font-size:19px; }
+  .step h2{ margin:4px 0 6px; font-size:20px; }
+  .step p{ margin:0; color:var(--muted); }
+  kbd{ background:#eef1f7; border:1px solid #d5dbe8; border-bottom-width:2px; border-radius:6px; padding:1px 7px; font:inherit; font-weight:700; color:var(--ink); }
+  .drag{ display:inline-flex; align-items:center; gap:10px; margin:14px 0 4px; padding:16px 26px; border-radius:14px; background:var(--navy); color:#fff; text-decoration:none; font-weight:800; font-size:20px; cursor:grab; box-shadow:0 6px 18px rgba(24,51,140,.28); }
+  .drag:active{ cursor:grabbing; }
+  .hint{ font-size:14px; color:var(--muted); }
+  details{ background:#fff; border:1px solid var(--line); border-radius:18px; padding:16px 22px; margin-top:22px; }
+  summary{ cursor:pointer; font-weight:700; }
+  details ol{ margin:12px 0 0 20px; padding:0; color:var(--muted); }
+  button.copy{ font:inherit; font-weight:700; margin-top:12px; padding:10px 16px; border-radius:10px; border:1px solid var(--navy); background:#fff; color:var(--navy); cursor:pointer; }
+  textarea{ position:absolute; left:-9999px; }
+  .ok{ color:#0a7d3c; font-weight:700; margin-left:8px; }
+  .safe{ margin-top:22px; font-size:15px; color:var(--muted); background:#e8eefb; border-radius:14px; padding:14px 18px; }
+</style>
+</head>
+<body>
+<div class="top"><b>RUNNFIT</b>정릉점 · 직원용</div>
+<div class="wrap">
+  <h1>📋 출석 대시보드 1분 설치</h1>
+  <p class="sub">한 번만 설치하면, 다짐매니저가 켜져 있을 때 북마크 클릭 한 번으로 대시보드를 볼 수 있어요.<br><b>대시보드가 업데이트돼도 다시 설치할 필요 없어요.</b> 누를 때마다 항상 최신 버전이 떠요.</p>
+
+  <div class="step"><span class="n">1</span><div>
+    <h2>크롬 북마크바 켜기</h2>
+    <p>크롬에서 맥은 <kbd>Cmd</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd>, 윈도우는 <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>B</kbd> 를 누르면 주소창 아래에 북마크바가 생겨요.</p>
+  </div></div>
+
+  <div class="step"><span class="n">2</span><div>
+    <h2>아래 버튼을 북마크바로 끌어다 놓기</h2>
+    <p>버튼을 <b>누르지 말고</b>, 마우스로 꾹 잡아서 북마크바 위에 놓아주세요.</p>
+    <a class="drag" id="bm" href="javascript:(function(){var s=document.createElement(&#x27;script&#x27;);s.src=&#x27;https://runnfit.github.io/runnfit-dashboard/loader.js?t=&#x27;+Date.now();document.body.appendChild(s);})();" draggable="true">🏃 런앤핏 출석</a>
+    <div class="hint">↑ 이 버튼을 북마크바로 드래그</div>
+  </div></div>
+
+  <div class="step"><span class="n">3</span><div>
+    <h2>다짐매니저 켜고 북마크 클릭</h2>
+    <p>다짐매니저에 로그인한 화면에서 북마크바의 <b>🏃 런앤핏 출석</b>을 누르면 대시보드가 떠요.<br>닫을 땐 <b>✕ 닫기</b>, <kbd>ESC</kbd>, 또는 북마크를 한 번 더 누르면 돼요.</p>
+  </div></div>
+
+  <details>
+    <summary>끌어다 놓기가 안 될 때 (직접 북마크 만들기)</summary>
+    <ol>
+      <li>아래 <b>코드 복사</b>를 눌러요.</li>
+      <li>북마크바에서 마우스 오른쪽 클릭 → <b>페이지 추가</b> (윈도우: <b>페이지 추가…</b>)</li>
+      <li>이름: <b>🏃 런앤핏 출석</b> / URL 칸에 <b>붙여넣기</b> → 저장</li>
+    </ol>
+    <button class="copy" id="copy">코드 복사</button><span id="copied" class="ok"></span>
+    <textarea id="code" readonly></textarea>
+  </details>
+
+  <div class="safe">🔒 다짐매니저에 로그인한 사람에게만 회원 정보가 보여요. 이 북마크와 대시보드 파일에는 회원 정보가 들어 있지 않고, 화면에 띄운 정보는 어디에도 저장되지 않아요.</div>
+</div>
+<script>
+  const a=document.getElementById('bm');
+  a.addEventListener('click',(e)=>{ e.preventDefault(); alert('버튼을 누르지 말고, 북마크바로 끌어다 놓아주세요!'); });
+  const ta=document.getElementById('code'); ta.value=a.getAttribute('href');
+  document.getElementById('copy').addEventListener('click', async ()=>{
+    let ok=false;
+    try{ await navigator.clipboard.writeText(ta.value); ok=true; }catch(e){}
+    if(!ok){ try{ ta.select(); ok=document.execCommand('copy'); }catch(e){} }
+    document.getElementById('copied').textContent = ok ? '복사됐어요!' : '복사가 막혔어요. 끌어다 놓기를 이용해 주세요.';
+  });
+</script>
+</body>
+</html>
