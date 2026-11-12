@@ -225,7 +225,7 @@
 
 
   /* 유효 회원 목표 진행 막대 */
-  .goalbar{ display:inline-block; width:46px; height:7px; background:#e7ebf3; border-radius:99px; overflow:hidden; vertical-align:1px; margin-right:6px; }
+  .goalbar{ display:inline-block; width:28px; height:7px; background:#e7ebf3; border-radius:99px; overflow:hidden; vertical-align:1px; margin-right:6px; }
   .goalbar i{ display:block; height:100%; background:#18338c; border-radius:99px; }
 
 
@@ -254,6 +254,27 @@
   .left .kpis > .kpi:not(.split) .sub .goalbar{ flex:none; }
   .left .kpis > .kpi.main{ gap:0; }   /* 카드 안쪽(.main)과 이름이 겹쳐 생기던 간격 제거 */
 
+
+  /* 30일 출석왕 */
+  .kpi.split .half.hoverable{ cursor:pointer; border-radius:0 14px 14px 0; transition: background .15s; }
+  .kpi.split .half.hoverable:hover, .kpi.split .half.hoverable:focus-visible{ background:#f1faf4; outline:none; box-shadow: inset 0 0 0 2px #0a7d3c; }
+  .exppop .pophead .popx{ margin-left:auto; font:inherit; font-size:15px; font-weight:800; background:#fff; border:1px solid var(--line); border-radius:10px; padding:4px 10px; cursor:pointer; color:var(--ink); }
+  #rankPop .pophead b{ color:#0a7d3c; }
+  .time.rank{ color:#0a7d3c; font-size:22px; }
+  .card.top3{ box-shadow: 0 0 0 2px #f5c518; }
+
+
+  /* 안내 문구 배경: 축하 = 반투명 파랑 네모 / 안부·연락 = 회색 네모 */
+  .msgs{ align-items:flex-start; }
+  .msgs p{ display:inline-block; align-self:flex-start; padding:3px 9px; border-radius:4px; }
+  .msgs p.cele{ background:rgba(29,78,216,.12); color:#1e3a8a; }
+  .msgs p.care{ background:#eceef2; color:#4a5164; }
+  .right .msgs{ gap:4px; }
+  /* 유효 회원 목표 진행 줄 (칸 맨 아래) */
+  .left .kpis > .kpi{ position:relative; overflow:hidden; }
+  .goalline{ position:absolute; left:0; right:0; bottom:0; height:5px; background:#e7ebf3; }
+  .goalline i{ display:block; height:100%; background:#18338c; }
+
   /* 안내 화면 */
   .notice{ background:#fff; border:1px solid var(--line); border-radius:18px; padding:48px 28px; text-align:center; color:var(--muted); font-size:18px; }
   .notice b{ color:var(--ink); }
@@ -280,7 +301,7 @@
         <div class="kpi hoverable" id="kExpireTile" tabindex="0" role="button" aria-haspopup="dialog" title="마우스를 올리면 회원 카드가 보여요"><div class="lbl">오늘 만료 회원 <span class="peek">🖱️</span></div><div class="val" id="kExpire">-</div><div class="sub" id="kExpireSub">재등록 안내</div></div>
         <div class="kpi split">
           <div class="half"><div class="lbl" id="kAbsentLbl">7일 이상 미출석 회원</div><div class="val alertv"><span id="kAbsent">-</span><em id="kAbsentPct"></em></div><div class="sub">유효 회원 대비 · 연락해 보세요</div></div>
-          <div class="half"><div class="lbl">주 1회 이상 출석 회원</div><div class="val goodv"><span id="kActive">-</span><em id="kActivePct"></em></div><div class="sub">유효 회원 − 7일 이상 미출석</div></div>
+          <div class="half hoverable" id="kActiveHalf" tabindex="0" role="button" aria-haspopup="dialog" title="누르면 최근 30일 출석왕 카드가 보여요"><div class="lbl">주 1회 이상 출석 회원 <span class="peek">🏆</span></div><div class="val goodv"><span id="kActive">-</span><em id="kActivePct"></em></div><div class="sub">유효 회원 − 7일 이상 미출석</div></div>
         </div>
       </div>
       <div class="chartcard">
@@ -292,6 +313,7 @@
     </section>
     </aside>
     <div id="expPop" class="right exppop hidden" role="dialog" aria-label="오늘·내일 만료 회원"></div>
+    <div id="rankPop" class="right exppop hidden" role="dialog" aria-label="최근 30일 출석왕"></div>
     <section class="right" aria-label="오늘 출석 회원">
 
 
@@ -557,9 +579,9 @@
 
     // 직원에게 주는 한마디
     const msgs = [];
-    if(milestone) msgs.push(d.count + '회 출석! 축하해주세요!🎉');
-    if(d && d.gap.kind === 'first') msgs.push('첫 출석이에요! 반갑게 맞아주세요!');
-    if(d && d.gap.kind === 'days' && d.gap.days >= LONG_GAP_DAYS) msgs.push(d.gap.days + '일 만에 나왔어요! 안부를 물어주세요!');
+    if(milestone) msgs.push({ k: 'cele', t: d.count + '회 출석! 축하해주세요!🎉' });
+    if(d && d.gap.kind === 'first') msgs.push({ k: 'cele', t: '첫 출석이에요! 반갑게 맞아주세요!' });
+    if(d && d.gap.kind === 'days' && d.gap.days >= LONG_GAP_DAYS) msgs.push({ k: 'care', t: d.gap.days + '일 만에 나왔어요! 안부를 물어주세요!' });
 
     const count = !d ? wait : d.count != null ? '누적 <b>' + d.count + '</b>회' : '누적 ' + na;
     const remain = c.expiry
@@ -577,7 +599,7 @@
       '</div>' +
       '<div class="main">' +
         '<div class="head2"><div class="time">' + hhmm(c.t) + '</div><div class="regbox">' + lights + '<span class="reg">' + regText + '</span></div></div>' +
-        (msgs.length ? '<div class="msgs">' + msgs.map((m)=> '<p>' + esc(m) + '</p>').join('') + '</div>' : '') +
+        (msgs.length ? '<div class="msgs">' + msgs.map((m)=> '<p class="' + m.k + '">' + esc(m.t) + '</p>').join('') + '</div>' : '') +
         '<div class="boxes"><div class="box"><span>' + count + '</span><span class="sep"></span><span>' + remain + '</span></div>' +
         '<div class="box"><span>' + gap + '</span></div></div>' +
         '<div class="foot"><span class="wl"><span>운동복 ' + (c.wear ? 'O' : 'X') + '</span><span>사물함 ' + (c.locker ? 'O' : 'X') + '</span></span>' +
@@ -731,7 +753,11 @@
         if(validGoal){
           const rate = Math.round(liveValidNow * 100 / validGoal), left = validGoal - liveValidNow;
           $('kValid').innerHTML = fmt(liveValidNow) + '<small> / ' + fmt(validGoal) + '명</small>';
-          $('kValidSub').innerHTML = '<span class="goalbar"><i style="width:' + Math.min(100, rate) + '%"></i></span>' + rate + '% · ' + (left > 0 ? fmt(left) + '명 남음' : '목표 달성! 🎉');
+          $('kValidSub').textContent = rate + '% · ' + (left > 0 ? fmt(left) + '명 남음' : '목표 달성! 🎉');
+          // 진행 막대는 칸 맨 아래에 얇은 줄로 (글자가 잘리지 않게)
+          let gl = $('kValidLine');
+          if(!gl){ gl = document.createElement('span'); gl.id = 'kValidLine'; gl.className = 'goalline'; gl.innerHTML = '<i></i>'; $('kValid').parentElement.appendChild(gl); }
+          gl.firstChild.style.width = Math.min(100, rate) + '%';
         } else {
           $('kValidSub').textContent = '지금 기준';
         }
@@ -811,7 +837,7 @@
       '</div>' +
       '<div class="main">' +
         '<div class="head2"><div class="time exp">' + whenLabel + ' 만료</div><div class="regbox">' + lights + '<span class="reg">' + regText + '</span></div></div>' +
-        '<div class="msgs"><p>' + esc(msg) + '</p></div>' +
+        '<div class="msgs"><p class="care">' + esc(msg) + '</p></div>' +
         '<div class="boxes"><div class="box"><span>누적 ' + (d.count != null ? '<b>' + d.count + '</b>회' : na) + '</span><span class="sep"></span><span>마지막 출석 <b>' + agoText + '</b></span></div></div>' +
         '<div class="foot"><span class="wl"><span>운동복 ' + (c.wear ? 'O' : 'X') + '</span><span>사물함 ' + (c.locker ? 'O' : 'X') + '</span></span>' +
           '<span>헬스 만료 ' + (c.gymExp ? dot(c.gymExp) : NA) + '</span></div>' +
@@ -823,6 +849,7 @@
   let expHideTimer = null, expPinned = false, expReq = 0;
   async function openExpPop(){
     clearTimeout(expHideTimer);
+    if($('rankPop')) $('rankPop').classList.add('hidden');
     if(!expPop.classList.contains('hidden')) return;
     const r = expTile.getBoundingClientRect(), L = $('summary').getBoundingClientRect();
     expPop.style.left = Math.round(L.right + 14) + 'px';
@@ -859,6 +886,95 @@
     document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && !expPop.classList.contains('hidden')){ e.stopPropagation(); closeExpPop(true); } }, true);
     grid.addEventListener('error', ()=>{}, true);
     expPop.addEventListener('error', (e)=>{ const img = e.target; if(img && img.tagName === 'IMG'){ const s = document.createElement('span'); s.className = 'ph'; s.innerHTML = PERSON; img.replaceWith(s); } }, true);
+  }
+
+  // ================= 30일 출석왕 카드 ('주 1회 이상 출석 회원'을 누르면 보임) =================
+  const RANK_Q = 'query RunFitStaffRanking($s: LXDateTime!, $e: LXDateTime!) { dashboard(startDate: $s, endDate: $e, isRefresh: false) { attendanceMemberRanking { id isDeleted name value } } }';
+  const RANK_DETAIL_Q = 'query RunFitStaffRankMember($id: String!) { managerMembers { by(id: $id) { totalAttendCount profilePhoto } purchasedProducts(memberId: $id) { __typename ... on Membership { category createdAt sale { hasRefund } } } } }';
+  let rankCache = null;   // { at, list }
+  async function loadRanking(){
+    if(rankCache && Date.now() - rankCache.at < 10 * 60e3) return rankCache.list;
+    const today = todayKst();
+    const d = await gql(RANK_Q, { s: new Date(dayStart(addDays(today, -29))).toISOString(), e: new Date(dayEnd(today)).toISOString() });
+    const raw = ((d && d.dashboard && d.dashboard.attendanceMemberRanking) || []).filter((m)=> m && !m.isDeleted);
+    // 같은 횟수는 같은 등수 (다짐 출석왕과 같은 방식: 1, 2, 3, 3, 4 …)
+    let rank = 0, prev = null;
+    const list = raw.map((m)=>{ if(m.value !== prev){ rank++; prev = m.value; } return { id: m.id, name: (m.name || '').trim(), n30: m.value, rank, photo: null, total: null, belt: null, reg: { kind: 'na' } }; });
+    let k = 0;
+    await Promise.all(Array.from({ length: 6 }, async ()=>{ while(k < list.length){ const m = list[k++];
+      try{
+        const r = await gql(RANK_DETAIL_Q, { id: m.id });
+        const mm = r.managerMembers || {};
+        m.photo = mm.by ? mm.by.profilePhoto : null;
+        m.total = mm.by ? mm.by.totalAttendCount : null;
+        m.belt = getBelt(m.total);
+        const gym = (mm.purchasedProducts || []).filter((p)=> p && p.__typename === 'Membership' && p.category === 'general' && !(p.sale && p.sale.hasRefund));
+        m.reg = gym.length === 1 ? { kind: 'first' } : gym.length > 1 ? { kind: 'nth', n: gym.length - 1 } : { kind: 'na' };
+      }catch(e){ if(e instanceof AuthError) throw e; }
+    } }));
+    rankCache = { at: Date.now(), list };
+    return list;
+  }
+
+  function rankCardHtml(m){
+    const belt = m.belt;
+    const light = belt ? belt.text === 'dark' : true;
+    const panel = belt ? belt.bg : '#c9cfdb';
+    const ink = belt ? (light ? '#0b1f4d' : '#fff') : '#0b1f4d';
+    const FOCUS = Array.isArray(CFG.STAFF_FOCUS_BELTS) ? CFG.STAFF_FOCUS_BELTS : ['흰 띠', '노란 띠'];
+    const focus = !!(belt && FOCUS.indexOf(belt.name) >= 0);
+    const na = '<span class="na">' + NA + '</span>';
+    let lamp = -1, regText = na;
+    if(m.reg.kind === 'first'){ lamp = 0; regText = '첫 등록'; }
+    else if(m.reg.kind === 'nth'){ lamp = m.reg.n >= 2 ? 2 : 1; regText = m.reg.n + '번째 재등록'; }
+    const lights = '<span class="lights" aria-hidden="true">' + ['r', 'y', 'g'].map((k, i)=> '<i class="' + k + (i === lamp ? ' on' : '') + '"></i>').join('') + '</span>';
+    const medal = m.rank === 1 ? '🥇 ' : m.rank === 2 ? '🥈 ' : m.rank === 3 ? '🥉 ' : '';
+    const msg = m.rank <= 3 ? '30일 출석왕 ' + m.rank + '위! 오시면 크게 칭찬해 주세요! 👏' : '꾸준히 오는 회원이에요! 칭찬 한마디 해주세요!';
+    const photo = m.photo ? '<img src="' + esc(m.photo) + '" alt="" loading="lazy" referrerpolicy="no-referrer">' : '<span class="ph">' + PERSON + '</span>';
+    return '<article class="card' + (m.rank <= 3 ? ' top3' : '') + '">' +
+      '<div class="side' + (light ? ' light' : '') + '" style="--belt:' + esc(panel) + ';--belt-ink:' + ink + '">' +
+        (focus ? '<span class="focus" title="집중관리 회원 (흰 띠·노란 띠)" aria-label="집중관리 회원">★</span>' : '') +
+        '<div class="beltname">' + (belt ? esc(belt.name) : NA) + '</div>' +
+        '<div class="avatar">' + photo + '</div>' +
+        '<div class="who">' + esc(m.name || '이름 확인 불가') + '</div>' +
+      '</div>' +
+      '<div class="main">' +
+        '<div class="head2"><div class="time rank">' + medal + m.rank + '위</div><div class="regbox">' + lights + '<span class="reg">' + regText + '</span></div></div>' +
+        '<div class="msgs"><p class="cele">' + esc(msg) + '</p></div>' +
+        '<div class="boxes"><div class="box"><span>30일 <b>' + m.n30 + '</b>회</span><span class="sep"></span><span>누적 ' + (m.total != null ? '<b>' + m.total + '</b>회' : na) + '</span></div></div>' +
+        '<div class="foot"><span>최근 30일 출석 횟수 기준</span><span>다짐 출석왕</span></div>' +
+      '</div>' +
+    '</article>';
+  }
+
+  const rankTile = $('kActiveHalf'), rankPop = $('rankPop');
+  let rankReq = 0;
+  async function openRankPop(){
+    if(!rankPop.classList.contains('hidden')){ rankPop.classList.add('hidden'); return; }
+    closeExpPop(true);
+    const r = rankTile.getBoundingClientRect(), L = $('summary').getBoundingClientRect();
+    rankPop.style.left = Math.round(L.right + 14) + 'px';
+    rankPop.style.top = '70px';
+    rankPop.classList.remove('hidden');
+    const my = ++rankReq;
+    rankPop.innerHTML = '<div class="pophead">최근 30일 출석왕 <small>불러오는 중…</small><button class="popx" aria-label="닫기">✕</button></div>';
+    try{
+      const list = await loadRanking();
+      if(my !== rankReq) return;
+      rankPop.innerHTML = '<div class="pophead">🏆 최근 30일 출석왕 <b>' + list.length + '명</b><small>다짐 출석왕 상위 10% · 많이 온 순서</small><button class="popx" aria-label="닫기">✕</button></div>' +
+        (list.length ? '<div class="grid">' + list.map(rankCardHtml).join('') + '</div>' : '<div class="popempty">' + NA + '</div>');
+    }catch(e){
+      if(e instanceof AuthError){ lockScreen(); rankPop.classList.add('hidden'); return; }
+      rankPop.innerHTML = '<div class="pophead">최근 30일 출석왕<button class="popx" aria-label="닫기">✕</button></div><div class="popempty">' + NA + ' · 잠시 후 다시 눌러주세요</div>';
+    }
+  }
+  if(rankTile && rankPop){
+    rankTile.addEventListener('click', openRankPop);
+    rankTile.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); openRankPop(); } });
+    rankPop.addEventListener('click', (e)=>{ if(e.target.closest('.popx')) rankPop.classList.add('hidden'); });
+    document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && !rankPop.classList.contains('hidden')){ e.stopPropagation(); rankPop.classList.add('hidden'); } }, true);
+    document.addEventListener('mousedown', (e)=>{ if(!rankPop.classList.contains('hidden') && !rankPop.contains(e.target) && !rankTile.contains(e.target)) rankPop.classList.add('hidden'); });
+    rankPop.addEventListener('error', (e)=>{ const img = e.target; if(img && img.tagName === 'IMG'){ const s = document.createElement('span'); s.className = 'ph'; s.innerHTML = PERSON; img.replaceWith(s); } }, true);
   }
 
   let lastChart = null;
