@@ -387,8 +387,9 @@
   .bt svg{ width:38px; height:24px; }
   .bt b{ font-size:22px; font-weight:800; line-height:1.1; font-variant-numeric:tabular-nums; }
   .bt b small{ font-size:11px; font-weight:700; color:var(--muted); margin-left:1px; }
-  .bt span{ font-size:12px; font-weight:800; }
-  .bt em{ font-style:normal; font-size:10.5px; color:#9aa1b2; }
+  .bt .bl{ display:flex; flex-wrap:wrap; justify-content:center; align-items:baseline; gap:0 3px; font-size:11px; font-weight:800; color:var(--ink); line-height:1.35; text-align:center; }
+  .bt .bl i{ font-style:normal; color:#c3c8d4; font-weight:400; }
+  .bt .bl strong{ color:#1f2f8a; }
   .pbelt svg{ width:34px; height:22px; vertical-align:-4px; margin-right:6px; }
 </style>
 </head>
@@ -1509,8 +1510,10 @@
   function drawBeltTiles(){
     const box = $('beltTiles'); if(!box || !beltAll) return;
     const cnt = BELTS.map(()=> 0); beltAll.forEach((m)=> cnt[beltIdx(m)]++);
+    const tot = beltAll.length;   // 유효 회원 대비 비율
     box.innerHTML = BELTS.map((b, i)=> '<button type="button" class="bt' + (i < 2 ? ' focus' : '') + '" data-b="' + i + '" title="' + esc(b.name) + ' ' + beltRange(i) + ' · 누르면 안 나온 순서로 회원 카드">' +
-      BELT_SVG(b.bg) + '<b>' + fmt(cnt[i]) + '<small>명</small></b><span>' + esc(b.name) + '</span><em>' + beltRange(i) + '</em></button>').join('');
+      BELT_SVG(b.bg) + '<b>' + fmt(cnt[i]) + '<small>명</small></b>' +
+      '<span class="bl">' + esc(b.name) + '<i>|</i>' + beltRange(i) + '<i>|</i><strong>' + (tot ? Math.round(cnt[i] * 100 / tot) : 0) + '%</strong></span></button>').join('');
   }
   async function openBeltPop(i){
     if(!beltPop.classList.contains('hidden') && beltPop.getAttribute('data-b') === String(i)){ beltPop.classList.add('hidden'); return; }
