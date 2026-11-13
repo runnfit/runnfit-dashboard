@@ -1299,6 +1299,7 @@
     absPop.innerHTML = '<div class="pophead">' + ABSENT_DAYS + '일 이상 미출석 회원 <small>불러오는 중… (인원이 많아 몇 초 걸려요)</small><button class="popx" aria-label="닫기">✕</button></div>';
     try{
       const list = await loadAbsentList();
+      await waitBeltStatus();   // 흰·노란 띠 신호등 계산이 끝난 뒤에 그리기
       if(my !== absReq) return;
       absPop.innerHTML = '<div class="pophead">📞 ' + ABSENT_DAYS + '일 이상 미출석 회원 <b>' + list.length + '명</b><small>오래 안 나온 순서 · 연락해서 안부를 물어주세요</small><button class="popx" aria-label="닫기">✕</button></div>' +
         (list.length ? beltSplitHtml(list) + '<div class="grid">' + list.map((m, i)=> absentCardHtml(m, i).replace('<article class="card"', '<article class="card" data-b="' + beltIdx(m) + '"')).join('') + '</div>' : '<div class="popempty">' + ABSENT_DAYS + '일 넘게 안 나온 회원이 없어요 🙂</div>');
@@ -1585,6 +1586,11 @@
       const b = on ? t.getAttribute('data-b') : null;
       pop.querySelectorAll('.grid > .card').forEach((c)=>{ c.style.display = !b || c.getAttribute('data-b') === b ? '' : 'none'; });
     });
+  }
+  async function waitBeltStatus(){
+    if(beltAll) return;
+    loadBeltCounts(true);
+    for(let t = 0; t < 40 && !beltAll; t++) await new Promise((r)=> setTimeout(r, 500));
   }
   async function loadBeltCounts(force){
     const box = $('beltTiles'); if(!box || beltBusy || (!force && Date.now() - beltAt < 10 * 60e3)) return;
