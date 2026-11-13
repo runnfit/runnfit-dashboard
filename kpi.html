@@ -5,22 +5,75 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>런앤핏 정릉점 · 마케팅 KPI</title>
 <style>
-  :root{ --navy:#18338c; --ink:#16213d; --muted:#5d6782; --line:#dfe4ee; --bg:#f3f5f9; }
+  :root{ --navy:#18338c; --ink:#16213d; --muted:#5d6782; --faint:#9aa1b2; --line:#dfe4ee; --bg:#f3f5f9; --card:#fff;
+    --c1:#3b5bd6; --c2:#d9782a; --grid:#eef1f6; --good:#0a7d3c; --bad:#b4232f; }
   *{ box-sizing:border-box; }
   html,body{ margin:0; height:100%; }
-  body{ background:var(--bg); color:var(--ink); font:16px/1.45 "Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif; display:flex; flex-direction:column; }
+  body{ background:var(--bg); color:var(--ink); font:15px/1.45 "Pretendard","Apple SD Gothic Neo","Malgun Gothic",system-ui,sans-serif; display:flex; flex-direction:column; }
   .topbar{ background:var(--navy); color:#fff; height:60px; flex:none; display:flex; align-items:center; gap:22px; padding:0 22px; }
   .topbar .logo{ height:26px; width:auto; display:block; }
-  .topbar .where{ font-size:17px; font-weight:700; display:flex; align-items:center; line-height:1; }
+  .topbar .where{ font-size:17px; font-weight:700; display:flex; align-items:center; line-height:1; white-space:nowrap; }
   .topbar .where .bar{ opacity:.55; margin:0 4px; font-weight:400; }
   .topbar .tabs{ display:flex; gap:4px; background:rgba(255,255,255,.1); border-radius:12px; padding:4px; }
   .topbar .tab{ font:inherit; font-size:14px; font-weight:800; color:rgba(255,255,255,.75); background:none; border:0; border-radius:9px; padding:6px 14px; cursor:pointer; white-space:nowrap; }
   .topbar .tab.on{ background:#fff; color:var(--navy); cursor:default; }
   .topbar button.tab:hover{ background:rgba(255,255,255,.18); color:#fff; }
   .topbar .close{ margin-left:auto; font:inherit; font-size:14px; font-weight:700; background:rgba(255,255,255,.14); color:#fff; border:1px solid rgba(255,255,255,.35); border-radius:10px; padding:6px 12px; cursor:pointer; }
-  main{ flex:1; min-height:0; overflow:auto; padding:18px; }
-  .empty{ height:100%; min-height:320px; border:2px dashed var(--line); border-radius:18px; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:8px; color:var(--muted); text-align:center; background:#fff; }
-  .empty b{ font-size:22px; color:var(--ink); }
+  .sub{ display:flex; align-items:center; gap:10px; padding:12px 22px 0; font-size:13px; color:var(--muted); }
+  .sub b{ color:var(--ink); }
+  .sub .link{ font:inherit; font-size:12.5px; font-weight:700; color:var(--navy); background:#fff; border:1px solid var(--line); border-radius:999px; padding:3px 10px; cursor:pointer; }
+  main{ flex:1; min-height:0; overflow:auto; padding:12px 22px 22px; }
+  .grid{ display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:12px; }
+  .card{ background:var(--card); border:1px solid var(--line); border-radius:16px; padding:14px 16px; min-width:0; }
+  .span2{ grid-column:span 2; } .span4{ grid-column:1 / -1; }
+  .lbl{ font-size:13px; font-weight:700; color:var(--muted); }
+  .big{ font-size:30px; font-weight:800; line-height:1.15; margin-top:4px; font-variant-numeric:tabular-nums; }
+  .big small{ font-size:15px; font-weight:700; color:var(--muted); margin-left:2px; }
+  .note{ font-size:12.5px; color:var(--muted); margin-top:4px; }
+  .note b{ color:var(--ink); }
+  .split{ display:flex; height:8px; border-radius:4px; overflow:hidden; margin-top:10px; gap:2px; background:var(--grid); }
+  .split i{ display:block; height:100%; }
+  .keys{ display:flex; gap:12px; font-size:12px; color:var(--muted); margin-top:6px; flex-wrap:wrap; }
+  .keys span::before{ content:''; display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px; vertical-align:-1px; background:var(--k); }
+  h2{ margin:0 0 10px; font-size:16px; font-weight:800; display:flex; align-items:baseline; gap:10px; flex-wrap:wrap; }
+  h2 small{ font-size:12.5px; font-weight:600; color:var(--muted); }
+  /* 퍼널 */
+  .funnel{ display:flex; flex-direction:column; gap:10px; }
+  .fr{ display:grid; grid-template-columns:70px 1fr 64px; align-items:center; gap:10px; }
+  .fr .n{ font-weight:700; color:var(--muted); font-size:13px; }
+  .fr .b{ height:26px; background:var(--grid); border-radius:6px; position:relative; }
+  .fr .b i{ position:absolute; left:0; top:0; bottom:0; border-radius:6px; background:var(--c1); }
+  .fr .v{ text-align:right; font-weight:800; font-size:17px; font-variant-numeric:tabular-nums; }
+  .conv{ margin:-4px 0 -4px 80px; font-size:12px; font-weight:700; color:var(--muted); }
+  .conv b{ color:var(--navy); font-size:13px; }
+  /* 막대 그래프 */
+  .chart{ position:relative; height:170px; display:flex; align-items:stretch; gap:3px; padding:0 0 20px; border-bottom:1px solid var(--line); }
+  .chart.tall{ height:200px; }
+  .col{ flex:1; position:relative; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; min-width:0; cursor:default; }
+  .col .bar{ width:70%; max-width:22px; display:flex; flex-direction:column-reverse; gap:2px; }
+  .col .bar i{ display:block; width:100%; border-radius:4px 4px 0 0; }
+  .col .bar i + i{ border-radius:4px 4px 0 0; }
+  .col .bar i.neg{ background:#c3c8d4 !important; }
+  .col .d{ position:absolute; bottom:-18px; font-size:10.5px; color:var(--faint); white-space:nowrap; }
+  .col.we .d{ color:#c2410c; }
+  .col.future .bar{ opacity:0; }
+  .col.today .d{ color:var(--navy); font-weight:800; }
+  .col .lab{ font-size:10px; font-weight:700; color:var(--muted); margin-bottom:2px; white-space:nowrap; font-variant-numeric:tabular-nums; }
+  .col:hover{ background:#f5f7fc; border-radius:6px; }
+  .tip{ position:fixed; z-index:99; pointer-events:none; background:#16213d; color:#fff; font-size:12.5px; line-height:1.5; border-radius:8px; padding:7px 10px; box-shadow:0 6px 18px rgba(0,0,0,.2); display:none; white-space:nowrap; }
+  .tip b{ font-weight:800; }
+  /* 홍보 */
+  .chips{ display:grid; grid-template-columns:repeat(auto-fit, minmax(110px,1fr)); gap:8px; }
+  .chip{ background:#f7f8fb; border:1px solid var(--line); border-radius:12px; padding:9px 12px; }
+  .chip .lbl{ font-size:12px; }
+  .chip .big{ font-size:22px; }
+  .setup{ max-width:620px; margin:40px auto; background:#fff; border:1px solid var(--line); border-radius:18px; padding:26px 28px; }
+  .setup h3{ margin:0 0 6px; font-size:20px; }
+  .setup ol{ margin:10px 0 16px; padding-left:20px; color:var(--muted); line-height:1.8; }
+  .setup input{ width:100%; font:inherit; font-size:14px; padding:10px 12px; border:1px solid var(--line); border-radius:10px; }
+  .setup button{ margin-top:10px; font:inherit; font-weight:800; color:#fff; background:var(--navy); border:0; border-radius:10px; padding:10px 18px; cursor:pointer; }
+  .setup .err{ color:var(--bad); font-size:13px; margin-top:8px; min-height:18px; }
+  .msg{ text-align:center; color:var(--muted); padding:60px 0; }
 </style>
 </head>
 <body>
@@ -30,14 +83,169 @@
     <nav class="tabs" aria-label="화면 선택"><button class="tab" id="toAttend" type="button" title="출석 화면 창으로 돌아가기">출석</button><span class="tab on" aria-current="page">📊 마케팅 KPI</span></nav>
     <button class="close" id="rfClose" type="button">✕ 창 닫기</button>
   </header>
-  <main id="kpiMain">
-    <div class="empty"><b>📊 마케팅 KPI</b><span>어떤 지표를 넣을지 정하면 여기에 채워져요.</span></div>
-  </main>
+  <div class="sub" id="sub" hidden></div>
+  <main id="kpiMain"><div class="msg">불러오는 중…</div></main>
+  <div class="tip" id="tip" role="tooltip"></div>
 <script>
 (function(){
+  const $ = (id)=> document.getElementById(id);
   const top = window.parent || window;
-  document.getElementById('rfClose').addEventListener('click', ()=>{ try{ top.close(); }catch(e){} try{ window.frameElement && window.frameElement.remove(); }catch(e){} });
-  document.getElementById('toAttend').addEventListener('click', ()=>{ try{ if(top.opener && !top.opener.closed){ top.opener.focus(); return; } }catch(e){} alert('출석 화면 창으로 돌아가 주세요.'); });
+  $('rfClose').addEventListener('click', ()=>{ try{ top.close(); }catch(e){} try{ window.frameElement && window.frameElement.remove(); }catch(e){} });
+  $('toAttend').addEventListener('click', ()=>{ try{ if(top.opener && !top.opener.closed){ top.opener.focus(); return; } }catch(e){} alert('출석 화면 창으로 돌아가 주세요.'); });
+
+  const KST = 9 * 3600e3;
+  const today = new Date(Date.now() + KST).toISOString().slice(0, 10);
+  const month = today.slice(0, 7), mNum = +today.slice(5, 7), dNum = +today.slice(8, 10);
+  const KEY = 'runfit_kpi_sheet_' + month;
+  const KPI_GID = '1416723171';   // '마케팅 KPI' 탭 (파일을 복사해도 같은 번호가 유지됨)
+  const store = { get(){ try{ return localStorage.getItem(KEY); }catch(e){ return null; } }, set(v){ try{ localStorage.setItem(KEY, v); }catch(e){} }, del(){ try{ localStorage.removeItem(KEY); }catch(e){} } };
+  const esc = (s)=> String(s == null ? '' : s).replace(/[&<>"']/g, (c)=> ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+  const fmt = (n)=> n == null || isNaN(n) ? '-' : Math.round(n).toLocaleString('ko-KR');
+  const won = (n)=> n == null || isNaN(n) ? '-' : Math.abs(n) >= 10000 ? (n / 10000).toLocaleString('ko-KR', { maximumFractionDigits: 0 }) + '만' : fmt(n);
+  const pct = (a, b)=> b ? Math.round(a * 100 / b) + '%' : '-';
+
+  function parseCsv(s){
+    const rows = []; let r = [], f = '', q = false;
+    for(let i = 0; i < s.length; i++){ const c = s[i];
+      if(q){ if(c === '"' && s[i + 1] === '"'){ f += '"'; i++; } else if(c === '"') q = false; else f += c; }
+      else if(c === '"') q = true; else if(c === ','){ r.push(f); f = ''; } else if(c === '\n'){ r.push(f); rows.push(r); r = []; f = ''; } else if(c !== '\r') f += c; }
+    r.push(f); rows.push(r); return rows;
+  }
+  const norm = (s)=> String(s || '').replace(/\s+/g, '');
+  const num = (s)=> { const t = String(s || '').replace(/[,원%\s]/g, ''); if(t === '' || isNaN(+t)) return null; return +t; };
+  // 시트 제목 → 대시보드 항목
+  const FIELDS = { '유효회원':'valid', '일방문객':'visit', '만료예정':'expire', '7일이상미출석':'absent', '미출석연락':'called',
+    '신규문의':'inq', '신규방문':'tour', '신규등록':'join', '재등록':'rereg', '소개':'refer',
+    '회원권매출':'salesM', 'PT매출':'salesP', '일':'salesD', '누적':'salesCum',
+    '쿠폰':'coupon', '전단(우편)':'flyer', '전단':'flyer', '벽보':'poster', '현수막':'banner',
+    '플레이스방문':'place', '네이버리뷰':'review', '인스타':'insta', '블로그':'blog', '당근':'karrot' };
+
+  function extract(rows){
+    const h = rows.findIndex((r)=> r.some((c)=> norm(c) === '유효회원') && r.some((c)=> norm(c) === '신규문의'));
+    if(h < 0) return null;
+    const col = {}; rows[h].forEach((c, i)=>{ const k = FIELDS[norm(c)]; if(k && col[k] == null) col[k] = i; });
+    const dayCol = rows[h].findIndex((c)=> /^\d+월?$/.test(norm(c))) + 1 || 2;   // '9 월' 옆 칸이 날짜
+    const total = {}; Object.keys(col).forEach((k)=> total[k] = num(rows[h + 1][col[k]]));
+    const days = [];
+    for(let r = h + 2; r < rows.length; r++){
+      const d = num(rows[r][dayCol]); if(d == null || d < 1 || d > 31){ if(days.length) break; else continue; }
+      const o = { d, wd: rows[r][dayCol - 1] || '' }; Object.keys(col).forEach((k)=> o[k] = num(rows[r][col[k]]));
+      days.push(o);
+    }
+    return { total, days };
+  }
+  async function loadSheet(url){
+    const id = (url.match(/\/d\/([\w-]{20,})/) || [])[1]; if(!id) throw new Error('주소에서 시트를 찾지 못했어요.');
+    const g = (url.match(/gid=(\d+)/) || [])[1];
+    for(const gid of [...new Set([g, KPI_GID].filter(Boolean))]){
+      try{
+        const r = await fetch('https://docs.google.com/spreadsheets/d/' + id + '/export?format=csv&gid=' + gid, { cache: 'no-store' });
+        if(!r.ok) continue;
+        const data = extract(parseCsv(await r.text()));
+        if(data && data.days.length) return data;
+      }catch(e){}
+    }
+    throw new Error("'마케팅 KPI' 탭을 찾지 못했어요. 시트 공유가 '링크가 있는 모든 사용자'인지, 그 탭에서 주소를 복사했는지 확인해 주세요.");
+  }
+
+  function setupView(err){
+    $('sub').hidden = true;
+    $('kpiMain').innerHTML = '<div class="setup"><h3>📎 ' + mNum + '월 시트 연결하기</h3>' +
+      '<div class="note">매달 새 시트를 만들면 여기서 한 번만 연결하면 돼요. 주소는 이 컴퓨터에만 저장돼요.</div>' +
+      '<ol><li>이번 달 시트에서 <b>마케팅 KPI</b> 탭을 열어요.</li><li>주소창의 주소를 복사해요.</li><li>아래에 붙여넣고 연결을 눌러요.</li></ol>' +
+      '<input id="sheetUrl" placeholder="https://docs.google.com/spreadsheets/d/…" autocomplete="off"><button id="sheetGo" type="button">연결</button><div class="err" id="sheetErr">' + esc(err || '') + '</div></div>';
+    const go = async ()=>{ const v = $('sheetUrl').value.trim(); if(!v) return; $('sheetErr').textContent = '확인 중…';
+      try{ await loadSheet(v); store.set(v); start(); }catch(e){ $('sheetErr').textContent = e.message; } };
+    $('sheetGo').addEventListener('click', go);
+    $('sheetUrl').addEventListener('keydown', (e)=>{ if(e.key === 'Enter') go(); });
+  }
+
+  // ---------- 그리기 ----------
+  const tip = $('tip');
+  document.addEventListener('mousemove', (e)=>{ const c = e.target.closest && e.target.closest('[data-tip]');
+    if(!c){ tip.style.display = 'none'; return; }
+    tip.innerHTML = c.getAttribute('data-tip'); tip.style.display = 'block';
+    const w = tip.offsetWidth; tip.style.left = Math.min(innerWidth - w - 8, e.clientX + 14) + 'px'; tip.style.top = (e.clientY + 14) + 'px'; });
+
+  function bars(days, last, parts, opt){
+    opt = opt || {};
+    const tot = (o)=> parts.reduce((s, p)=> s + Math.max(0, o[p.k] || 0), 0);
+    const max = Math.max(1, ...days.map(tot));
+    return '<div class="chart' + (opt.tall ? ' tall' : '') + '">' + days.map((o)=>{
+      const fut = o.d > last, t = tot(o);
+      const segs = parts.map((p)=>{ const v = o[p.k] || 0; if(v <= 0) return ''; return '<i style="height:' + (v / max * (opt.tall ? 150 : 120)).toFixed(1) + 'px;background:' + p.c + '"></i>'; }).join('');
+      const neg = parts.some((p)=> (o[p.k] || 0) < 0);
+      const tipTxt = '<b>' + mNum + '.' + o.d + ' (' + esc(o.wd) + ')</b><br>' + parts.map((p)=> p.n + ' <b>' + (opt.money ? fmt(o[p.k] || 0) + '원' : fmt(o[p.k] || 0)) + '</b>').join('<br>') + (opt.extra ? opt.extra(o) : '');
+      const showLab = !fut && t > 0 && (opt.labelAll || t === max);
+      return '<div class="col' + (fut ? ' future' : '') + (o.d === dNum ? ' today' : '') + (/[토일]/.test(o.wd) ? ' we' : '') + '"' + (fut ? '' : ' data-tip="' + esc(tipTxt) + '"') + '>' +
+        (showLab ? '<span class="lab">' + (opt.money ? won(t) : fmt(t)) + '</span>' : '') +
+        '<span class="bar">' + segs + (neg ? '<i class="neg" style="height:3px"></i>' : '') + '</span>' +
+        '<span class="d">' + (o.d === 1 || o.d % 5 === 0 || o.d === dNum ? o.d : '') + '</span></div>';
+    }).join('') + '</div>';
+  }
+
+  function draw(data){
+    const T = data.total, D = data.days;
+    const last = Math.max(0, ...D.filter((o)=> o.valid != null || (o.salesD || 0) !== 0 || (o.inq || 0) > 0).map((o)=> o.d));
+    const L = D.find((o)=> o.d === last) || {};
+    const sum = (k)=> D.filter((o)=> o.d <= last).reduce((s, o)=> s + (o[k] || 0), 0);
+    const pick = (k)=> T[k] != null ? T[k] : sum(k);
+    const inq = pick('inq'), tour = pick('tour'), join = pick('join'), rereg = pick('rereg'), refer = pick('refer'), expire = pick('expire');
+    const sM = pick('salesM'), sP = pick('salesP'), sCum = T.salesCum != null ? T.salesCum : (L.salesCum != null ? L.salesCum : sM + sP);
+    const reviewGain = T.review != null ? T.review : null;
+    const mx = Math.max(inq, 1);
+
+    $('sub').hidden = false;
+    $('sub').innerHTML = '📎 <b>' + mNum + '월 시트</b> 연결됨 · 시트 마지막 입력 <b>' + mNum + '.' + last + '</b> · 5분마다 새로고침 <button class="link" id="chg" type="button">시트 바꾸기</button>';
+    $('chg').addEventListener('click', ()=>{ if(confirm('이 컴퓨터에 저장된 ' + mNum + '월 시트 연결을 지우고 새로 연결할까요?')){ store.del(); setupView(); } });
+
+    $('kpiMain').innerHTML = '<div class="grid">' +
+      // 1줄: 숫자
+      '<div class="card"><div class="lbl">💰 이번 달 매출</div><div class="big">' + won(sCum) + '<small>원</small></div>' +
+        '<div class="split" aria-hidden="true"><i style="flex:' + Math.max(0, sM) + ';background:var(--c1)"></i><i style="flex:' + Math.max(0, sP) + ';background:var(--c2)"></i></div>' +
+        '<div class="keys"><span style="--k:var(--c1)">회원권 ' + won(sM) + ' (' + pct(sM, sM + sP) + ')</span><span style="--k:var(--c2)">PT ' + won(sP) + ' (' + pct(sP, sM + sP) + ')</span></div></div>' +
+      '<div class="card"><div class="lbl">🌱 신규 등록</div><div class="big">' + fmt(join) + '<small>명</small></div><div class="note">문의 <b>' + fmt(inq) + '</b> → 방문 <b>' + fmt(tour) + '</b> → 등록 <b>' + fmt(join) + '</b> · 문의 대비 <b>' + pct(join, inq) + '</b></div></div>' +
+      '<div class="card"><div class="lbl">🔁 재등록</div><div class="big">' + fmt(rereg) + '<small>명</small></div><div class="note">이달 만료 예정 <b>' + fmt(expire) + '명</b> 대비 <b>' + pct(rereg, expire) + '</b></div></div>' +
+      '<div class="card"><div class="lbl">🤝 소개로 등록</div><div class="big">' + fmt(refer) + '<small>명</small></div><div class="note">신규 등록 중 <b>' + pct(refer, join) + '</b></div></div>' +
+      // 2줄: 퍼널 + 일별 문의
+      '<div class="card"><h2>신규 흐름 <small>문의에서 등록까지</small></h2><div class="funnel">' +
+        '<div class="fr"><span class="n">신규 문의</span><span class="b"><i style="width:' + (inq / mx * 100) + '%"></i></span><span class="v">' + fmt(inq) + '</span></div>' +
+        '<div class="conv">↓ 방문 전환 <b>' + pct(tour, inq) + '</b></div>' +
+        '<div class="fr"><span class="n">신규 방문</span><span class="b"><i style="width:' + (tour / mx * 100) + '%"></i></span><span class="v">' + fmt(tour) + '</span></div>' +
+        '<div class="conv">↓ 등록 전환 <b>' + pct(join, tour) + '</b></div>' +
+        '<div class="fr"><span class="n">신규 등록</span><span class="b"><i style="width:' + (join / mx * 100) + '%"></i></span><span class="v">' + fmt(join) + '</span></div>' +
+      '</div></div>' +
+      '<div class="card span3" style="grid-column:span 3"><h2>일별 신규 문의 <small>막대에 마우스를 올리면 방문·등록도 보여요</small></h2>' +
+        bars(D, last, [{ k: 'inq', n: '신규 문의', c: 'var(--c1)' }], { labelAll: true, extra: (o)=> '<br>신규 방문 <b>' + fmt(o.tour || 0) + '</b><br>신규 등록 <b>' + fmt(o.join || 0) + '</b>' }) + '</div>' +
+      // 3줄: 일별 매출
+      '<div class="card span4"><h2>일별 매출 <small>회원권 + PT</small><span class="keys" style="margin:0"><span style="--k:var(--c1)">회원권</span><span style="--k:var(--c2)">PT</span></span></h2>' +
+        bars(D, last, [{ k: 'salesM', n: '회원권', c: 'var(--c1)' }, { k: 'salesP', n: 'PT', c: 'var(--c2)' }], { money: true, tall: true, labelAll: true, extra: (o)=> '<br>합계 <b>' + fmt(o.salesD || 0) + '원</b>' + (o.salesCum != null ? '<br>누적 <b>' + fmt(o.salesCum) + '원</b>' : '') }) + '</div>' +
+      // 4줄: 홍보
+      '<div class="card span2"><h2>오프라인 홍보 <small>이번 달 배포량</small></h2><div class="chips">' +
+        [['🎟️ 쿠폰', 'coupon'], ['✉️ 전단(우편)', 'flyer'], ['📌 벽보', 'poster'], ['🏳️ 현수막', 'banner']].map((x)=> '<div class="chip"><div class="lbl">' + x[0] + '</div><div class="big">' + fmt(pick(x[1])) + '</div></div>').join('') + '</div>' +
+        '<h2 style="margin-top:14px">일별 배포량 <small>쿠폰 + 전단 + 벽보 + 현수막</small></h2>' +
+        bars(D.map((o)=> Object.assign({}, o, { promo: (o.coupon || 0) + (o.flyer || 0) + (o.poster || 0) + (o.banner || 0) })), last, [{ k: 'promo', n: '배포량', c: 'var(--c1)' }], { extra: (o)=> '<br>신규 문의 <b>' + fmt(o.inq || 0) + '</b>' }) + '</div>' +
+      '<div class="card span2"><h2>온라인 <small>이번 달</small></h2><div class="chips">' +
+        '<div class="chip"><div class="lbl">📍 플레이스 방문</div><div class="big">' + fmt(pick('place')) + '</div></div>' +
+        '<div class="chip"><div class="lbl">⭐ 네이버 리뷰</div><div class="big">' + fmt(L.review != null ? L.review : null) + '</div><div class="note">이번 달 <b>+' + fmt(reviewGain) + '</b></div></div>' +
+        '<div class="chip"><div class="lbl">📷 인스타</div><div class="big">' + fmt(pick('insta')) + '</div></div>' +
+        '<div class="chip"><div class="lbl">✍️ 블로그</div><div class="big">' + fmt(pick('blog')) + '</div></div>' +
+        '<div class="chip"><div class="lbl">🥕 당근</div><div class="big">' + fmt(pick('karrot')) + '</div></div></div>' +
+        '<h2 style="margin-top:14px">일별 플레이스 방문</h2>' +
+        bars(D, last, [{ k: 'place', n: '플레이스 방문', c: 'var(--c1)' }], { labelAll: false }) + '</div>' +
+    '</div>';
+  }
+
+  let timer = null;
+  async function start(){
+    clearInterval(timer);
+    const url = store.get();
+    if(!url){ setupView(); return; }
+    try{ draw(await loadSheet(url)); }
+    catch(e){ setupView(e.message); return; }
+    timer = setInterval(async ()=>{ try{ draw(await loadSheet(url)); }catch(e){} }, 5 * 60e3);
+  }
+  start();
 })();
 </script>
 </body>
