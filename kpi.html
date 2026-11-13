@@ -439,7 +439,7 @@
     const byD = {}; D.forEach((o)=> byD[o.d] = o);
     const upto = D.filter((o)=> o.d <= last);
     const sum = (k, arr)=> (arr || upto).reduce((s, o)=> s + (o[k] || 0), 0);
-    const L = byD[last] || {};
+    const lastV = Math.max(0, ...upto.filter((o)=> o.valid != null).map((o)=> o.d)), L = byD[lastV] || byD[last] || {};
     const yd = byD[dNum - 1] && (byD[dNum - 1].valid != null || (byD[dNum - 1].inq || 0) > 0) ? dNum - 1 : last;
     const Y = byD[yd] || {};
     const offOf = (o)=> (o.coupon || 0) + (o.flyer || 0) + (o.poster || 0) + (o.banner || 0);
@@ -449,7 +449,7 @@
     const inq = sum('inq'), tour = sum('tour'), join = sum('join'), rereg = sum('rereg'), refer = sum('refer');
     const expMonth = T.expire != null ? T.expire : sum('expire', D), expSoFar = sum('expire');
     const frac = last / DAYS;
-    const prevOut = (X.out || []).filter((o)=> !(o.y === +today.slice(0, 4) && o.m === mNum)).pop();
+    const curKey = +today.slice(0, 4) * 12 + mNum, prevOut = (X.out || []).filter((o)=> o.y * 12 + o.m < curKey && o.nw != null).pop();
     const lyOut = (X.out || []).find((o)=> o.y === +today.slice(0, 4) - 1 && o.m === mNum);
 
     // ---- 어제 마감 ----
@@ -555,7 +555,7 @@
 
     // ---- 오른쪽: 월별 고객 지표 (OutPut_지표) ----
     let right = '';
-    if(X.out && X.out.length){ const rows = X.out.slice(-14), mxS = Math.max(1, ...rows.map((o)=> o.sum || 0)); let prevY = null;
+    if(X.out && X.out.length){ const rows = X.out.filter((o)=> o.y * 12 + o.m <= curKey && !(o.re == null && o.nw == null && o.ex == null)).slice(-14), mxS = Math.max(1, ...rows.map((o)=> o.sum || 0)); let prevY = null;
       right = '<div class="card mk-ot"><h2>월별 고객 지표 <small>OutPut_지표 탭</small></h2><table><tr><th>월</th><th>유효</th><th>재등록</th><th>신규</th><th>등록 합</th><th>만료자</th><th>재등록률</th></tr>' +
         rows.map((o, i)=>{ const cur = o.y === +today.slice(0, 4) && o.m === mNum, yl = o.y !== prevY; prevY = o.y;
           const vv = o.v != null ? fmt(o.v) : cur && L.valid ? '<span style="color:var(--muted)">' + fmt(L.valid) + '*</span>' : '-';
