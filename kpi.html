@@ -439,7 +439,7 @@
     const byD = {}; D.forEach((o)=> byD[o.d] = o);
     const upto = D.filter((o)=> o.d <= last);
     const sum = (k, arr)=> (arr || upto).reduce((s, o)=> s + (o[k] || 0), 0);
-    const lastV = Math.max(0, ...upto.filter((o)=> o.valid != null).map((o)=> o.d)), L = byD[lastV] || byD[last] || {};
+    const lastV = Math.max(0, ...upto.filter((o)=> o.valid > 0).map((o)=> o.d)), L = byD[lastV] || byD[last] || {};
     const yd = byD[dNum - 1] && (byD[dNum - 1].valid != null || (byD[dNum - 1].inq || 0) > 0) ? dNum - 1 : last;
     const Y = byD[yd] || {};
     const offOf = (o)=> (o.coupon || 0) + (o.flyer || 0) + (o.poster || 0) + (o.banner || 0);
