@@ -422,6 +422,12 @@
   .split5 .bt{ padding:8px 4px; }
   .split5 .bt[aria-pressed="true"]{ border-color:#1f2f8a; box-shadow:0 0 0 3px rgba(31,47,138,.25); }
   .split5:has(.bt[aria-pressed="true"]) .bt[aria-pressed="false"]{ opacity:.45; }
+  .regmix{ display:inline-flex; gap:6px; align-items:center; margin-left:4px; }
+  .regmix > span{ font-size:12px; font-weight:600; border-radius:999px; padding:3px 9px; white-space:nowrap; }
+  .regmix b{ font-weight:800; color:inherit !important; }
+  .regmix .rf{ background:#fdecec; color:#b4232f; }
+  .regmix .rr{ background:#e9f7ef; color:#0a7d3c; }
+  .regmix .rn{ background:#f1f3f8; color:#7a8295; }
 </style>
 </head>
 <body>
@@ -1301,7 +1307,7 @@
       const list = await loadAbsentList();
       await waitBeltStatus();   // 흰·노란 띠 신호등 계산이 끝난 뒤에 그리기
       if(my !== absReq) return;
-      absPop.innerHTML = '<div class="pophead">📞 ' + ABSENT_DAYS + '일 이상 미출석 회원 <b>' + list.length + '명</b><small>오래 안 나온 순서 · 연락해서 안부를 물어주세요</small><button class="popx" aria-label="닫기">✕</button></div>' +
+      absPop.innerHTML = '<div class="pophead">📞 ' + ABSENT_DAYS + '일 이상 미출석 회원 <b>' + list.length + '명</b><small>오래 안 나온 순서 · 연락해서 안부를 물어주세요</small>' + regMixHtml(list) + '<button class="popx" aria-label="닫기">✕</button></div>' +
         (list.length ? beltSplitHtml(list) + '<div class="grid">' + list.map((m, i)=> absentCardHtml(m, i).replace('<article class="card"', '<article class="card" data-b="' + beltIdx(m) + '"')).join('') + '</div>' : '<div class="popempty">' + ABSENT_DAYS + '일 넘게 안 나온 회원이 없어요 🙂</div>');
     }catch(e){
       if(e instanceof AuthError){ lockScreen(); absPop.classList.add('hidden'); return; }
@@ -1576,6 +1582,14 @@
     const cnt = BELTS.map(()=> 0); list.forEach((m)=> cnt[beltIdx(m)]++);
     return '<div class="belttiles split5" role="group" aria-label="띠별 인원">' + BELTS.map((b, i)=> '<button type="button" class="bt" data-b="' + i + '" aria-pressed="false">' +
       BELT_SVG(b.bg) + '<b>' + fmt(cnt[i]) + '<small>명</small></b><span class="bl">' + esc(b.name) + '<i>|</i><strong>' + (list.length ? Math.round(cnt[i] * 100 / list.length) : 0) + '%</strong></span></button>').join('') + '</div>';
+  }
+  // 첫 등록 / 재등록 몇 명 · 몇 %
+  function regMixHtml(list){
+    const n = list.length; if(!n) return '';
+    const f = list.filter((m)=> m.reg && m.reg.kind === 'first').length, r = list.filter((m)=> m.reg && m.reg.kind === 'nth').length;
+    const pc = (v)=> Math.round(v * 100 / n) + '%';
+    return '<span class="regmix"><span class="rf">첫 등록 <b>' + f + '명</b> ' + pc(f) + '</span><span class="rr">재등록 <b>' + r + '명</b> ' + pc(r) + '</span>' +
+      (n - f - r ? '<span class="rn">확인 불가 ' + (n - f - r) + '명</span>' : '') + '</span>';
   }
   function bindBeltFilter(pop){
     pop.addEventListener('click', (e)=>{
