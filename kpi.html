@@ -41,7 +41,7 @@
   .funnel{ display:flex; flex-direction:column; gap:10px; }
   .fr{ display:grid; grid-template-columns:70px 1fr 64px; align-items:center; gap:10px; }
   .fr .n{ font-weight:700; color:var(--muted); font-size:13px; }
-  .fr .b{ height:26px; background:var(--grid); border-radius:6px; position:relative; }
+  .fr .b{ display:block; height:26px; background:var(--grid); border-radius:6px; position:relative; }
   .fr .b i{ position:absolute; left:0; top:0; bottom:0; border-radius:6px; background:var(--c1); }
   .fr .v{ text-align:right; font-weight:800; font-size:17px; font-variant-numeric:tabular-nums; }
   .conv{ margin:-4px 0 -4px 80px; font-size:12px; font-weight:700; color:var(--muted); }
@@ -178,7 +178,7 @@
       const tipTxt = '<b>' + mNum + '.' + o.d + ' (' + esc(o.wd) + ')</b><br>' + parts.map((p)=> p.n + ' <b>' + (opt.money ? fmt(o[p.k] || 0) + '원' : fmt(o[p.k] || 0)) + '</b>').join('<br>') + (opt.extra ? opt.extra(o) : '');
       const showLab = !fut && t > 0 && (opt.labelAll || t === max);
       return '<div class="col' + (fut ? ' future' : '') + (o.d === dNum ? ' today' : '') + (/[토일]/.test(o.wd) ? ' we' : '') + '"' + (fut ? '' : ' data-tip="' + esc(tipTxt) + '"') + '>' +
-        (showLab ? '<span class="lab">' + (opt.money ? won(t) : fmt(t)) + '</span>' : '') +
+        (showLab ? '<span class="lab">' + (opt.money ? won(o.salesD != null ? o.salesD : t) + (neg ? ' ↩︎' : '') : fmt(t)) + '</span>' : '') +
         '<span class="bar">' + segs + (neg ? '<i class="neg" style="height:3px"></i>' : '') + '</span>' +
         '<span class="d">' + (o.d === 1 || o.d % 5 === 0 || o.d === dNum ? o.d : '') + '</span></div>';
     }).join('') + '</div>';
@@ -193,6 +193,7 @@
     const inq = pick('inq'), tour = pick('tour'), join = pick('join'), rereg = pick('rereg'), refer = pick('refer'), expire = pick('expire');
     const sM = pick('salesM'), sP = pick('salesP'), sCum = T.salesCum != null ? T.salesCum : (L.salesCum != null ? L.salesCum : sM + sP);
     const reviewGain = T.review != null ? T.review : null;
+    const lastReview = (D.filter((o)=> o.review != null && o.d <= last).pop() || {}).review;   // 리뷰는 누적 숫자라 마지막으로 적힌 값
     const mx = Math.max(inq, 1);
 
     $('sub').hidden = false;
@@ -219,7 +220,7 @@
         bars(D, last, [{ k: 'inq', n: '신규 문의', c: 'var(--c1)' }], { labelAll: true, extra: (o)=> '<br>신규 방문 <b>' + fmt(o.tour || 0) + '</b><br>신규 등록 <b>' + fmt(o.join || 0) + '</b>' }) + '</div>' +
       // 3줄: 일별 매출
       '<div class="card span4"><h2>일별 매출 <small>회원권 + PT</small><span class="keys" style="margin:0"><span style="--k:var(--c1)">회원권</span><span style="--k:var(--c2)">PT</span></span></h2>' +
-        bars(D, last, [{ k: 'salesM', n: '회원권', c: 'var(--c1)' }, { k: 'salesP', n: 'PT', c: 'var(--c2)' }], { money: true, tall: true, labelAll: true, extra: (o)=> '<br>합계 <b>' + fmt(o.salesD || 0) + '원</b>' + (o.salesCum != null ? '<br>누적 <b>' + fmt(o.salesCum) + '원</b>' : '') }) + '</div>' +
+        bars(D, last, [{ k: 'salesM', n: '회원권', c: 'var(--c1)' }, { k: 'salesP', n: 'PT', c: 'var(--c2)' }], { money: true, tall: true, labelAll: true, extra: (o)=> '<br>합계 <b>' + fmt(o.salesD || 0) + '원</b>' + ((o.salesP || 0) < 0 || (o.salesM || 0) < 0 ? '<br>↩︎ 환불 포함' : '') + (o.salesCum != null ? '<br>누적 <b>' + fmt(o.salesCum) + '원</b>' : '') }) + '</div>' +
       // 4줄: 홍보
       '<div class="card span2"><h2>오프라인 홍보 <small>이번 달 배포량</small></h2><div class="chips">' +
         [['🎟️ 쿠폰', 'coupon'], ['✉️ 전단(우편)', 'flyer'], ['📌 벽보', 'poster'], ['🏳️ 현수막', 'banner']].map((x)=> '<div class="chip"><div class="lbl">' + x[0] + '</div><div class="big">' + fmt(pick(x[1])) + '</div></div>').join('') + '</div>' +
@@ -227,7 +228,7 @@
         bars(D.map((o)=> Object.assign({}, o, { promo: (o.coupon || 0) + (o.flyer || 0) + (o.poster || 0) + (o.banner || 0) })), last, [{ k: 'promo', n: '배포량', c: 'var(--c1)' }], { extra: (o)=> '<br>신규 문의 <b>' + fmt(o.inq || 0) + '</b>' }) + '</div>' +
       '<div class="card span2"><h2>온라인 <small>이번 달</small></h2><div class="chips">' +
         '<div class="chip"><div class="lbl">📍 플레이스 방문</div><div class="big">' + fmt(pick('place')) + '</div></div>' +
-        '<div class="chip"><div class="lbl">⭐ 네이버 리뷰</div><div class="big">' + fmt(L.review != null ? L.review : null) + '</div><div class="note">이번 달 <b>+' + fmt(reviewGain) + '</b></div></div>' +
+        '<div class="chip"><div class="lbl">⭐ 네이버 리뷰</div><div class="big">' + fmt(lastReview) + '</div><div class="note">이번 달 <b>+' + fmt(reviewGain) + '</b></div></div>' +
         '<div class="chip"><div class="lbl">📷 인스타</div><div class="big">' + fmt(pick('insta')) + '</div></div>' +
         '<div class="chip"><div class="lbl">✍️ 블로그</div><div class="big">' + fmt(pick('blog')) + '</div></div>' +
         '<div class="chip"><div class="lbl">🥕 당근</div><div class="big">' + fmt(pick('karrot')) + '</div></div></div>' +
