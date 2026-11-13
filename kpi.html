@@ -473,7 +473,7 @@
       let st;
       if(!has) st = '<span class="mk-st n">목표 미설정</span>';
       else if(isLevel){ const gap = goal - val; st = gap > 0 ? '<span class="mk-st y">' + fmt(gap) + '명 더 필요해요</span>' : '<span class="mk-st g">목표 달성</span>'; }
-      else { const diff = Math.round(val - goal * frac); st = diff >= 1 ? '<span class="mk-st g">목표선보다 ' + diff + '명 앞서요</span>' : diff <= -1 ? '<span class="mk-st r">목표선보다 ' + (-diff) + '명 뒤처져요</span>' : '<span class="mk-st g">목표선과 비슷해요</span>'; }
+      else { const diff = Math.round(val - goal * frac), w = /지난달/.test(goalLbl) ? '지난달 속도' : '목표선'; st = diff >= 1 ? '<span class="mk-st g">' + w + '보다 ' + diff + '명 앞서요</span>' : diff <= -1 ? '<span class="mk-st r">' + w + '보다 ' + (-diff) + '명 뒤처져요</span>' : '<span class="mk-st g">' + w + '과 비슷해요</span>'; }
       return '<div class="card"><div class="lbl">' + lbl + '</div><div class="big">' + fmt(val) + '<small>' + (has ? ' / ' + goalLbl : '명') + '</small></div>' +
         '<div class="mk-pg"><i style="width:' + fill.toFixed(1) + '%;background:' + color + '"></i>' + (has ? '<span class="pace" style="left:' + paceAt.toFixed(1) + '%"></span>' : '') + '</div>' + st + '<div class="note">' + sub + '</div></div>';
     };
@@ -482,7 +482,7 @@
     const proj = (x)=> last ? Math.round(x / last * DAYS) : 0;
     const validStart = (D.find((o)=> o.valid != null) || {}).valid, vmax = upto.reduce((m, o)=> o.valid != null && o.valid > m.v ? { v: o.valid, d: o.d } : m, { v: -1, d: 0 });
     const tiles = '<div class="mk-row mk-r3">' +
-      tile('신규 등록', join, goalJ, jl, 'var(--g)', false, '이대로면 월말 <b>' + proj(join) + '명</b>' + (G.join ? '' : ' · 목표는 config.json에서')) +
+      tile('신규 등록', join, goalJ, jl, 'var(--g)', false, '이대로면 월말 <b>' + proj(join) + '명</b>' + (G.join ? '' : ' · 목표가 없어 지난달 실적과 비교')) +
       tile('재등록', rereg, goalR, rl, '#9aa1b2', false, '이달 만료 ' + fmt(expMonth) + '명 · 남은 만료 <b>' + fmt(Math.max(0, expMonth - expSoFar)) + '명</b>') +
       tile('유효 회원', L.valid || 0, VALID_GOAL, fmt(VALID_GOAL) + '명', 'var(--y)', true, '이달 1일 ' + fmt(validStart) + '명 → <b>' + ((L.valid || 0) - (validStart || 0) >= 0 ? '+' : '') + fmt((L.valid || 0) - (validStart || 0)) + '명</b> · 최고 ' + fmt(vmax.v) + '명(' + vmax.d + '일)') +
       '</div>';
