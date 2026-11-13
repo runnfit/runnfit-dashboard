@@ -155,6 +155,36 @@
   .dt td.dd .dw{ display:inline-block; margin-left:8px; }
   .dt td.dd .tdy{ display:inline-block; margin-left:8px; font-size:11px; color:#fff; background:var(--navy); border-radius:5px; padding:0 6px; }
   .dt tr.fut td.dd{ font-weight:700; }
+  .cell.click{ cursor:pointer; transition:transform .1s, box-shadow .1s; } .cell.click:hover{ box-shadow:0 0 0 3px rgba(31,47,138,.25); }
+  .dayov{ position:fixed; inset:0; z-index:90; background:rgba(15,23,60,.28); display:flex; justify-content:center; align-items:flex-start; padding:60px 20px; overflow:auto; }
+  .dayov[hidden]{ display:none; }
+  .dbox{ width:560px; max-width:100%; background:#fff; border-radius:18px; box-shadow:0 18px 50px rgba(11,31,77,.25); padding:18px 20px 14px; }
+  .dhd{ display:flex; align-items:center; justify-content:space-between; } .dhd h3{ margin:0; font-size:18px; }
+  .dx{ font:inherit; font-size:15px; font-weight:800; background:#fff; border:1px solid var(--line); border-radius:10px; padding:4px 10px; cursor:pointer; color:var(--ink); }
+  .dtot{ font-size:28px; font-weight:900; margin-top:4px; font-variant-numeric:tabular-nums; } .dtot small{ font-size:14px; color:var(--muted); }
+  .dsplit{ display:flex; gap:14px; font-size:13px; color:var(--muted); } .dsplit b{ color:var(--ink); }
+  .dsplit span::before{ content:''; display:inline-block; width:9px; height:9px; border-radius:2px; margin-right:5px; background:var(--k); }
+  .dmix{ display:flex; gap:6px; margin:12px 0; flex-wrap:wrap; } .dmix span{ font-size:12px; font-weight:700; border-radius:999px; padding:3px 10px; background:#f1f3f8; color:var(--muted); } .dmix b{ color:var(--ink); }
+  .dseg{ display:inline-flex; background:#f1f3f8; border-radius:10px; padding:3px; margin:2px 0 10px; }
+  .dseg button{ font:inherit; font-size:13px; font-weight:800; padding:5px 16px; border-radius:8px; color:var(--muted); background:none; border:0; cursor:pointer; }
+  .dseg button.on{ background:#fff; color:var(--navy); box-shadow:0 1px 3px rgba(0,0,0,.08); }
+  .dgrp{ font-size:12px; font-weight:800; color:var(--muted); margin:10px 0 4px; display:flex; align-items:center; }
+  .dgrp::before{ content:''; width:9px; height:9px; border-radius:2px; background:var(--k); margin-right:6px; } .dgrp span:first-child{ margin-right:auto; }
+  .dit{ display:grid; grid-template-columns:1fr 50px 100px; gap:8px; padding:6px 2px; border-bottom:1px solid #f1f3f8; align-items:center; font-variant-numeric:tabular-nums; }
+  .dit .n{ font-weight:700; } .dit .c{ color:var(--muted); text-align:right; } .dit .a{ text-align:right; font-weight:800; } .dit .bar{ height:6px; border-radius:3px; background:var(--k); margin-top:4px; }
+  .dmem{ display:grid; grid-template-columns:70px 74px 1fr 92px; gap:8px; padding:7px 2px; border-bottom:1px solid #f1f3f8; align-items:center; font-variant-numeric:tabular-nums; }
+  .dmem .nm{ font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; } .dmem .a{ text-align:right; font-weight:800; }
+  .dmem .pd{ font-weight:600; } .dmem .pd small{ display:block; color:var(--faint); font-size:11.5px; font-weight:500; }
+  .dit .a.neg, .dmem .a.neg{ color:#a3232a; }
+  .tag{ font-size:11.5px; font-weight:800; border-radius:6px; padding:2px 4px; text-align:center; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tag.new{ background:#e6edfb; color:#2850c8; } .tag.re{ background:var(--gbg); color:#0a6b35; } .tag.day{ background:#eef0fa; color:#4b5aa8; }
+  .tag.add{ background:#e6f1f2; color:#3f6e74; } .tag.etc{ background:#fff; color:var(--faint); border:1px dashed var(--line); } .tag.pt{ background:#fcebdc; color:#a8521a; } .tag.mem{ background:#f1f3f8; color:var(--muted); }
+  .nmb{ font:inherit; font-weight:800; color:var(--navy); background:none; border:0; padding:0; text-align:left; cursor:pointer; text-decoration:underline dotted #b9c0cf; text-underline-offset:3px; }
+  .nmb:hover{ color:#2850c8; }
+  .mhost{ margin:4px 0 12px; border:2px solid var(--navy); border-radius:14px; padding:10px; background:#f5f7fb; }
+  .mbar{ display:flex; align-items:center; gap:6px; font-size:13px; color:var(--muted); margin-bottom:8px; } .mbar b{ color:var(--ink); } .mbar .dx{ margin-left:auto; padding:2px 8px; font-size:13px; }
+  .mbody{ font-size:13px; color:var(--muted); } .mnote{ font-size:12px; color:var(--muted); margin-top:6px; }
+  .dbox{ width:680px; }
 </style>
 </head>
 <body>
@@ -382,7 +412,91 @@
     if(!r.ok) throw new Error("시트에서 '매출' 탭을 찾지 못했어요.");
     const s = extractSales(parseCsv(await r.text()));
     if(!s) throw new Error("'매출' 탭에서 목표나 일별 매출을 찾지 못했어요.");
+    s.tx = {};   // 날짜별 결제 내역 (Team_결제 · PT_결제 탭, 없으면 달력 누르기만 안 됨)
+    const get = async (gid)=>{ try{ const x = await fetch('https://docs.google.com/spreadsheets/d/' + id + '/export?format=csv&gid=' + gid, { cache: 'no-store' }); return x.ok ? parseCsv(await x.text()) : null; }catch(e){ return null; } };
+    const [team, pt] = await Promise.all([get(TEAM_GID), get(PT_GID)]);
+    const add = (d, o)=>{ (s.tx[d] = s.tx[d] || []).push(o); };
+    const head = (rows, need)=>{ const h = rows.findIndex((r)=> need.every((n)=> r.some((c)=> norm(c) === n))); return h < 0 ? null : { h, ci: (n)=> rows[h].findIndex((c)=> norm(c) === n) }; };
+    if(team){ const H = head(team, ['날짜', '상품종류', '결제금액', '이름']);
+      if(H){ const cD = H.ci('날짜'), cK = H.ci('매출구분'), cIn = H.ci('신규유입경로'), cP = H.ci('상품종류'), cA = H.ci('결제금액'), cW = H.ci('결제구분'), cN = H.ci('이름');
+        for(let r = H.h + 1; r < team.length; r++){ const row = team[r], d = num(row[cD]), p = (row[cP] || '').trim(), n = (row[cN] || '').trim();
+          if(d == null || d < 1 || d > 31 || (!p && !n)) continue;
+          add(d, { src: 'm', kind: clean(row[cK]), inflow: clean(row[cIn]), prod: p, amt: num(row[cA]) || 0, pay: clean(row[cW]), name: n }); } } }
+    if(pt){ const H = head(pt, ['결제일', '상품종류', '고객명', '결제금액']);
+      if(H){ const cD = H.ci('결제일'), cK = H.ci('매출구분'), cIn = H.ci('신규유입경로'), cP = H.ci('상품종류'), cA = H.ci('결제금액'), cW = H.ci('결제구분'), cN = H.ci('고객명');
+        const cC = pt[H.h].findIndex((c)=> /^횟수/.test(norm(c)));
+        for(let r = H.h + 1; r < pt.length; r++){ const row = pt[r], d = num(row[cD]), n = (row[cN] || '').trim();
+          if(d == null || d < 1 || d > 31 || !n) continue;
+          const cnt = cC >= 0 ? num(row[cC]) : null, p = (row[cP] || '').trim();
+          add(d, { src: 'p', kind: clean(row[cK]), inflow: clean(row[cIn]), prod: (p ? p + ' ' : '') + 'PT' + (cnt ? ' ' + cnt + '회' : ''), amt: num(row[cA]) || 0, pay: clean(row[cW]), name: n, coach: clean(row[cD - 1]) }); } } }
     return s;
+  }
+  const clean = (v)=> { const t = String(v || '').trim(); return /^[━─\-]+$/.test(t) ? '' : t; };
+  const TEAM_GID = '1449473337', PT_GID = '555613257';   // 'Team_결제' · 'PT_결제' 탭
+
+  // ---------- 달력 칸을 누르면: 그날 매출 내역 (상품별 / 회원별) ----------
+  const cat = (t)=> /사물함|운동복|수건|락커/.test(t.prod) ? 'add' : /패밀리|쿠폰/.test(t.prod) || /쿠폰/.test(t.kind) ? 'etc' : t.src === 'p' ? 'pt' : /일일권/.test(t.kind + t.prod) ? 'day' : 'mem';
+  const CAT = { mem: ['회원권', 'var(--c1)'], day: ['일일권', '#8e9bd6'], add: ['부가', '#7aa2a8'], etc: ['기타', '#b0b6c3'], pt: ['PT', 'var(--c2)'] };
+  let DMODE = 'prod';
+  function dayDetail(S, d, goalOf){
+    const list = (S.tx[d] || []).slice(), x = S.data[d] || { m: 0, p: 0, t: 0 };
+    let ov = $('dayPop'); if(!ov){ ov = document.createElement('div'); ov.id = 'dayPop'; ov.className = 'dayov'; document.body.appendChild(ov);
+      ov.addEventListener('click', (e)=>{ if(e.target === ov || e.target.closest('.dx')) ov.hidden = true; });
+      document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') ov.hidden = true; }); }
+    const isNew = (t)=> /^신규/.test(t.kind), isRe = (t)=> /재등록/.test(t.kind), isDay = (t)=> cat(t) === 'day';
+    const people = (fn)=> new Set(list.filter(fn).map((t)=> t.name)).size;
+    const nNew = people(isNew), nRe = people(isRe), nDay = people(isDay), nRef = people((t)=> /소개/.test(t.inflow));
+    const render = ()=>{
+      let h = '<div class="dbox" role="dialog" aria-label="' + mNum + '월 ' + d + '일 매출 내역"><div class="dhd"><h3>' + mNum + '월 ' + d + '일 (' + wdOf(d) + ') 매출</h3><button class="dx" type="button" aria-label="닫기">✕</button></div>' +
+        '<div class="dtot">' + fmt(x.t) + '<small>원 · 일 목표 ' + Math.round(x.t / goalOf(d) * 100) + '%</small></div>' +
+        '<div class="dsplit"><span style="--k:var(--c1)">회원권 <b>' + fmt(x.m) + '</b></span><span style="--k:var(--c2)">PT <b>' + fmt(x.p) + '</b></span></div>' +
+        '<div class="dmix"><span>신규 <b>' + nNew + '</b>명</span><span>재등록 <b>' + nRe + '</b>명</span><span>일일권 <b>' + nDay + '</b>명</span>' + (nRef ? '<span>소개 <b>' + nRef + '</b>명</span>' : '') + '</div>' +
+        '<div class="dseg" role="group"><button type="button" data-m="prod" class="' + (DMODE === 'prod' ? 'on' : '') + '">상품별</button><button type="button" data-m="mem" class="' + (DMODE === 'mem' ? 'on' : '') + '">회원별</button></div>';
+      if(!list.length) h += '<div class="msg" style="padding:20px 0">이날 결제 내역이 시트에 없어요</div>';
+      else if(DMODE === 'prod'){
+        const max = Math.max(1, ...list.map((t)=> Math.abs(t.amt)));
+        ['mem', 'day', 'add', 'etc', 'pt'].forEach((c)=>{
+          const items = list.filter((t)=> cat(t) === c); if(!items.length) return;
+          const g = {}; items.forEach((t)=>{ (g[t.prod] = g[t.prod] || { c: 0, a: 0 }); g[t.prod].c++; g[t.prod].a += t.amt; });
+          const sumC = items.reduce((s, t)=> s + t.amt, 0), gmax = Math.max(1, ...Object.values(g).map((v)=> Math.abs(v.a)));
+          h += '<div class="dgrp" style="--k:' + CAT[c][1] + '"><span>' + CAT[c][0] + '</span><span>' + fmt(sumC) + '</span></div>';
+          Object.entries(g).sort((a, b)=> b[1].a - a[1].a).forEach(([n, v])=>{
+            h += '<div class="dit" style="--k:' + CAT[c][1] + '"><div><div class="n">' + esc(n) + '</div><div class="bar" style="width:' + Math.max(2, Math.abs(v.a) / Math.max(gmax, max) * 100) + '%"></div></div><div class="c">' + v.c + '건</div><div class="a' + (v.a < 0 ? ' neg' : '') + '">' + fmt(v.a) + '</div></div>';
+          });
+        });
+      } else {
+        list.slice().sort((a, b)=> b.amt - a.amt).forEach((t)=>{
+          const c = cat(t), tg = c === 'pt' ? ['pt', 'PT' + (t.kind ? ' ' + t.kind : '')] : c === 'add' ? ['add', '부가'] : c === 'etc' ? ['etc', '기타'] : c === 'day' ? ['day', '일일권'] : isNew(t) ? ['new', '신규'] : isRe(t) ? ['re', '재등록'] : ['mem', t.kind || '회원권'];
+          const sub = [t.pay, t.inflow && ('유입 ' + t.inflow), t.coach && ('담당 ' + t.coach)].filter(Boolean).join(' · ');
+          h += '<div class="dmem"><button type="button" class="nm nmb" data-name="' + esc(t.name) + '" title="누르면 회원 카드">' + esc(t.name) + '</button><span class="tag ' + tg[0] + '">' + esc(tg[1]) + '</span><span class="pd">' + esc(t.prod) + (sub ? '<small>' + esc(sub) + '</small>' : '') + '</span><span class="a' + (t.amt < 0 ? ' neg' : '') + '">' + fmt(t.amt) + '</span></div>';
+        });
+      }
+      ov.innerHTML = h + '</div>';
+      ov.querySelectorAll('.dseg button').forEach((b)=> b.addEventListener('click', ()=>{ DMODE = b.getAttribute('data-m'); render(); }));
+      ov.querySelectorAll('.nmb').forEach((b)=> b.addEventListener('click', ()=> memberCard(ov, b.getAttribute('data-name'), today.slice(0, 8) + String(d).padStart(2, '0'))));
+    };
+    render(); ov.hidden = false;
+  }
+
+  // 회원 이름을 누르면: 출석 대시보드(이 창을 연 다짐 화면)에게 회원 카드를 받아서 보여줌
+  async function memberCard(ov, name, day){
+    let host = ov.querySelector('.mhost'); if(!host){ host = document.createElement('div'); host.className = 'mhost'; ov.querySelector('.dbox').insertBefore(host, ov.querySelector('.dseg')); }
+    host.innerHTML = '<div class="mbar"><b>' + esc(name) + '</b> 회원 카드<button type="button" class="dx mclose">✕</button></div><div class="mbody">불러오는 중…</div>';
+    host.querySelector('.mclose').addEventListener('click', ()=> host.remove());
+    host.scrollIntoView({ block: 'nearest' });
+    let fn = null;
+    try{ const op = (top.opener && !top.opener.closed) ? top.opener : null; const f = op && op.document.getElementById('__rfdash'); fn = f && f.contentWindow && f.contentWindow.__rfMemberCard; }catch(e){}
+    const body = host.querySelector('.mbody');
+    if(!fn){ body.textContent = '출석 대시보드 창이 열려 있어야 회원 카드를 볼 수 있어요. 다짐매니저에서 출석 대시보드를 켠 뒤 다시 눌러주세요.'; return; }
+    try{
+      const r = await fn(name, day);
+      if(!r || !r.n){ body.textContent = '다짐매니저에서 "' + name + '" 회원을 찾지 못했어요.'; return; }
+      body.textContent = '';
+      const box = document.createElement('div'); body.appendChild(box);
+      const sh = box.attachShadow({ mode: 'open' });
+      sh.innerHTML = '<style>' + r.css + ' .cards{ display:grid; gap:10px; } .card{ min-height:150px; }</style><div class="cards">' + r.html + '</div>';
+      if(r.n > 1){ const m = document.createElement('div'); m.className = 'mnote'; m.textContent = '같은 이름이 ' + r.n + '명 있어요. 이날 결제한 회원을 맨 위에 보여줘요.'; body.appendChild(m); }
+    }catch(e){ body.textContent = '회원 카드를 불러오지 못했어요. 잠시 후 다시 눌러주세요.'; }
   }
 
   let SEL = 'basic';
@@ -438,7 +552,7 @@
         const sat = wdOf(d) === '토', sun = wdOf(d) === '일'; wg += goalOf(d);
         if(isPast(d)){
           const x = data[d] || { m: 0, p: 0, t: 0 }; wm += x.m; wp += x.p; wgPast += goalOf(d); has = true; const r = x.t / goalOf(d);
-          h += '<div class="cell ' + cls(r) + (sat ? ' sat' : sun ? ' sun' : '') + (d === dNow ? ' today' : '') + '"><div class="d"><span>' + d + '</span><em>' + Math.round(r * 100) + '%</em></div>' +
+          h += '<div class="cell ' + cls(r) + (sat ? ' sat' : sun ? ' sun' : '') + (d === dNow ? ' today' : '') + ((S.tx || {})[d] ? ' click" data-day="' + d + '" role="button" tabindex="0" title="누르면 이날 매출 내역' : '') + '"><div class="d"><span>' + d + '</span><em>' + Math.round(r * 100) + '%</em></div>' +
             '<div class="row"><span>회원권</span><b>' + fmt(x.m) + '</b></div><div class="row' + (x.p < 0 ? ' neg' : '') + '"><span>PT</span><b>' + fmt(x.p) + (x.p < 0 ? ' ↩︎' : '') + '</b></div>' +
             '<div class="tot"><span>합계</span><span>' + fmt(x.t) + '</span></div></div>';
         } else {
@@ -485,6 +599,10 @@
       '<div class="rc"><div class="dtkey"><label class="selbox">기준 <select id="lineSel">' + opts + '</select></label><span><i style="background:var(--gbg)"></i>100% 이상</span><span><i style="background:var(--ybg)"></i>60~99%</span><span><i style="background:var(--rbg)"></i>60% 미만</span><span><i style="background:#eef2fb;border:2px solid #18338c"></i>오늘</span></div>' +
       '<div class="tbwrap" id="rallyTable">' + table(SEL) + '</div></div></div></div></div>';
     $('boardMain').innerHTML = h;
+    $('boardMain').querySelectorAll('.cell.click').forEach((c)=>{
+      const open = ()=> dayDetail(S, +c.getAttribute('data-day'), goalOf);
+      c.addEventListener('click', open); c.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); open(); } });
+    });
     $('lineSel').addEventListener('change', (e)=>{ SEL = e.target.value; $('rallyTable').innerHTML = table(SEL); document.querySelectorAll('.cum [data-k]').forEach((n)=> n.classList.toggle('on', n.getAttribute('data-k') === SEL)); });
   }
 

@@ -1483,6 +1483,20 @@
   }
   const lastText = (m)=> m.days == null ? '출석 기록 없음' : m.days === 0 ? '오늘 출석' : m.days + '일 전 출석';
 
+  // ---------- 경영계기판 창에서 회원 이름을 누르면: 이 대시보드와 같은 회원 카드를 만들어 돌려줌 ----------
+  window.__rfMemberCard = async (name, day)=>{
+    name = String(name || '').trim(); if(!name) return null;
+    const q = 'query RunFitStaffFind($filter: ManagerMemberListFilterInput!, $paging: PagingInput!) { managerMembers { list(filter: $filter, paging: $paging) { data { id name phone profilePhoto expiredAt recentAttendAt purchasedProducts { category startDate expiredAt createdAt } } } } }';
+    const d = await gql(q, { filter: { keyword: name }, paging: { limit: 30, offset: 0 } });
+    let arr = ((d && d.managerMembers && d.managerMembers.list && d.managerMembers.list.data) || []).filter((m)=> (m.name || '').replace(/\s+/g, '') === name.replace(/\s+/g, ''));
+    // 같은 이름이 여러 명이면 그날 결제(등록)한 회원을 앞에
+    if(arr.length > 1 && day){ const hit = (m)=> (m.purchasedProducts || []).some((p)=> p && ((p.createdAt && kstDate(Date.parse(p.createdAt)) === day) || (p.startDate && kstDate(Date.parse(p.startDate)) === day))); arr.sort((a, b)=> hit(b) - hit(a)); }
+    const today = todayKst(), list = arr.slice(0, 3).map((m)=> toMember(m, today));
+    if(list.length) await enrichMembers(list, true);
+    const css = [...document.querySelectorAll('style')].map((s)=> s.textContent).join('\n').replace(/:root/g, ':host');
+    return { n: arr.length, css, html: list.map((m, i)=> absentCardHtml(m, i, { head: lastText(m) })).join('') };
+  };
+
   // ---------- 이름에 마우스를 올리면 회원 카드 ----------
   const hoverCard = document.createElement('div');
   hoverCard.className = 'exppop hovercard hidden'; hoverCard.setAttribute('role', 'tooltip');
