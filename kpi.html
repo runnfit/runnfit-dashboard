@@ -234,6 +234,7 @@
   .bspark .sp{ cursor:pointer; outline:none; } .bspark .sp:hover .sm, .bspark .sp:focus .sm{ fill:#16213d; font-weight:900; }
   .spinfo{ display:flex; flex-wrap:wrap; gap:4px 12px; font-size:12px; color:var(--muted); margin-top:4px; padding-top:6px; border-top:1px dashed var(--line); }
   .spinfo b{ color:var(--ink); } .spinfo em{ font-style:normal; font-weight:800; margin-left:4px; } .spinfo em.up{ color:#0a7d3c; } .spinfo em.dn{ color:#b4232f; }
+  .bbars .bpy{ font-size:10.5px; font-weight:700; fill:#16213d; opacity:.42; }
 </style>
 </head>
 <body>
@@ -805,7 +806,7 @@
         (prevR != null ? '<div class="bdelta ' + (lastR >= prevR ? 'up' : 'dn') + '">' + (lastR >= prevR ? '▲' : '▼') + ' ' + Math.abs((lastR - prevR) * 100).toFixed(1) + '%p <span>' + MN[last] + ' ' + (lastR * 100).toFixed(1) + '% · ' + MN[prev] + ' ' + (prevR * 100).toFixed(1) + '%</span>' + (PY && PY.rev[last] ? (()=>{ const pr = (PY.op[last] || 0) / PY.rev[last], dd = lastR - pr; return '<span class="yy ' + (dd >= 0 ? 'up' : 'dn') + '">' + (dd >= 0 ? '▲' : '▼') + ' ' + Math.abs(dd * 100).toFixed(1) + '%p <span>전년 동월 ' + (pr * 100).toFixed(1) + '%</span></span>'; })() : '') + '</div>' : '') + spark(opr, '#6b4fbf', (v)=> v.toFixed(1) + '%') + '</div></div>';
     // 월별 세로 막대
     const curMonth = isCur ? mNum - 1 : -1, curAmt = isCur && CUR_SALES != null && !A.has[curMonth] ? CUR_SALES : null;
-    const mx = Math.max(10000000, ...A.rev.map((x)=> x || 0), ...A.bep.map((x)=> x || 0), curAmt || 0) * 1.08;
+    const mx = Math.ceil(Math.max(10000000, ...A.rev.map((x)=> x || 0), ...A.bep.map((x)=> x || 0), ...(PY ? PY.rev.map((x)=> x || 0) : []), curAmt || 0) * 1.08 / 20000000) * 20000000;   // 2,000만 단위로 깔끔하게
     const W = 1396, H = 330, L = 64, R = 20, T = 40, B = 50, iw = W - L - R, ih = H - T - B, cw = iw / 12, bw = Math.min(30, cw * .26), Y = (v)=> T + ih - Math.max(0, v) / mx * ih;
     let s = '<svg class="bbars" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="월별 매출·영업이익·BEP">';
     [0, .25, .5, .75, 1].forEach((g)=>{ s += '<line x1="' + L + '" x2="' + (W - R) + '" y1="' + Y(mx * g) + '" y2="' + Y(mx * g) + '" stroke="#eef1f6"/><text x="' + (L - 8) + '" y="' + (Y(mx * g) + 4) + '" text-anchor="end" class="ax">' + man(mx * g) + '</text>'; });
@@ -818,7 +819,7 @@
           '<rect x="' + (cx - cw / 2 + 4) + '" y="' + (T - 30) + '" width="' + (cw - 8) + '" height="' + (ih + 74) + '" fill="transparent"/>' +
           '<rect x="' + (cx - bw - 2) + '" y="' + Y(A.rev[i]) + '" width="' + bw + '" height="' + (T + ih - Y(A.rev[i])) + '" rx="4" fill="#3b5bd6"/>' +
           '<rect x="' + (cx + 2) + '" y="' + Y(A.op[i] || 0) + '" width="' + bw + '" height="' + Math.max(2, T + ih - Y(A.op[i] || 0)) + '" rx="4" fill="#2a9d8f"/>' +
-          (PY && PY.rev[i] ? '<line x1="' + (cx - bw - 6) + '" x2="' + (cx - 2 + 4) + '" y1="' + Y(PY.rev[i]) + '" y2="' + Y(PY.rev[i]) + '" stroke="#16213d" stroke-width="2" stroke-dasharray="3 2" opacity=".55"><title>' + PY.year + '년 ' + MN[i] + ' 매출 ' + fmt(PY.rev[i]) + '원</title></line>' : '') +
+          (PY && PY.rev[i] ? '<line x1="' + (cx - bw - 6) + '" x2="' + (cx - 2 + 4) + '" y1="' + Y(PY.rev[i]) + '" y2="' + Y(PY.rev[i]) + '" stroke="#16213d" stroke-width="2" stroke-dasharray="3 2" opacity=".55"><title>' + PY.year + '년 ' + MN[i] + ' 매출 ' + fmt(PY.rev[i]) + '원</title></line>' + (()=>{ const ly = Y(PY.rev[i]), ry = Y(A.rev[i]) - 6, lx = cx - bw / 2 - 2, near = Math.abs((ly - 5) - ry) < 14; return '<text x="' + lx + '" y="' + (near ? ly + 14 : ly - 5) + '" text-anchor="middle" class="bpy">' + man(PY.rev[i]).replace('만', '') + '</text>'; })() : '') +
           (A.bep[i] ? '<line x1="' + (cx - bw - 8) + '" x2="' + (cx + bw + 8) + '" y1="' + Y(A.bep[i]) + '" y2="' + Y(A.bep[i]) + '" stroke="#d9534f" stroke-width="3" stroke-linecap="round"/>' : '') +
           '<text x="' + (cx - bw / 2 - 2) + '" y="' + (Y(A.rev[i]) - 6) + '" text-anchor="middle" class="bv">' + man(A.rev[i]).replace('만', '') + '</text>' +
           '<rect x="' + (cx - 24) + '" y="' + (T + ih + 24) + '" width="48" height="18" rx="5" fill="' + c[0] + '"/><text x="' + cx + '" y="' + (T + ih + 37) + '" text-anchor="middle" class="br" fill="' + c[1] + '">' + (r * 100).toFixed(1) + '%</text></g>';
