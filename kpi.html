@@ -867,7 +867,7 @@
     $('bizMain').querySelectorAll('.yseg button').forEach((b)=> b.addEventListener('click', ()=>{ BYEAR = b.getAttribute('data-y'); BSEL = null; drawBiz(); }));
   }
   async function refreshBiz(){
-    const u = bstore.get(); if(!u){ bizSetup(); return; }
+    const u = SHEETS.annual || bstore.get(); if(!u){ bizSetup(); return; }
     try{ ANNUAL = await loadAnnual(u); drawBiz(); }catch(e){ if(!ANNUAL) bizSetup(e.message); }
   }
   // 이번 달 시트 주소가 없으면 연간 시트의 '주소' 줄에서 찾아 씀
@@ -879,11 +879,18 @@
     if(s.status === 'fulfilled'){ drawBoard(s.value); const c = s.value, dd = Object.keys(c.data).map(Number).filter((d)=> d <= dNum); CUR_SALES = dd.reduce((t, d)=> t + (c.data[d].t || 0), 0); if(ANNUAL) drawBiz(); } else $('boardMain').innerHTML = '<div class="msg">' + esc(s.reason && s.reason.message || '매출 탭을 불러오지 못했어요.') + '</div>';
     return k.status === 'fulfilled' || s.status === 'fulfilled';
   }
+  // 시트 주소는 공개 설정 파일(config.json)에서 자동으로 (버튼·붙여넣기 없이). 없을 때만 이 컴퓨터에 저장된 주소
+  let SHEETS = {};
+  async function loadSheetsCfg(){
+    try{ const r = await fetch('https://runnfit.github.io/runnfit-dashboard/config.json?t=' + Date.now(), { cache: 'no-store' }); const c = await r.json();
+      SHEETS = { annual: (c.annualSheets || {})[today.slice(0, 4)] || null, monthly: (c.monthlySheets || {})[month] || null }; }catch(e){ SHEETS = {}; }
+  }
   async function start(){
     clearInterval(timer);
     setupMode = false; show(VIEW);
+    await loadSheetsCfg();
     await refreshBiz();
-    const url = store.get() || monthlyFromAnnual();
+    const url = SHEETS.monthly || monthlyFromAnnual() || store.get();
     if(!url){ setupView(); if(VIEW === 'biz') show('biz'); return; }
     if(!(await refresh(url))){ setupView('시트를 불러오지 못했어요. 공유 설정과 주소를 확인해 주세요.'); return; }
     subBar();

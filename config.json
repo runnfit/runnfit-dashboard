@@ -1,4 +1,11 @@
 {
   "validGoal": 550,
-  "_설명": "유효 회원 목표 숫자. 바꾸면 모든 직원 화면에 5분 안에 반영"
+  "_설명": "유효 회원 목표 숫자. 바꾸면 모든 직원 화면에 5분 안에 반영",
+  "annualSheets": {
+    "2026": "https://docs.google.com/spreadsheets/d/16BSaoXnhDBlkbkZcIlv-6KHC_hvwQh-NBTIT967t41s/edit?gid=1975953217#gid=1975953217"
+  },
+  "monthlySheets": {
+    "2026-11": "https://docs.google.com/spreadsheets/d/1_cQE_AERjjr05zQxUlif1Aih-R4PyGojErh3kk7g5l8/edit?gid=1416723171#gid=1416723171"
+  },
+  "_시트설명": "경영·매출·마케팅 KPI가 읽는 구글 시트. 연간 시트 '주소' 줄에 그 달 시트 링크가 있으면 monthlySheets 없이도 자동으로 찾아감"
 }
