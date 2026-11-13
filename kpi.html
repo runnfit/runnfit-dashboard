@@ -185,6 +185,23 @@
   .mbar{ display:flex; align-items:center; gap:6px; font-size:13px; color:var(--muted); margin-bottom:8px; } .mbar b{ color:var(--ink); } .mbar .dx{ margin-left:auto; padding:2px 8px; font-size:13px; }
   .mbody{ font-size:13px; color:var(--muted); } .mnote{ font-size:12px; color:var(--muted); margin-top:6px; }
   .dbox{ width:680px; }
+  .mc{ display:flex; background:#fff; border:1px solid var(--line); border-radius:14px; overflow:hidden; min-height:150px; margin-bottom:8px; }
+  .mside{ position:relative; width:170px; flex:none; background:var(--belt); color:var(--ink); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px; padding:12px 8px; }
+  .mbelt{ position:absolute; top:7px; right:7px; font-size:11px; font-weight:800; padding:1px 8px; border-radius:999px; background:rgba(255,255,255,.2); border:1px solid rgba(255,255,255,.4); }
+  .mav{ width:92px; height:92px; border-radius:50%; background:#fff; padding:4px; box-shadow:0 0 0 1px rgba(11,31,77,.15); }
+  .mav img, .mph{ width:100%; height:100%; border-radius:50%; object-fit:cover; display:grid; place-items:center; background:#eef2f9; font-size:36px; }
+  .mname{ font-size:17px; font-weight:900; }
+  .mmain{ flex:1; min-width:0; padding:10px 14px; display:flex; flex-direction:column; gap:6px; }
+  .mtop{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+  .mlast{ font-size:18px; font-weight:900; color:var(--navy); }
+  .mreg{ display:flex; flex-direction:column; align-items:flex-end; gap:3px; font-size:12px; font-weight:800; }
+  .mlights{ display:flex; gap:4px; background:#1b2547; padding:3px 6px; border-radius:999px; } .mlights i{ width:13px; height:13px; border-radius:50%; background:#6b7392; }
+  .mlights i.on{ box-shadow:0 0 0 2px #fff; } .mlights i.r.on{ background:#e5484d; } .mlights i.y.on{ background:#f5c518; } .mlights i.g.on{ background:#3fbf5f; }
+  .mtel{ align-self:flex-start; font:inherit; font-size:15px; font-weight:900; color:#0b1f4d; background:#eceef2; border:0; border-radius:6px; padding:3px 9px; cursor:pointer; }
+  .mcopied{ font-size:12px; color:#0a7d3c; font-weight:800; }
+  .mbox{ background:#eef2f9; border-radius:9px; padding:6px 12px; font-size:16px; display:flex; align-items:center; gap:10px; } .mbox b{ font-weight:900; }
+  .msep{ width:2px; height:18px; background:#b7c0d6; }
+  .mfoot{ display:flex; justify-content:space-between; font-size:12px; color:var(--muted); margin-top:auto; }
 </style>
 </head>
 <body>
@@ -478,25 +495,68 @@
     render(); ov.hidden = false;
   }
 
-  // 회원 이름을 누르면: 출석 대시보드(이 창을 연 다짐 화면)에게 회원 카드를 받아서 보여줌
+  // 회원 이름을 누르면: 이 창이 직접 다짐에서 회원 정보를 읽어 카드로 보여줌 (출석 대시보드 창이 없어도 됨)
+  const DG = 'https://www.dagym-manager.com/api/graphql';
+  const BELTS = [{ from: 1, name: '흰 띠', bg: '#F4F7FB', ink: '#0b1f4d' }, { from: 10, name: '노란 띠', bg: '#FFD54A', ink: '#0b1f4d' }, { from: 30, name: '파란 띠', bg: '#093692', ink: '#fff' }, { from: 50, name: '빨간 띠', bg: '#B91C32', ink: '#fff' }, { from: 100, name: '검은 띠', bg: '#111827', ink: '#fff' }];
+  const beltOf = (n)=>{ let b = null; BELTS.forEach((x)=>{ if(n >= x.from) b = x; }); return b; };
+  function dgToken(){
+    const pick = (c)=> { const m = String(c || '').match(/(?:^|; )authToken=([^;]*)/); return m ? decodeURIComponent(m[1]) : ''; };
+    let t = ''; try{ t = pick(document.cookie); }catch(e){}
+    if(!t){ try{ t = pick(top.document.cookie); }catch(e){} }
+    if(!t){ try{ t = pick(top.opener && top.opener.document.cookie); }catch(e){} }
+    return t;
+  }
+  async function dg(query, variables){
+    const tok = dgToken(); if(!tok) throw new Error('login');
+    const r = await fetch(DG, { method: 'POST', headers: { 'content-type': 'application/json', Authorization: tok }, body: JSON.stringify({ query, variables }) });
+    const j = await r.json(); if(j.errors) throw new Error((j.errors[0] && j.errors[0].message) || 'error'); return j.data;
+  }
   async function memberCard(ov, name, day){
     let host = ov.querySelector('.mhost'); if(!host){ host = document.createElement('div'); host.className = 'mhost'; ov.querySelector('.dbox').insertBefore(host, ov.querySelector('.dseg')); }
-    host.innerHTML = '<div class="mbar"><b>' + esc(name) + '</b> 회원 카드<button type="button" class="dx mclose">✕</button></div><div class="mbody">불러오는 중…</div>';
+    host.innerHTML = '<div class="mbar"><b>' + esc(name) + '</b> 회원 카드<button type="button" class="dx mclose" aria-label="닫기">✕</button></div><div class="mbody">불러오는 중…</div>';
     host.querySelector('.mclose').addEventListener('click', ()=> host.remove());
     host.scrollIntoView({ block: 'nearest' });
-    let fn = null;
-    try{ const op = (top.opener && !top.opener.closed) ? top.opener : null; const f = op && op.document.getElementById('__rfdash'); fn = f && f.contentWindow && f.contentWindow.__rfMemberCard; }catch(e){}
     const body = host.querySelector('.mbody');
-    if(!fn){ body.textContent = '출석 대시보드 창이 열려 있어야 회원 카드를 볼 수 있어요. 다짐매니저에서 출석 대시보드를 켠 뒤 다시 눌러주세요.'; return; }
     try{
-      const r = await fn(name, day);
-      if(!r || !r.n){ body.textContent = '다짐매니저에서 "' + name + '" 회원을 찾지 못했어요.'; return; }
+      const L = await dg('query RunFitKpiFind($filter: ManagerMemberListFilterInput!, $paging: PagingInput!) { managerMembers { list(filter: $filter, paging: $paging) { data { id name phone profilePhoto recentAttendAt purchasedProducts { name category startDate expiredAt createdAt } } } } }', { filter: { keyword: name }, paging: { limit: 30, offset: 0 } });
+      let arr = ((L.managerMembers && L.managerMembers.list && L.managerMembers.list.data) || []).filter((m)=> (m.name || '').replace(/\s+/g, '') === name.replace(/\s+/g, ''));
+      if(!arr.length){ body.textContent = '다짐매니저에서 "' + name + '" 회원을 찾지 못했어요.'; return; }
+      const kd = (v)=> v ? new Date(Date.parse(v) + KST).toISOString().slice(0, 10) : '';
+      const hit = (m)=> (m.purchasedProducts || []).some((p)=> kd(p.createdAt) === day || kd(p.startDate) === day);
+      arr.sort((a, b)=> hit(b) - hit(a));
+      const show = arr.slice(0, 3);
+      // 누적 출석 · 재등록 (한 번에)
+      const q = 'query RunFitKpiCards { ' + show.map((m, i)=> 'a' + i + ': managerMembers { by(id: "' + String(m.id).replace(/[^\w-]/g, '') + '") { totalAttendCount } purchasedProducts(memberId: "' + String(m.id).replace(/[^\w-]/g, '') + '") { __typename ... on Membership { category sale { hasRefund } } } }').join(' ') + ' }';
+      const D = await dg(q, {});
       body.textContent = '';
-      const box = document.createElement('div'); body.appendChild(box);
-      const sh = box.attachShadow({ mode: 'open' });
-      sh.innerHTML = '<style>' + r.css + ' .cards{ display:grid; gap:10px; } .card{ min-height:150px; }</style><div class="cards">' + r.html + '</div>';
-      if(r.n > 1){ const m = document.createElement('div'); m.className = 'mnote'; m.textContent = '같은 이름이 ' + r.n + '명 있어요. 이날 결제한 회원을 맨 위에 보여줘요.'; body.appendChild(m); }
-    }catch(e){ body.textContent = '회원 카드를 불러오지 못했어요. 잠시 후 다시 눌러주세요.'; }
+      show.forEach((m, i)=>{
+        const x = D['a' + i] || {}, total = x.by ? x.by.totalAttendCount : null, belt = beltOf(total || 0);
+        const gym = (x.purchasedProducts || []).filter((p)=> p && p.__typename === 'Membership' && p.category === 'general' && !(p.sale && p.sale.hasRefund)).length;
+        const lamp = gym === 1 ? 0 : gym === 2 ? 1 : gym > 2 ? 2 : -1, regT = gym === 1 ? '첫 등록' : gym > 1 ? (gym - 1) + '번째 재등록' : '확인 불가';
+        const pp = m.purchasedProducts || [], now = Date.now();
+        const live = (c)=> pp.some((p)=> p.category === c && p.expiredAt && Date.parse(p.expiredAt) >= now);
+        const g = pp.filter((p)=> p.category === 'general' && p.expiredAt).sort((a, b)=> Date.parse(b.expiredAt) - Date.parse(a.expiredAt))[0];
+        const ago = m.recentAttendAt ? Math.round((Date.parse(today + 'T00:00:00+09:00') - Date.parse(kd(m.recentAttendAt) + 'T00:00:00+09:00')) / 864e5) : null;
+        const dig = String(m.phone || '').replace(/\D/g, ''), tel = dig.length === 11 ? dig.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3') : dig.length === 10 ? dig.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3') : (m.phone || '');
+        const c = document.createElement('article'); c.className = 'mc';
+        c.innerHTML = '<div class="mside" style="--belt:' + (belt ? belt.bg : '#c9cfdb') + ';--ink:' + (belt ? belt.ink : '#0b1f4d') + '">' +
+            '<span class="mbelt">' + (belt ? belt.name : '띠 없음') + '</span>' +
+            '<div class="mav">' + (m.profilePhoto ? '<img alt="" referrerpolicy="no-referrer" src="' + esc(m.profilePhoto) + '">' : '<span class="mph">👤</span>') + '</div>' +
+            '<div class="mname">' + esc(m.name) + '</div></div>' +
+          '<div class="mmain"><div class="mtop"><span class="mlast">' + (ago == null ? '출석 기록 없음' : ago === 0 ? '오늘 출석' : ago + '일 전 출석') + '</span>' +
+            '<span class="mreg"><span class="mlights">' + ['r', 'y', 'g'].map((k, j)=> '<i class="' + k + (j === lamp ? ' on' : '') + '"></i>').join('') + '</span>' + regT + '</span></div>' +
+            (tel ? '<button type="button" class="mtel" data-tel="' + esc(tel) + '">📞 ' + esc(tel) + '</button><span class="mcopied"></span>' : '') +
+            '<div class="mbox">누적 <b>' + (total == null ? '-' : total) + '</b>회<span class="msep"></span>마지막 출석 <b>' + (ago == null ? '-' : ago === 0 ? '오늘' : ago + '일 전') + '</b></div>' +
+            '<div class="mfoot"><span>운동복 ' + (live('rentalSportsWear') ? 'O' : 'X') + ' · 사물함 ' + (live('rentalLocker') ? 'O' : 'X') + '</span><span>헬스 만료 ' + (g ? kd(g.expiredAt).replace(/-/g, '.') : '-') + '</span></div></div>';
+        const img = c.querySelector('img'); if(img) img.addEventListener('error', ()=>{ img.outerHTML = '<span class="mph">👤</span>'; });
+        const tb = c.querySelector('.mtel'); if(tb) tb.addEventListener('click', ()=>{ const done = (ok)=>{ const s = c.querySelector('.mcopied'); s.textContent = ok ? '복사됐어요!' : ''; setTimeout(()=> s.textContent = '', 1800); };
+          try{ navigator.clipboard.writeText(tb.getAttribute('data-tel')).then(()=> done(true), ()=> done(false)); }catch(e){ done(false); } });
+        body.appendChild(c);
+      });
+      if(arr.length > 1){ const n = document.createElement('div'); n.className = 'mnote'; n.textContent = '같은 이름이 ' + arr.length + '명 있어요. 이날 결제한 회원을 맨 위에 보여줘요.'; body.appendChild(n); }
+    }catch(e){
+      body.textContent = e.message === 'login' ? '다짐매니저 로그인을 확인하지 못했어요. 다짐매니저에 로그인된 크롬에서 경영계기판을 열어주세요.' : '회원 카드를 불러오지 못했어요. 잠시 후 다시 눌러주세요.';
+    }
   }
 
   let SEL = 'basic';
