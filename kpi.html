@@ -150,6 +150,11 @@
   .pill{ display:inline-block; min-width:52px; text-align:center; border-radius:6px; padding:1px 6px; font-weight:800; font-size:11.5px; }
   .pill.g{ background:var(--gbg); color:#0a6b35; } .pill.y{ background:var(--ybg); color:#8a5a00; } .pill.r{ background:var(--rbg); color:#a3232a; }
   @media (max-width:1100px){ .dash4{ grid-template-columns:1fr 1fr; } .rallygrid{ grid-template-columns:1fr; } .cal{ gap:4px; } .cell{ padding:5px 6px; } .cell .row{ font-size:11px; } .cell .tot{ font-size:12px; } .hero .big{ font-size:32px; } .remain .big{ font-size:28px; } }
+  .dt td.dd{ font-weight:800; font-variant-numeric:tabular-nums; }
+  .dt td.dd .dn{ display:inline-block; width:2.1ch; text-align:right; }
+  .dt td.dd .dw{ display:inline-block; margin-left:8px; }
+  .dt td.dd .tdy{ display:inline-block; margin-left:8px; font-size:11px; color:#fff; background:var(--navy); border-radius:5px; padding:0 6px; }
+  .dt tr.fut td.dd{ font-weight:700; }
 </style>
 </head>
 <body>
@@ -467,7 +472,7 @@
       let c2 = 0;
       for(let d = 1; d <= DAYS; d++){
         const past = isPast(d), x = data[d] || { m: 0, p: 0, t: 0 }; if(past) c2 += x.t; const tg = P[sel][d - 1], r = c2 / tg, diff = c2 - tg;
-        tb += '<tr class="' + (past ? '' : 'fut') + (d === dNow ? ' today' : '') + '"><td class="' + (isWe(d) ? 'we' : '') + '">' + d + ' ' + wdOf(d) + (d === dNow ? ' · 오늘' : '') + '</td>' +
+        tb += '<tr class="' + (past ? '' : 'fut') + (d === dNow ? ' today' : '') + '"><td class="dd' + (isWe(d) ? ' we' : '') + '"><span class="dn">' + d + '</span><span class="dw">' + wdOf(d) + '</span>' + (d === dNow ? '<span class="tdy">오늘</span>' : '') + '</td>' +
           (past ? '<td>' + fmt(x.m) + '</td><td class="' + (x.p < 0 ? 'neg' : '') + '">' + fmt(x.p) + '</td><td><b>' + fmt(x.t) + '</b></td><td><b>' + fmt(c2) + '</b></td>' : '<td></td><td></td><td></td><td></td>') +
           '<td class="pl' + (past ? (r >= 1 ? ' hit' : r >= .6 ? ' mid' : ' miss') : '') + '">' + fmt(tg) + '</td>' +
           (past ? '<td class="' + (diff >= 0 ? 'up' : 'dn') + '">' + (diff >= 0 ? '+' : '−') + fmt(Math.abs(diff)) + '</td><td><span class="pill ' + cls(r) + '">' + (r * 100).toFixed(1) + '%</span></td>' : '<td></td><td></td>') + '</tr>';
