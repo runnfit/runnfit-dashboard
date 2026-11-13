@@ -208,13 +208,13 @@
   .bbig{ font-size:30px; font-weight:900; line-height:1.15; margin-top:4px; font-variant-numeric:tabular-nums; } .bbig small{ font-size:15px; color:var(--muted); font-weight:700; }
   .lbl small{ font-weight:600; color:var(--faint); font-size:11.5px; margin-left:4px; }
   .bdelta{ font-size:12.5px; font-weight:700; margin-top:4px; } .bdelta span{ color:var(--muted); font-weight:600; } .bdelta.up{ color:#0a7d3c; } .bdelta.dn{ color:#b4232f; }
-  .bspark{ width:100%; height:46px; margin-top:8px; display:block; }
+  .bspark{ width:100%; height:auto; margin-top:6px; display:block; overflow:visible; } .bspark .sm{ font-size:10px; fill:#9aa1b2; font-weight:700; } .bspark .sm.on{ fill:#16213d; font-weight:900; }
   .bbars{ width:100%; height:auto; display:block; } .bbars .ax{ font-size:11px; fill:#9aa1b2; } .bbars .bv{ font-size:11px; font-weight:800; fill:#16213d; } .bbars .br{ font-size:11px; font-weight:800; }
   .bbars .bmn{ font-size:12.5px; font-weight:700; fill:#16213d; } .bbars .bmn.on{ font-weight:900; } .bbars .bmn.off{ fill:#c3c8d4; }
   .bbars .bm{ cursor:pointer; outline:none; } .bbars .bm:hover > rect:first-of-type, .bbars .bm:focus > rect:first-of-type{ fill:#f5f7fc; }
   .bdet{ display:grid; grid-template-columns:1.6fr 1fr; gap:14px; } .card.sel{ border:2px solid var(--navy); }
   .wf{ width:100%; height:auto; display:block; } .wf .wv{ font-size:12.5px; font-weight:800; fill:#16213d; } .wf .wl{ font-size:12px; fill:#5d6782; font-weight:700; }
-  .wf .wp{ font-size:12px; font-weight:800; fill:#9aa1b2; } .wf .wp.c{ fill:#b4561a; } .wf .wp.p{ fill:#2a9d8f; }
+  .wf .wp{ font-size:12px; font-weight:800; fill:#9aa1b2; } .wf .wp.c{ fill:#b8322e; } .wf .wp.p{ fill:#2a9d8f; }
   .bline{ padding:10px 0; border-bottom:1px solid #f1f3f8; } .bline > div:first-child{ display:flex; justify-content:space-between; align-items:baseline; } .bline .note{ text-align:right; }
   .bnum{ font-size:24px; font-weight:900; font-variant-numeric:tabular-nums; }
   .bdiag{ margin-top:12px; border-radius:10px; padding:10px 12px; font-weight:800; } .bdiag.r{ background:var(--rbg); color:#a3232a; } .bdiag.y{ background:var(--ybg); color:#8a5a00; } .bdiag.g{ background:var(--gbg); color:#0a6b35; }
@@ -763,18 +763,20 @@
     const delta = (a, inv)=>{ if(prev == null) return ''; const x = a[last] || 0, y = a[prev] || 0; if(!y) return ''; const r = (x - y) / Math.abs(y);
       return '<div class="bdelta ' + ((r >= 0) !== !!inv ? 'up' : 'dn') + '">' + (r >= 0 ? '▲' : '▼') + ' ' + Math.abs(r * 100).toFixed(1) + '% <span>' + MN[last] + ' · 전월 대비</span></div>'; };
     const costM = A.rev.map((_, i)=> (A.lab[i] || 0) + (A.rent[i] || 0) + (A.fix[i] || 0) + (A.vari[i] || 0));
-    const spark = (a, c)=>{ if(a.length < 2) return ''; const mx = Math.max(...a), mn = Math.min(...a, 0), W = 260, H = 46; const y = (v)=> (H - 4 - (v - mn) / ((mx - mn) || 1) * (H - 10)).toFixed(1);
-      return '<svg class="bspark" viewBox="0 0 ' + W + ' ' + H + '" preserveAspectRatio="none" aria-hidden="true"><polyline fill="none" stroke="' + c + '" stroke-width="2" points="' + a.map((v, i)=> (i / (a.length - 1) * W).toFixed(1) + ',' + y(v)).join(' ') + '"/><circle cx="' + W + '" cy="' + y(a[a.length - 1]) + '" r="3.5" fill="' + c + '"/></svg>'; };
+    const spark = (a, c, fm)=>{ if(a.length < 2) return ''; const mx = Math.max(...a), mn = Math.min(...a, 0), W = 300, H = 74, P = 10, n = a.length;
+      const x = (i)=> (P + i / (n - 1) * (W - P * 2)).toFixed(1), y = (v)=> (8 + (1 - (v - mn) / ((mx - mn) || 1)) * (H - 30)).toFixed(1);
+      return '<svg class="bspark" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="월별 추이"><polyline fill="none" stroke="' + c + '" stroke-width="2" points="' + a.map((v, i)=> x(i) + ',' + y(v)).join(' ') + '"/>' +
+        a.map((v, i)=> '<g><title>' + MN[idx[i]] + ' · ' + (fm ? fm(v) : man(v)) + '</title><circle cx="' + x(i) + '" cy="' + y(v) + '" r="' + (i === n - 1 ? 4 : 2.6) + '" fill="' + (i === n - 1 ? c : '#fff') + '" stroke="' + c + '" stroke-width="1.6"/><text x="' + x(i) + '" y="' + (H - 4) + '" text-anchor="middle" class="sm' + (i === n - 1 ? ' on' : '') + '">' + (idx[i] + 1) + '</text></g>').join('') + '</svg>'; };
     const rCls = (r)=> r >= .15 ? 'g' : r >= .05 ? 'y' : 'r';
     let h = '<div class="bwrap"><div class="bhead"><div><div class="btitle">' + YEAR + '년 경영 현황</div><div class="note">' + MN[idx[0]] + '~' + MN[last] + ' 누적 · 급여·성과금 제외 · 연간 시트 기준</div></div><button class="link" id="bizChg" type="button">연간 시트 바꾸기</button></div>';
     // 위 4칸
     const lastR = A.rev[last] ? (A.op[last] || 0) / A.rev[last] : 0, prevR = prev != null && A.rev[prev] ? (A.op[prev] || 0) / A.rev[prev] : null;
     h += '<div class="dash4">' +
       '<div class="card"><div class="lbl">총 매출</div><div class="bbig" style="color:var(--c1)">' + man(tRev) + '<small>원</small></div>' + delta(A.rev) + spark(series(A.rev), '#3b5bd6') + '</div>' +
-      '<div class="card"><div class="lbl">총 비용 <small>운영비(BEP)</small></div><div class="bbig" style="color:var(--c2)">' + man(tCost) + '<small>원</small></div>' + delta(costM, true) + spark(cost, '#d9782a') + '</div>' +
+      '<div class="card"><div class="lbl">총 비용 <small>운영비(BEP)</small></div><div class="bbig" style="color:#d9534f">' + man(tCost) + '<small>원</small></div>' + delta(costM, true) + spark(cost, '#d9534f') + '</div>' +
       '<div class="card"><div class="lbl">영업이익 <small>대표·실장 급여 전</small></div><div class="bbig" style="color:#2a9d8f">' + man(tOp) + '<small>원</small></div>' + delta(A.op) + spark(series(A.op), '#2a9d8f') + '</div>' +
       '<div class="card"><div class="lbl">영업이익률</div><div class="bbig" style="color:#6b4fbf">' + (rate * 100).toFixed(1) + '<small>%</small></div>' +
-        (prevR != null ? '<div class="bdelta ' + (lastR >= prevR ? 'up' : 'dn') + '">' + (lastR >= prevR ? '▲' : '▼') + ' ' + Math.abs((lastR - prevR) * 100).toFixed(1) + '%p <span>' + MN[last] + ' ' + (lastR * 100).toFixed(1) + '% · ' + MN[prev] + ' ' + (prevR * 100).toFixed(1) + '%</span></div>' : '') + spark(opr, '#6b4fbf') + '</div></div>';
+        (prevR != null ? '<div class="bdelta ' + (lastR >= prevR ? 'up' : 'dn') + '">' + (lastR >= prevR ? '▲' : '▼') + ' ' + Math.abs((lastR - prevR) * 100).toFixed(1) + '%p <span>' + MN[last] + ' ' + (lastR * 100).toFixed(1) + '% · ' + MN[prev] + ' ' + (prevR * 100).toFixed(1) + '%</span></div>' : '') + spark(opr, '#6b4fbf', (v)=> v.toFixed(1) + '%') + '</div></div>';
     // 월별 세로 막대
     const curMonth = mNum - 1, curAmt = CUR_SALES != null && !A.has[curMonth] ? CUR_SALES : null;
     const mx = Math.max(10000000, ...A.rev.map((x)=> x || 0), ...A.bep.map((x)=> x || 0), curAmt || 0) * 1.08;
@@ -790,7 +792,7 @@
           '<rect x="' + (cx - cw / 2 + 4) + '" y="' + (T - 30) + '" width="' + (cw - 8) + '" height="' + (ih + 74) + '" fill="transparent"/>' +
           '<rect x="' + (cx - bw - 2) + '" y="' + Y(A.rev[i]) + '" width="' + bw + '" height="' + (T + ih - Y(A.rev[i])) + '" rx="4" fill="#3b5bd6"/>' +
           '<rect x="' + (cx + 2) + '" y="' + Y(A.op[i] || 0) + '" width="' + bw + '" height="' + Math.max(2, T + ih - Y(A.op[i] || 0)) + '" rx="4" fill="#2a9d8f"/>' +
-          (A.bep[i] ? '<line x1="' + (cx - bw - 8) + '" x2="' + (cx + bw + 8) + '" y1="' + Y(A.bep[i]) + '" y2="' + Y(A.bep[i]) + '" stroke="#d9782a" stroke-width="3" stroke-linecap="round"/>' : '') +
+          (A.bep[i] ? '<line x1="' + (cx - bw - 8) + '" x2="' + (cx + bw + 8) + '" y1="' + Y(A.bep[i]) + '" y2="' + Y(A.bep[i]) + '" stroke="#d9534f" stroke-width="3" stroke-linecap="round"/>' : '') +
           '<text x="' + (cx - bw / 2 - 2) + '" y="' + (Y(A.rev[i]) - 6) + '" text-anchor="middle" class="bv">' + man(A.rev[i]).replace('만', '') + '</text>' +
           '<rect x="' + (cx - 24) + '" y="' + (T + ih + 24) + '" width="48" height="18" rx="5" fill="' + c[0] + '"/><text x="' + cx + '" y="' + (T + ih + 37) + '" text-anchor="middle" class="br" fill="' + c[1] + '">' + (r * 100).toFixed(1) + '%</text></g>';
       } else if(i === curMonth && curAmt != null){
@@ -800,14 +802,14 @@
       s += '<text x="' + cx + '" y="' + (T + ih + 16) + '" text-anchor="middle" class="bmn' + (i === BSEL ? ' on' : '') + (A.has[i] || i === curMonth ? '' : ' off') + '">' + MN[i] + '</text>';
     }
     s += '</svg>';
-    h += '<div class="card"><h2>월별 손익 <small>달을 누르면 아래에 그 달 손익 흐름이 나와요</small><span class="legend3" style="margin-left:auto"><span style="--k:#3b5bd6">매출</span><span style="--k:#2a9d8f">영업이익</span><span style="--k:#d9782a">BEP(운영비)</span></span><span class="legend3"><span style="--k:#2fb36b">이익률 15%↑</span><span style="--k:#f5b82e">5~15%</span><span style="--k:#e5484d">5% 미만</span></span></h2>' + s + '</div>';
+    h += '<div class="card"><h2>월별 손익 <small>달을 누르면 아래에 그 달 손익 흐름이 나와요</small><span class="legend3" style="margin-left:auto"><span style="--k:#3b5bd6">매출</span><span style="--k:#2a9d8f">영업이익</span><span style="--k:#d9534f">BEP(운영비)</span></span><span class="legend3"><span style="--k:#2fb36b">이익률 15%↑</span><span style="--k:#f5b82e">5~15%</span><span style="--k:#e5484d">5% 미만</span></span></h2>' + s + '</div>';
     // 고른 달: 손익 흐름 + 한눈에
     const i = BSEL, rv = A.rev[i] || 0, ded = rv - (A.net[i] || rv), lb = A.lab[i] || 0, rt = A.rent[i] || 0, fx = A.fix[i] || 0, va = A.vari[i] || 0, rs = A.res[i] || 0, op = A.op[i] || 0, bp = A.bep[i] || (lb + rt + fx + va);
     const steps = [['매출', rv, 'rev'], ['부가세·수수료', -ded, 'c'], ['인건비', -lb, 'c'], ['임관리비', -rt, 'c'], ['고정비', -fx, 'c'], ['변동비', -va, 'c']].concat(rs ? [['지점 적립', -rs, 'c']] : []).concat([['영업이익', op, 'p']]);
     const W2 = 1000, H2 = 340, L2 = 30, T2 = 30, ih2 = H2 - T2 - 60, bw2 = 86, gap = (W2 - L2 * 2 - bw2 * steps.length) / (steps.length - 1), Y2 = (v)=> T2 + ih2 - Math.max(0, v) / (rv || 1) * ih2;
     let s2 = '<svg class="wf" viewBox="0 0 ' + W2 + ' ' + H2 + '" role="img" aria-label="' + MN[i] + ' 손익 흐름">', run = 0;
     steps.forEach((st, k)=>{ const x = L2 + k * (bw2 + gap); let y0, y1, col;
-      if(st[2] === 'rev'){ y0 = 0; y1 = st[1]; run = st[1]; col = '#3b5bd6'; } else if(st[2] === 'p'){ y0 = 0; y1 = st[1]; col = '#2a9d8f'; } else { y1 = run; y0 = run + st[1]; run = y0; col = '#d9782a'; }
+      if(st[2] === 'rev'){ y0 = 0; y1 = st[1]; run = st[1]; col = '#3b5bd6'; } else if(st[2] === 'p'){ y0 = 0; y1 = st[1]; col = '#2a9d8f'; } else { y1 = run; y0 = run + st[1]; run = y0; col = '#d9534f'; }
       s2 += '<rect x="' + x + '" y="' + Y2(Math.max(y0, y1)) + '" width="' + bw2 + '" height="' + Math.max(2, Math.abs(Y2(y0) - Y2(y1))) + '" rx="4" fill="' + col + '"/><text class="wv" x="' + (x + bw2 / 2) + '" y="' + (Y2(Math.max(y0, y1)) - 8) + '" text-anchor="middle">' + (st[1] < 0 ? '−' : '') + man(Math.abs(st[1])) + '</text><text class="wl" x="' + (x + bw2 / 2) + '" y="' + (H2 - 30) + '" text-anchor="middle">' + st[0] + '</text><text class="wp' + (st[2] === 'p' ? ' p' : st[2] === 'c' ? ' c' : '') + '" x="' + (x + bw2 / 2) + '" y="' + (H2 - 10) + '" text-anchor="middle">' + (rv ? (Math.abs(st[1]) / rv * 100).toFixed(1) : '0') + '%</text>';
       if(k < steps.length - 1) s2 += '<line x1="' + (x + bw2) + '" x2="' + (x + bw2 + gap) + '" y1="' + Y2(run) + '" y2="' + Y2(run) + '" stroke="#c3c8d4" stroke-dasharray="3 3"/>'; });
     s2 += '</svg>';
@@ -815,11 +817,11 @@
     const diag = r0 < .05 ? (rv > bp ? 'BEP보다 매출이 ' + man(rv - bp) + ' 많지만 부가세·수수료를 빼면 거의 남지 않았어요' : '매출이 BEP보다 ' + man(bp - rv) + ' 적어요') : r0 >= .15 ? '이익률 ' + (r0 * 100).toFixed(1) + '% · 좋은 달이에요' : '이익률 ' + (r0 * 100).toFixed(1) + '% · 보통이에요';
     h += '<div class="bdet"><div class="card sel"><h2>' + MN[i] + ' 손익 흐름 <small>매출에서 무엇이 빠져 영업이익이 남았는지</small></h2>' + s2 + '</div>' +
       '<div class="card sel"><h2>' + MN[i] + ' 한눈에</h2>' +
-      [['매출', rv, '#3b5bd6', '회원권 ' + man(A.mem[i] || 0) + ' · PT ' + man(A.pt[i] || 0)], ['BEP(운영비)', bp, '#d9782a', '인건비 ' + man(lb) + ' · 임관리비 ' + man(rt)], ['영업이익', op, '#2a9d8f', '이익률 ' + (r0 * 100).toFixed(1) + '%' + (pi != null ? ' · ' + MN[pi] + ' ' + man(A.op[pi] || 0) : '')]]
+      [['매출', rv, '#3b5bd6', '회원권 ' + man(A.mem[i] || 0) + ' · PT ' + man(A.pt[i] || 0)], ['BEP(운영비)', bp, '#d9534f', '인건비 ' + man(lb) + ' · 임관리비 ' + man(rt)], ['영업이익', op, '#2a9d8f', '이익률 ' + (r0 * 100).toFixed(1) + '%' + (pi != null ? ' · ' + MN[pi] + ' ' + man(A.op[pi] || 0) : '')]]
         .map((x)=> '<div class="bline"><div><span class="lbl">' + x[0] + '</span><span class="bnum" style="color:' + x[2] + '">' + man(x[1]) + '</span></div><div class="note">' + x[3] + '</div></div>').join('') +
       '<div class="bdiag ' + rCls(r0) + '">' + diag + '</div></div></div>';
     // 아래 3칸 (고른 달 기준)
-    const cats = [['인건비', lb, '#b4561a'], ['임관리비', rt, '#d9782a'], ['고정비', fx, '#eba468'], ['변동비', va, '#f3c9a2']], ct = cats.reduce((s, c)=> s + c[1], 0) || 1;
+    const cats = [['인건비', lb, '#a8322e'], ['임관리비', rt, '#d9534f'], ['고정비', fx, '#e98b88'], ['변동비', va, '#f4c2c0']], ct = cats.reduce((s, c)=> s + c[1], 0) || 1;
     let a0 = -Math.PI / 2, dn = '<div class="bdonut"><svg viewBox="0 0 180 180" width="160" aria-hidden="true"><g transform="translate(90,90)">';
     cats.forEach((c)=>{ if(!c[1]) return; const b = a0 + c[1] / ct * Math.PI * 2, r = 78, ri = 50, l = b - a0 > Math.PI ? 1 : 0;
       dn += '<path d="M' + (r * Math.cos(a0)) + ' ' + (r * Math.sin(a0)) + 'A' + r + ' ' + r + ' 0 ' + l + ' 1 ' + (r * Math.cos(b)) + ' ' + (r * Math.sin(b)) + 'L' + (ri * Math.cos(b)) + ' ' + (ri * Math.sin(b)) + 'A' + ri + ' ' + ri + ' 0 ' + l + ' 0 ' + (ri * Math.cos(a0)) + ' ' + (ri * Math.sin(a0)) + 'Z" fill="' + c[2] + '" stroke="#fff" stroke-width="2"/>'; a0 = b; });
@@ -828,7 +830,7 @@
     const items = []; GROUPS.forEach((g)=> A.items[g].forEach(([n, v])=>{ if(v[i]) items.push([n.replace('반환금,사대보험', '4대보험 등'), v[i]]); }));
     items.sort((a, b)=> b[1] - a[1]); const top7 = items.slice(0, 7), imax = top7.length ? top7[0][1] : 1;
     h += '<div class="g3b"><div class="card"><h2>비용 분포 <small>' + MN[i] + '</small></h2>' + dn + '</div>' +
-      '<div class="card"><h2>주요 비용 항목 <small>' + MN[i] + '</small></h2><div class="bbarsl">' + (top7.length ? top7.map((x)=> '<div class="r" style="--k:var(--c2)"><span>' + esc(x[0]) + '</span><span class="t"><i style="width:' + (x[1] / imax * 100) + '%"></i></span><span class="a">' + man(x[1]) + '</span><span class="p">' + Math.round(x[1] / ct * 100) + '%</span></div>').join('') : '<div class="note">세부 항목이 없어요</div>') + '</div></div>' +
+      '<div class="card"><h2>주요 비용 항목 <small>' + MN[i] + '</small></h2><div class="bbarsl">' + (top7.length ? top7.map((x)=> '<div class="r" style="--k:#d9534f"><span>' + esc(x[0]) + '</span><span class="t"><i style="width:' + (x[1] / imax * 100) + '%"></i></span><span class="a">' + man(x[1]) + '</span><span class="p">' + Math.round(x[1] / ct * 100) + '%</span></div>').join('') : '<div class="note">세부 항목이 없어요</div>') + '</div></div>' +
       '<div class="card"><h2>매출 구성 <small>' + MN[i] + '</small></h2><div class="bbarsl">' + [['회원권', A.mem[i] || 0, 'var(--c1)'], ['PT', A.pt[i] || 0, '#8ea2ea']].map((x)=> '<div class="r" style="--k:' + x[2] + '"><span>' + x[0] + '</span><span class="t"><i style="width:' + (rv ? x[1] / rv * 100 : 0) + '%"></i></span><span class="a">' + man(x[1]) + '</span><span class="p">' + (rv ? Math.round(x[1] / rv * 100) : 0) + '%</span></div>').join('') + '</div><div class="note" style="margin-top:10px">아래 3칸은 위에서 고른 달 기준이에요</div></div></div></div>';
     $('bizMain').innerHTML = h;
     $('bizMain').querySelectorAll('.bm').forEach((g)=>{ const go = ()=>{ BSEL = +g.getAttribute('data-m'); drawBiz(); };
