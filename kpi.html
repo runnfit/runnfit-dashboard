@@ -445,7 +445,7 @@
       document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') ov.hidden = true; }); }
     const isNew = (t)=> /^신규/.test(t.kind), isRe = (t)=> /재등록/.test(t.kind), isDay = (t)=> cat(t) === 'day';
     const people = (fn)=> new Set(list.filter(fn).map((t)=> t.name)).size;
-    const nNew = people(isNew), nRe = people(isRe), nDay = people(isDay), nRef = people((t)=> /소개/.test(t.inflow));
+    const nNew = people(isNew), nRe = people(isRe), nDay = people(isDay), nRef = people((t)=> /소개/.test(t.inflow) && isNew(t));   // 소개로 온 신규 등록만
     const render = ()=>{
       let h = '<div class="dbox" role="dialog" aria-label="' + mNum + '월 ' + d + '일 매출 내역"><div class="dhd"><h3>' + mNum + '월 ' + d + '일 (' + wdOf(d) + ') 매출</h3><button class="dx" type="button" aria-label="닫기">✕</button></div>' +
         '<div class="dtot">' + fmt(x.t) + '<small>원 · 일 목표 ' + Math.round(x.t / goalOf(d) * 100) + '%</small></div>' +
