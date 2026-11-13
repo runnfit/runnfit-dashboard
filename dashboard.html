@@ -1817,26 +1817,23 @@
   (function(){
     const btns = document.querySelectorAll('.kpiTab'); if(!btns.length) return;
     const SITE = CFG.SITE_BASE || 'https://runnfit.github.io/runnfit-dashboard/';
-    btns.forEach((btn)=> btn.addEventListener('click', ()=>{
+    btns.forEach((btn)=> btn.addEventListener('click', async ()=>{
       const view = btn.getAttribute('data-view');
       let P; try{ P = window.parent; void P.location.href; }catch(e){ P = window; }
-      const w = P.open(P.location.href, 'runfit_kpi');
+      // 경영계기판·마케팅 KPI는 다짐 데이터가 필요 없어서, 빈 새 창에 화면을 바로 그린다 (다짐 페이지를 다시 열지 않음)
+      const w = P.open('', 'runfit_kpi');
       if(!w){ alert('새 창이 막혔어요. 브라우저 주소창 오른쪽의 팝업 허용을 눌러주세요.'); return; }
-      // 이미 열려 있으면 그 창에서 화면만 바꾸기
-      try{ const f = w.document.getElementById('__rfdash'); if(f && f.contentWindow && f.contentWindow.__rfSwitch){ f.contentWindow.__rfSwitch(view); w.focus(); return; } }catch(e){}
-      const t0 = Date.now();
-      const iv = setInterval(()=>{
-        try{
-          if(w.closed || Date.now() - t0 > 30000){ clearInterval(iv); return; }
-          if(w.location.href === 'about:blank' || w.document.readyState !== 'complete' || !w.document.body) return;
-          clearInterval(iv);
-          setTimeout(()=>{ try{
-            if(w.document.getElementById('__rfdash')) return;
-            w.__RF_PAGE = 'kpi'; w.__RF_VIEW = view;
-            const s = w.document.createElement('script'); s.src = SITE + 'loader.js?t=' + Date.now(); w.document.body.appendChild(s);
-          }catch(e){} }, 1200);
-        }catch(e){}
-      }, 300);
+      try{ if(w.__rfSwitch && w.document.getElementById('boardMain')){ w.__rfSwitch(view); w.focus(); return; } }catch(e){}
+      try{
+        w.document.open(); w.document.write('<!DOCTYPE html><meta charset="utf-8"><title>불러오는 중…</title><body style="font:16px system-ui;color:#5d6782;display:grid;place-items:center;height:100vh;margin:0">불러오는 중…</body>'); w.document.close();
+        const r = await fetch(SITE + 'kpi.html?t=' + Date.now(), { cache: 'no-store' });
+        if(!r.ok) throw new Error(r.status);
+        const page = (await r.text()).replace('<head>', '<head><script>window.__RF_VIEW=' + JSON.stringify(view) + ';<\/script>');
+        w.document.open(); w.document.write(page); w.document.close();
+        w.focus();
+      }catch(e){
+        try{ w.document.body.textContent = '화면을 불러오지 못했어요. 인터넷 연결을 확인하고 다시 눌러주세요.'; }catch(_){}
+      }
     }));
   })();
 })();
