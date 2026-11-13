@@ -126,8 +126,10 @@
   .rallygrid{ display:grid; grid-template-columns:1fr 1fr; gap:18px; align-items:stretch; }
   .rallygrid .lc{ display:flex; flex-direction:column; justify-content:space-between; } .cum{ width:100%; height:auto; display:block; }
   .cum .ax{ font-size:12px; fill:#9aa1b2; } .cum .ax.td{ fill:#18338c; font-weight:800; }
-  .cum .pln{ stroke:#c3c8d4; } .cum .pln.on{ stroke:#16213d; stroke-width:2.5; }
-  .cum .ln{ font-size:12px; fill:#9aa1b2; font-weight:700; } .cum .ln.on{ fill:#16213d; font-weight:900; } .cum .now{ font-size:14px; fill:#16213d; font-weight:900; }
+  .cum .pln{ stroke:#16213d; opacity:.4; } .cum .pln.on{ opacity:1; stroke-width:2.5; }
+  .cum .pln[data-k="best"]{ stroke:#2fb36b; } .cum .pln[data-k="bep"]{ stroke:#e5484d; }
+  .cum .ln{ font-size:12px; fill:#16213d; font-weight:700; opacity:.55; } .cum .ln.on{ opacity:1; font-weight:900; }
+  .cum .ln[data-k="best"]{ fill:#0a7d3c; } .cum .ln[data-k="bep"]{ fill:#c0262d; } .cum .now{ font-size:14px; fill:#16213d; font-weight:900; }
   .dtkey{ display:flex; gap:14px; font-size:12px; color:var(--muted); margin:2px 0 8px; font-weight:600; align-items:center; flex-wrap:wrap; }
   .dtkey i{ display:inline-block; width:12px; height:12px; border-radius:3px; margin-right:5px; vertical-align:-2px; }
   .selbox{ font-weight:800; color:var(--ink); display:inline-flex; align-items:center; gap:6px; margin-right:8px; }
