@@ -39,12 +39,12 @@
   h2 small{ font-size:12.5px; font-weight:600; color:var(--muted); }
   /* 퍼널 */
   .funnel{ display:flex; flex-direction:column; gap:10px; }
-  .fr{ display:grid; grid-template-columns:70px 1fr 64px; align-items:center; gap:10px; }
+  .fr{ display:grid; grid-template-columns:62px minmax(40px,1fr) 40px; align-items:center; gap:8px; }
   .fr .n{ font-weight:700; color:var(--muted); font-size:13px; }
   .fr .b{ display:block; height:26px; background:var(--grid); border-radius:6px; position:relative; }
   .fr .b i{ position:absolute; left:0; top:0; bottom:0; border-radius:6px; background:var(--c1); }
   .fr .v{ text-align:right; font-weight:800; font-size:17px; font-variant-numeric:tabular-nums; }
-  .conv{ margin:-4px 0 -4px 80px; font-size:12px; font-weight:700; color:var(--muted); }
+  .conv{ margin:-4px 0 -4px 70px; font-size:12px; font-weight:700; color:var(--muted); }
   .conv b{ color:var(--navy); font-size:13px; }
   /* 막대 그래프 */
   .chart{ position:relative; height:170px; display:flex; align-items:stretch; gap:3px; padding:0 0 20px; border-bottom:1px solid var(--line); }
