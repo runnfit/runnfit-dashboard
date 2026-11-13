@@ -289,6 +289,17 @@
   .mk-dg .dv em{ font-style:normal; font-size:11px; font-weight:800; margin-left:4px; white-space:nowrap; } .mk-dg .ds{ font-size:11.5px; color:var(--muted); margin-top:2px; }
   .mk .up{ color:#1d7a46; } .mk .dn{ color:#b42328; } .mk .miss{ color:#b42328; font-weight:700; }
   @media (max-width:1200px){ .mk .mk-r3{ grid-template-columns:1fr 1fr; } .mk-strip{ grid-template-columns:repeat(4, minmax(0,1fr)); } .mk-strip > div:nth-child(4){ border-right:0; } .mk .mk-rc{ grid-template-columns:1fr; } }
+  /* 경영: 연간 비교 */
+  .yacmp{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:14px; }
+  .yacmp .kv{ display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:10px; margin-top:6px; }
+  .yacmp .kv div{ background:#f7f8fb; border-radius:10px; padding:8px 12px; min-width:0; }
+  .yacmp .kv small{ display:block; font-size:12px; color:var(--muted); font-weight:700; }
+  .yacmp .kv b{ display:block; font-size:18px; font-weight:900; white-space:nowrap; font-variant-numeric:tabular-nums; margin:2px 0; }
+  .yacmp .sb{ display:flex; height:32px; border-radius:8px; overflow:hidden; gap:2px; margin-top:12px; }
+  .yacmp .sb i{ display:flex; align-items:center; justify-content:center; color:#fff; font-style:normal; font-size:12px; font-weight:800; white-space:nowrap; overflow:hidden; }
+  .yalg{ display:flex; gap:14px; flex-wrap:wrap; font-size:12.5px; color:var(--muted); font-weight:700; margin-top:10px; }
+  .yalg span::before{ content:''; display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; background:var(--k); vertical-align:-1px; }
+  @media (max-width:1100px){ .yacmp{ grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -1107,6 +1118,26 @@
     h += '<div class="g3b"><div class="card"><h2>비용 분포 <small>' + MN[i] + '</small></h2>' + dn + '</div>' +
       '<div class="card"><h2>주요 비용 항목 <small>' + MN[i] + '</small></h2><div class="bbarsl">' + (top7.length ? top7.map((x)=> '<div class="r" style="--k:#d9534f"><span>' + esc(x[0]) + '</span><span class="t"><i style="width:' + (x[1] / imax * 100) + '%"></i></span><span class="a">' + man(x[1]) + '</span><span class="p">' + Math.round(x[1] / ct * 100) + '%</span></div>').join('') : '<div class="note">세부 항목이 없어요</div>') + '</div></div>' +
       '<div class="card"><h2>매출 구성 <small>' + MN[i] + '</small></h2><div class="bbarsl">' + [['회원권', A.mem[i] || 0, 'var(--c1)'], ['PT', A.pt[i] || 0, '#8ea2ea']].map((x)=> '<div class="r" style="--k:' + x[2] + '"><span>' + x[0] + '</span><span class="t"><i style="width:' + (rv ? x[1] / rv * 100 : 0) + '%"></i></span><span class="a">' + man(x[1]) + '</span><span class="p">' + (rv ? Math.round(x[1] / rv * 100) : 0) + '%</span></div>').join('') + '</div><div class="note" style="margin-top:10px">아래 3칸은 위에서 고른 달 기준이에요</div></div></div></div>';
+    // ---- 연간 비교 (2026 | 2025) ----
+    {
+      const eok = (n)=>{ n = Math.round(n / 1e4); const e = Math.floor(n / 1e4), r = n % 1e4; return (e ? e + '억' + (r ? ' ' : '') : '') + (r || !e ? r.toLocaleString('ko-KR') + '만' : ''); };
+      const pc = (a, b)=> b ? (a / b * 100).toFixed(1) + '%' : '-';
+      const COLS = [['수수료·부가세', 'fee', '#c3c8d4'], ['인건비', 'lab', '#d9534f'], ['임관리비', 'rent', '#e98b84'], ['고정비', 'fix', '#f1b2ad'], ['변동비', 'vari', '#f6d0cc'], ['적립금', 'res', '#9aa1b2'], ['영업이익', 'op', '#2a9d8f']];
+      const tot = (Y)=>{ const ix = []; Y.has.forEach((h, i)=>{ if(h) ix.push(i); }); const S2 = (a)=> ix.reduce((t, i)=> t + (a[i] || 0), 0);
+        const o = { n: ix.length, first: ix[0] + 1, last: ix[ix.length - 1] + 1, rev: S2(Y.rev), net: S2(Y.net), lab: S2(Y.lab), rent: S2(Y.rent), fix: S2(Y.fix), vari: S2(Y.vari), res: S2(Y.res), op: S2(Y.op) };
+        o.cost = o.lab + o.rent + o.fix + o.vari; o.fee = o.net ? o.rev - o.net : 0; return o; };
+      const yrs = Object.keys(ANNUAL).sort().reverse().slice(0, 2);
+      if(yrs.length){
+        h += '<div class="yacmp">' + yrs.map((y)=>{ const T = tot(ANNUAL[y]); if(!T.n) return '';
+          return '<div class="card"><h2>' + y + '년 <small>' + T.first + '~' + T.last + '월 (' + T.n + '개월)</small></h2><div class="kv">' +
+            '<div><small>총 매출</small><b>' + eok(T.rev) + '</b><small>월평균 ' + eok(T.rev / T.n) + '</small></div>' +
+            '<div><small>총 비용</small><b style="color:#d9534f">' + eok(T.cost) + '</b><small>매출의 ' + pc(T.cost, T.rev) + '</small></div>' +
+            '<div><small>영업이익</small><b style="color:#2a9d8f">' + eok(T.op) + '</b><small>월평균 ' + eok(T.op / T.n) + '</small></div>' +
+            '<div><small>이익률</small><b style="color:#2a9d8f">' + pc(T.op, T.rev) + '</b><small>매출 대비</small></div></div>' +
+            '<div class="sb">' + COLS.filter((c)=> T[c[1]] > 0).map((c)=> '<i style="flex:' + T[c[1]] + ';background:' + c[2] + '" title="' + c[0] + ' ' + eok(T[c[1]]) + ' · ' + pc(T[c[1]], T.rev) + '">' + (T[c[1]] / T.rev > 0.05 ? pc(T[c[1]], T.rev) : '') + '</i>').join('') + '</div></div>'; }).join('') + '</div>' +
+          '<div class="yalg">' + COLS.map((c)=> '<span style="--k:' + c[2] + '">' + c[0] + '</span>').join('') + '</div>';
+      }
+    }
     $('bizMain').innerHTML = h;
     $('bizMain').querySelectorAll('.bm').forEach((g)=>{ const go = ()=>{ BSEL = +g.getAttribute('data-m'); drawBiz(); };
       g.addEventListener('click', go); g.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } }); });
