@@ -1605,7 +1605,8 @@
       oldStatus.clear();
       beltAll.forEach((m)=>{
         if(beltIdx(m) > 1) return;
-        const g = (m._pp || []).filter((p)=> p && p.category === 'general' && p.startDate).map((p)=> kstDate(Date.parse(p.startDate))).sort();
+        let g = (m._pp || []).filter((p)=> p && p.category === 'general' && p.startDate).map((p)=> kstDate(Date.parse(p.startDate))).sort();
+        if(!g.length) g = (m._pp || []).filter((p)=> p && p.startDate && !/^rental/.test(p.category || '') && p.category !== 'daily').map((p)=> kstDate(Date.parse(p.startDate))).sort();   // 헬스 이용권이 따로 없으면(PT 등) 첫 이용권 시작일
         if(!g.length) return;
         const from = g[0] < '2025-03-01' ? '2025-03-01' : g[0];
         const day = daysBetween(today, g[0]) + 1, span = daysBetween(today, from) + 1;
