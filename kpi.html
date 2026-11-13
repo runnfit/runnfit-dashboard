@@ -707,8 +707,7 @@
   let timer = null;
   function subBar(){
     $('sub').hidden = false;
-    $('sub').innerHTML = '<b>' + mNum + '월 시트</b> 연결됨 · 5분마다 새로고침 <button class="link" id="chg" type="button">시트 바꾸기</button>';
-    $('chg').addEventListener('click', ()=>{ if(confirm('이 컴퓨터에 저장된 ' + mNum + '월 시트 연결을 지우고 새로 연결할까요?')){ store.del(); setupView(); } });
+    $('sub').innerHTML = '<b>' + mNum + '월 시트</b> 연결됨 · 5분마다 새로고침 ';
   }
   // ================= 경영 (연간 시트: 매출·비용·영업이익) =================
   const YEAR = today.slice(0, 4);
@@ -795,7 +794,7 @@
     const pyS = (a)=> PY ? idx.reduce((s, i)=> s + (a[i] || 0), 0) : null;
     const pyLine = PY ? (()=>{ const p = pyS(PY.rev), r = p ? (tRev - p) / p : 0; return ' · 작년 같은 기간 매출 ' + man(p) + ' 대비 <b class="' + (r >= 0 ? 'up' : 'dn') + '">' + (r >= 0 ? '▲' : '▼') + Math.abs(r * 100).toFixed(1) + '%</b>'; })() : '';
     let h = '<div class="bwrap"><div class="bhead"><div><div class="btitle">' + BYEAR + '년 경영 현황</div><div class="note">' + MN[idx[0]] + '~' + MN[last] + ' 누적 · 급여·성과금 제외 · 연간 시트 기준' + pyLine + '</div></div>' +
-      '<div class="bctl"><div class="yseg" role="group" aria-label="연도">' + years.map((y)=> '<button type="button" data-y="' + y + '" class="' + (y === BYEAR ? 'on' : '') + '">' + y + '</button>').join('') + '</div><button class="link" id="bizChg" type="button">연간 시트 바꾸기</button></div></div>';
+      '<div class="bctl"><div class="yseg" role="group" aria-label="연도">' + years.map((y)=> '<button type="button" data-y="' + y + '" class="' + (y === BYEAR ? 'on' : '') + '">' + y + '</button>').join('') + '</div></div></div>';
     // 위 4칸
     const lastR = A.rev[last] ? (A.op[last] || 0) / A.rev[last] : 0, prevR = prev != null && A.rev[prev] ? (A.op[prev] || 0) / A.rev[prev] : null;
     h += '<div class="dash4">' +
@@ -866,7 +865,6 @@
     $('bizMain').querySelectorAll('.bspark .sp').forEach((g)=>{ const go = ()=>{ BSEL = +g.getAttribute('data-m'); drawBiz(); };
       g.addEventListener('click', go); g.addEventListener('keydown', (e)=>{ if(e.key === 'Enter' || e.key === ' '){ e.preventDefault(); go(); } }); });
     $('bizMain').querySelectorAll('.yseg button').forEach((b)=> b.addEventListener('click', ()=>{ BYEAR = b.getAttribute('data-y'); BSEL = null; drawBiz(); }));
-    $('bizChg').addEventListener('click', ()=>{ if(confirm('이 컴퓨터에 저장된 ' + YEAR + '년 연간 시트 연결을 지우고 새로 연결할까요?')){ bstore.del(); ANNUAL = null; bizSetup(); } });
   }
   async function refreshBiz(){
     const u = bstore.get(); if(!u){ bizSetup(); return; }
