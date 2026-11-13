@@ -356,7 +356,8 @@
     if(!G.basic) G.basic = G.month;
     const data = {};
     for(let r = h + 1; r < rows.length; r++){
-      const d = num(cell(r, cD)); if(d == null || d < 1 || d > 31) continue;
+      const d = num(cell(r, cD)); if(d == null || d < 1 || d > 31){ if(Object.keys(data).length) break; continue; }
+      if(data[d]) break;   // 표 아래 다른 영역은 읽지 않음
       data[d] = { m: num(cell(r, cM)) || 0, p: num(cell(r, cP)) || 0 };
       data[d].t = cT >= 0 && num(cell(r, cT)) != null ? num(cell(r, cT)) : data[d].m + data[d].p;
     }
