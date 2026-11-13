@@ -9,7 +9,8 @@
   }
   var old = document.getElementById('__rfdash');
   if (old) { old.remove(); return; }            // 열려 있으면 한 번 더 눌러서 닫기
-  fetch(BASE + 'dashboard.html?t=' + Date.now(), { cache: 'no-store' })
+  var PAGE = window.__RF_PAGE === 'kpi' ? 'kpi.html' : 'dashboard.html';   // 마케팅 KPI 창이면 KPI 화면
+  fetch(BASE + PAGE + '?t=' + Date.now(), { cache: 'no-store' })
     .then(function (r) { if (!r.ok) throw new Error(r.status); return r.text(); })
     .then(function (page) {
       var f = document.createElement('iframe');
