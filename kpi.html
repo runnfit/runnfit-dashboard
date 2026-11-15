@@ -920,7 +920,7 @@
     h += '<div class="card"><h2>일자별 완료 <small>' + mNum + '월 · 칸 숫자 = 완료 건수 · 노란 칸 = 기록 있는데 완료 없음 · 검은 네모 = 오늘</small></h2><div class="whm-wrap"><div class="wtbox" style="left:calc(52px + (100% - 52px) * ' + (todayCol - 1) + ' / ' + DAYS + ' - 1px);width:calc((100% - 52px) / ' + DAYS + ' + 2px)"></div><table class="whm"><colgroup><col style="width:52px">' + '<col>'.repeat(DAYS) + '</colgroup><tr><th></th>';
     for(let d = 1; d <= DAYS; d++) h += '<th class="' + (/[토일]/.test(wdOf(d)) ? 'we' : '') + '">' + d + '<br>' + wdOf(d) + '</th>';
     h += '</tr>' + P.map((p)=> '<tr><td class="pn" style="color:' + p.color + '">' + esc(p.name) + '</td>' + Array.from({ length: DAYS }, (_, i)=>{ const d = i + 1, n = cnt(p, d), hs = any(p, d), fut = d > dNum;
-      return '<td><button type="button" class="wc" data-wd="' + d + '" style="background:' + (n ? p.color : hs ? '#fdf3d8' : fut ? '#f7f8fb' : '#eef1f7') + ';opacity:' + (n ? Math.min(1, .3 + n * .14) : 1) + ';color:' + (n ? '#fff' : '#b3b9c7') + '">' + (n || (hs ? '·' : '')) + '</button></td>'; }).join('') + '</tr>').join('') + '</table></div></div>';
+      return '<td><button type="button" class="wc" data-wd="' + d + '" style="background:' + (n ? p.color : fut ? '#f7f8fb' : '#eef1f7') + ';opacity:' + (n ? Math.min(1, .3 + n * .14) : 1) + ';color:' + (n ? '#fff' : '#b3b9c7') + '">' + (n || (hs ? '·' : '')) + '</button></td>'; }).join('') + '</tr>').join('') + '</table></div></div>';
     // 달력 + 그날
     if(WBS_DAY == null || WBS_DAY > DAYS) WBS_DAY = Math.min(dNum, DAYS);
     const mondayOff = (FIRST_DOW + 6) % 7;
