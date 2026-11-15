@@ -300,6 +300,48 @@
   .yalg{ display:flex; gap:14px; flex-wrap:wrap; font-size:12.5px; color:var(--muted); font-weight:700; margin-top:10px; }
   .yalg span::before{ content:''; display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:5px; background:var(--k); vertical-align:-1px; }
   @media (max-width:1100px){ .yacmp{ grid-template-columns:1fr; } }
+  /* 보고 브리핑 */
+  .mkb{ padding:10px 16px; }
+  .mkb-row{ display:flex; align-items:center; gap:12px; flex-wrap:wrap; }
+  .mkb-t{ font-size:15px; font-weight:900; }
+  .mkb .seg{ display:inline-flex; background:#eef1f7; border-radius:10px; padding:3px; gap:2px; }
+  .mkb .seg button{ border:0; background:none; padding:5px 14px; border-radius:8px; font:inherit; font-size:13px; font-weight:800; color:var(--muted); cursor:pointer; }
+  .mkb .seg button.on{ background:#fff; color:var(--navy); box-shadow:0 1px 2px rgba(0,0,0,.08); }
+  .mkb-head{ font-size:13px; font-weight:800; color:var(--ink); }
+  .mkb-note{ font-size:12.5px; color:var(--muted); font-weight:700; }
+  .mkb-sp{ flex:1; }
+  .mkb-tog{ border:0; background:var(--navy); color:#fff; border-radius:9px; padding:7px 14px; font:inherit; font-weight:800; font-size:13px; cursor:pointer; }
+  .chipk{ display:inline-flex; gap:6px; align-items:center; background:#f3f5f9; border-radius:8px; padding:5px 10px; font-size:12.5px; color:var(--muted); font-weight:700; }
+  .chipk b{ color:var(--ink); font-size:15px; font-weight:900; }
+  .chipk .dot{ width:9px; height:9px; border-radius:50%; background:var(--dot); display:inline-block; }
+  .chipk .up, .mkb .c.up{ color:#1d7a46; } .chipk .dn, .mkb .c.dn{ color:#b42328; } .mkb .c.warn{ color:#a36a00; }
+  .mkb-chips{ display:flex; gap:6px; flex-wrap:wrap; }
+  .mkb-chips button{ border:1px solid #e3e7ef; background:#f3f5f9; border-radius:8px; padding:5px 10px; font:inherit; font-size:12.5px; font-weight:700; color:var(--muted); cursor:pointer; }
+  .mkb-chips button.on{ background:var(--navy); color:#fff; border-color:var(--navy); }
+  .mkb-date{ position:relative; }
+  .datebtn{ border:1px solid #c9d2ee; border-radius:9px; padding:6px 12px; font:inherit; font-weight:800; font-size:13.5px; color:var(--navy); background:#fff; cursor:pointer; }
+  .calpop{ position:absolute; top:40px; left:0; width:290px; background:#fff; border:1px solid var(--line); border-radius:12px; box-shadow:0 10px 30px rgba(20,30,60,.18); padding:12px; z-index:30; }
+  .calpop.hidden{ display:none; }
+  .cgt{ text-align:center; font-weight:900; margin-bottom:6px; }
+  .cg{ display:grid; grid-template-columns:repeat(7, 1fr); gap:3px; text-align:center; font-size:12px; }
+  .cg .h{ color:var(--muted); font-weight:800; font-size:11px; padding:2px 0; }
+  .cg button, .cg span{ padding:5px 0; border-radius:6px; font:inherit; font-size:12px; font-weight:700; border:0; background:none; position:relative; }
+  .cg button{ cursor:pointer; background:#eef2fd; } .cg button:hover{ background:#dfe6fb; }
+  .cg button::after{ content:''; position:absolute; left:50%; bottom:2px; width:4px; height:4px; margin-left:-2px; border-radius:50%; background:var(--c1); }
+  .cg button.on{ background:var(--navy); color:#fff; } .cg button.on::after{ background:#fff; }
+  .cg .f{ color:#c3c8d4; }
+  .cgn{ font-size:11.5px; color:var(--muted); margin-top:8px; }
+  .kt{ display:grid; grid-template-columns:repeat(6, minmax(0,1fr)); gap:10px; margin-top:12px; }
+  .kt .k{ border:1px solid var(--line); border-radius:12px; padding:10px 12px 8px 14px; position:relative; overflow:hidden; min-width:0; }
+  .kt .k::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--a); }
+  .kt .l{ font-size:12.5px; color:var(--muted); font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .kt .v{ font-size:24px; font-weight:900; line-height:1.2; margin-top:2px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+  .kt .v small{ font-size:12.5px; color:var(--muted); margin-left:2px; }
+  .kt .c{ display:block; font-size:12px; font-weight:800; margin-top:2px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .sp7{ display:flex; align-items:flex-end; gap:3px; height:28px; margin-top:8px; }
+  .sp7 i{ flex:1; background:#dfe5f6; border-radius:2px 2px 0 0; } .sp7 i.on{ background:var(--a); }
+  .sp7d{ display:flex; gap:3px; font-size:9.5px; color:#9aa1b2; margin-top:2px; } .sp7d span{ flex:1; text-align:center; }
+  @media (max-width:1200px){ .kt{ grid-template-columns:repeat(3, minmax(0,1fr)); } }
 </style>
 </head>
 <body>
@@ -442,6 +484,7 @@
   }
   let MK_GOALS = {};
   let MK = null, MKSEL = null;
+  const MKB = (()=>{ let o = {}; try{ o = JSON.parse(localStorage.getItem('rf_mkb') || '{}') || {}; }catch(e){} return { open: !!o.open, mode: ['d', 'w', 'm'].includes(o.mode) ? o.mode : 'd', day: null, week: null }; })();
   function mkDraw(data, S, X){
     if(data) MK = { data, S, X }; if(!MK) return;
     ({ data, S, X } = MK); X = X || {};
@@ -629,12 +672,119 @@
     const wk = '<div class="card mk-wt"><h2>주차별 흐름 <small>월~일 기준 · 빨간 칸 = 지난주보다 나빠짐</small></h2><table><tr><th>주차 (월~일)</th><th>문의</th><th>방문</th><th>등록</th><th>방문→등록</th><th>재등록</th><th>오프라인 영업</th></tr>' + wrows + '</table>' +
       (cNow != null && cPrev != null && cNow < cPrev - 0.05 ? '<div class="mk-ins">문의·방문은 들어오는데 <b>상담에서 놓치고 있어요.</b> 이번 주 방문 후 미등록 ' + fmt(missed) + '명에게 다시 연락해 보세요.</div>' : '') + '</div>';
 
-    $('kpiMain').innerHTML = '<div class="mk">' + strip + tiles + funnels +
+    // ---- 보고 브리핑 (일간 · 주간 · 월간) ----
+    const briefHtml = '<div class="card mkb" id="mkBrief"></div>';
+    function mkBrief(){
+      const box = $('mkBrief'); if(!box) return;
+      const B = MKB;
+      if(B.day == null || B.day > last || !byD[B.day]) B.day = yd;
+      if(B.week == null || !weeks[B.week] || !weeks[B.week].some((d)=> d <= last)) B.week = weekOf(Math.max(1, last));
+      const wk1 = (o)=> o && o.valid > 0 && o.absent != null ? o.valid - o.absent : null;
+      const act = (o)=> offOf(o) + onOf(o);
+      const sale = (d)=> salesOf(d).t || 0;
+      const light = (r)=> r == null ? '#c3c8d4' : r >= 0.8 ? 'var(--g)' : r >= 0.7 ? 'var(--y)' : 'var(--r)';
+      const lightTxt = (r)=> r == null ? '' : r >= 0.8 ? 'up' : r >= 0.7 ? 'warn' : 'dn';
+      const dl = (v, b, f, lab, good)=>{ if(b == null || !isFinite(b)) return '<span class="c">&nbsp;</span>'; const up = v >= b; const ok = good == null ? up : good; return '<span class="c ' + (ok ? 'up' : 'dn') + '">' + (up ? '▲' : '▼') + ' ' + lab + ' ' + f(b) + '</span>'; };
+      const r1 = (x)=> (Math.round(x * 10) / 10).toLocaleString('ko-KR');
+      const spark = (vals, labels, on)=>{ const m = Math.max(1, ...vals.map((v)=> v || 0)); return '<div class="sp7">' + vals.map((v, i)=> '<i class="' + (i === on ? 'on' : '') + '" style="height:' + Math.max(4, (v || 0) / m * 100).toFixed(0) + '%"></i>').join('') + '</div><div class="sp7d">' + labels.map((l)=> '<span>' + l + '</span>').join('') + '</div>'; };
+      const tile = (k)=> '<div class="k" style="--a:' + k.a + '"><div class="l">' + k.l + '</div><div class="v">' + k.v + '</div>' + k.c + (k.s || '') + '</div>';
+      let T = [], chips = [], head = '', brief = '', picker = '';
+      if(B.mode === 'd'){
+        const d = B.day, o = byD[d] || {};
+        const same = upto.filter((x)=> x.d !== d && wdOf(x.d) === wdOf(d)), base = same.length ? same : upto.filter((x)=> x.d !== d), lab = same.length ? wdOf(d) + ' 평균' : '평균';
+        const av = (f)=> base.length ? base.reduce((s, x)=> s + (f(x) || 0), 0) / base.length : null;
+        const win = upto.filter((x)=> x.d <= d).slice(-7), wl = win.map((x)=> x.d), on = win.length - 1;
+        const w1 = wk1(o), wr = w1 != null && o.valid ? w1 / o.valid : null;
+        const sv = sale(d), aS = av((x)=> sale(x.d));
+        const accent = (v, b)=> b == null ? 'var(--c1)' : v >= b ? 'var(--g)' : 'var(--r)';
+        T = [
+          { l: '매출', v: man(sv), a: accent(sv, aS), c: dl(sv, aS, man, lab), s: spark(win.map((x)=> sale(x.d)), wl, on) },
+          { l: '출석', v: fmt(o.visit || 0) + '<small>명</small>', a: accent(o.visit || 0, av((x)=> x.visit)), c: dl(o.visit || 0, av((x)=> x.visit), (x)=> fmt(Math.round(x)), lab), s: spark(win.map((x)=> x.visit), wl, on) },
+          { l: '주 1회 이상 출석', v: (w1 == null ? '-' : fmt(w1) + '<small>명 · ' + Math.round(wr * 100) + '%</small>'), a: light(wr), c: '<span class="c ' + lightTxt(wr) + '">' + (wr == null ? '' : wr >= 0.8 ? '● 좋음 (80% 이상)' : wr >= 0.7 ? '● 주의 (70~79%)' : '● 위험 (70% 미만)') + '</span>', s: spark(win.map((x)=> wk1(x) && x.valid ? wk1(x) / x.valid * 100 : 0), wl, on) },
+          { l: '신규 문의 → 방문 → 등록', v: fmt(o.inq || 0) + ' → ' + fmt(o.tour || 0) + ' → ' + fmt(o.join || 0), a: accent(o.join || 0, av((x)=> x.join)), c: dl(o.join || 0, av((x)=> x.join), r1, lab + ' 등록'), s: spark(win.map((x)=> x.join), wl, on) },
+          { l: '재등록', v: fmt(o.rereg || 0) + '<small>명</small>', a: accent(o.rereg || 0, av((x)=> x.rereg)), c: dl(o.rereg || 0, av((x)=> x.rereg), r1, lab), s: spark(win.map((x)=> x.rereg), wl, on) },
+          { l: '영업 활동량', v: fmt(act(o)) + '<small>건</small>', a: accent(act(o), av(act)), c: dl(act(o), av(act), (x)=> fmt(Math.round(x)), lab), s: spark(win.map(act), wl, on) } ];
+        head = mNum + '월 ' + d + '일 (' + wdOf(d) + ')' + (d === yd ? ' · 어제' : '');
+        picker = '<span class="mkb-date"><button type="button" class="datebtn" id="mkbDate">' + head + ' ▾</button><div class="calpop hidden" id="mkbCal"><div class="cgt">' + today.slice(0, 4) + '년 ' + mNum + '월</div><div class="cg">' + '월화수목금토일'.split('').map((x)=> '<span class="h">' + x + '</span>').join('') +
+          '<span></span>'.repeat(mondayOff) + Array.from({ length: DAYS }, (_, i)=> i + 1).map((x)=> x <= last && byD[x] ? '<button type="button" data-bd="' + x + '" class="' + (x === d ? 'on' : 'has') + '">' + x + '</button>' : '<span class="f">' + x + '</span>').join('') + '</div><div class="cgn">점 = 데이터 있는 날</div></div></span>' +
+          '<span class="mkb-note">같은 요일(' + wdOf(d) + ') 평균과 비교 · 막대 = 최근 7일</span>';
+        const lines = [];
+        if(aS != null) lines.push('매출 ' + man(sv) + (sv >= aS ? '으로 ' + lab + '(' + man(aS) + ')보다 높아요' : '으로 ' + lab + '(' + man(aS) + ')보다 낮아요'));
+        if(wr != null) lines.push('주 1회 이상 출석 ' + Math.round(wr * 100) + '%' + (wr >= 0.8 ? ' — 좋아요' : wr >= 0.7 ? ' — 80%까지 ' + Math.ceil(o.valid * 0.8 - w1) + '명 더' : ' — 7일 미출석 ' + fmt(o.absent) + '명 연락이 급해요'));
+        if((o.tour || 0) > (o.join || 0)) lines.push('상담 ' + fmt(o.tour) + '명 중 ' + fmt(o.join || 0) + '명 등록 — 미등록 ' + fmt(o.tour - (o.join || 0)) + '명 다시 연락');
+        if(!(o.called || 0) && o.absent) lines.push('미출석 연락 기록 0건');
+        brief = lines.join(' · ');
+        chips = [['매출', man(sv), aS != null && sv >= aS], ['출석', fmt(o.visit || 0), (o.visit || 0) >= (av((x)=> x.visit) || 0)], ['주1회+', wr == null ? '-' : Math.round(wr * 100) + '%', wr != null && wr >= 0.8, light(wr)], ['문의→등록', fmt(o.inq || 0) + '→' + fmt(o.join || 0), (o.join || 0) >= (av((x)=> x.join) || 0)]];
+      } else if(B.mode === 'w'){
+        const w = B.week, pw = w - 1;
+        const days = weeks[w].filter((d)=> d <= last), pdays = pw >= 0 ? weeks[pw].filter((d)=> d <= last) : [];
+        const S = (arr, f)=> arr.reduce((s, d)=> s + (f(byD[d] || {}, d) || 0), 0);
+        const lastIn = (arr)=> arr.map((d)=> byD[d]).filter((o)=> o && o.valid > 0).pop();
+        const cur = { s: S(days, (o, d)=> sale(d)), v: S(days, (o)=> o.visit), q: S(days, (o)=> o.inq), t: S(days, (o)=> o.tour), j: S(days, (o)=> o.join), r: S(days, (o)=> o.rereg), a: S(days, act) };
+        const prv = pdays.length ? { s: S(pdays, (o, d)=> sale(d)), v: S(pdays, (o)=> o.visit), q: S(pdays, (o)=> o.inq), t: S(pdays, (o)=> o.tour), j: S(pdays, (o)=> o.join), r: S(pdays, (o)=> o.rereg), a: S(pdays, act) } : null;
+        const lo = lastIn(days), w1 = wk1(lo), wr = w1 != null && lo && lo.valid ? w1 / lo.valid : null;
+        const plo = lastIn(pdays), pwr = plo && wk1(plo) != null ? wk1(plo) / plo.valid : null;
+        const wl = weeks.map((_, i)=> (i + 1) + '주').slice(0, weekOf(Math.max(1, last)) + 1), wv = (f)=> wl.map((_, i)=> S(weeks[i].filter((d)=> d <= last), f));
+        const acc = (a, b)=> b == null ? 'var(--c1)' : a >= b ? 'var(--g)' : 'var(--r)';
+        const P = (k)=> prv ? prv[k] : null;
+        T = [
+          { l: '매출', v: man(cur.s), a: acc(cur.s, P('s')), c: dl(cur.s, P('s'), man, '지난주'), s: spark(wv((o, d)=> sale(d)), wl, w) },
+          { l: '출석 (주 합계)', v: fmt(cur.v) + '<small>명</small>', a: acc(cur.v, P('v')), c: dl(cur.v, P('v'), fmt, '지난주'), s: spark(wv((o)=> o.visit), wl, w) },
+          { l: '주 1회 이상 출석', v: w1 == null ? '-' : fmt(w1) + '<small>명 · ' + Math.round(wr * 100) + '%</small>', a: light(wr), c: pwr != null && wr != null ? '<span class="c ' + lightTxt(wr) + '">● 지난주 ' + Math.round(pwr * 100) + '%</span>' : '<span class="c ' + lightTxt(wr) + '">●</span>', s: '' },
+          { l: '신규 문의 → 방문 → 등록', v: fmt(cur.q) + ' → ' + fmt(cur.t) + ' → ' + fmt(cur.j), a: acc(cur.j, P('j')), c: dl(cur.j, P('j'), fmt, '지난주 등록'), s: spark(wv((o)=> o.join), wl, w) },
+          { l: '재등록', v: fmt(cur.r) + '<small>명</small>', a: acc(cur.r, P('r')), c: dl(cur.r, P('r'), fmt, '지난주'), s: spark(wv((o)=> o.rereg), wl, w) },
+          { l: '영업 활동량', v: fmt(cur.a) + '<small>건</small>', a: acc(cur.a, P('a')), c: dl(cur.a, P('a'), fmt, '지난주'), s: spark(wv(act), wl, w) } ];
+        head = (w + 1) + '주차 (' + days[0] + '~' + weeks[w][weeks[w].length - 1] + '일)';
+        picker = '<span class="mkb-chips">' + wl.map((l, i)=> '<button type="button" data-bw="' + i + '" class="' + (i === w ? 'on' : '') + '">' + (i + 1) + '주차 ' + weeks[i][0] + '~' + weeks[i][weeks[i].length - 1] + '</button>').join('') + '</span><span class="mkb-note">지난주와 비교</span>';
+        const cv = cur.t ? cur.j / cur.t : null, pv = prv && prv.t ? prv.j / prv.t : null, lines = [];
+        lines.push('문의 ' + fmt(cur.q) + '건 · 방문 ' + fmt(cur.t) + '명 · 등록 ' + fmt(cur.j) + '명' + (prv ? ' (지난주 ' + fmt(prv.q) + ' · ' + fmt(prv.t) + ' · ' + fmt(prv.j) + ')' : ''));
+        if(cv != null) lines.push('방문→등록 ' + Math.round(cv * 100) + '%' + (pv != null ? ' (지난주 ' + Math.round(pv * 100) + '%)' : '') + (cur.t > cur.j ? ' — 미등록 ' + fmt(cur.t - cur.j) + '명 다시 연락' : ''));
+        if(wr != null) lines.push('주 1회 이상 출석 ' + Math.round(wr * 100) + '%');
+        brief = lines.join(' · ');
+        chips = [['매출', man(cur.s), prv && cur.s >= prv.s], ['주1회+', wr == null ? '-' : Math.round(wr * 100) + '%', wr != null && wr >= 0.8, light(wr)], ['등록', fmt(cur.j), prv && cur.j >= prv.j], ['방문→등록', cv == null ? '-' : Math.round(cv * 100) + '%', pv == null || cv >= pv]];
+      } else {
+        const sales = upto.reduce((s, o)=> s + sale(o.d), 0), vis = upto.reduce((s, o)=> s + (o.visit || 0), 0), A = upto.reduce((s, o)=> s + act(o), 0);
+        const lo = upto.filter((o)=> o.valid > 0).pop(), w1 = wk1(lo), wr = w1 != null && lo ? w1 / lo.valid : null;
+        const yr = today.slice(0, 4), pyr = mNum === 1 ? String(+yr - 1) : yr, pm = mNum === 1 ? 11 : mNum - 2;
+        const pSales = typeof ANNUAL !== 'undefined' && ANNUAL && ANNUAL[pyr] && ANNUAL[pyr].rev[pm] ? ANNUAL[pyr].rev[pm] : null;
+        const pv = prevOut || {}, acc = (a, b)=> b == null ? 'var(--c1)' : a >= b ? 'var(--g)' : 'var(--r)';
+        const pmLab = (pm + 1) + '월';
+        T = [
+          { l: '매출 (' + last + '일까지)', v: man(sales), a: acc(sales / last * DAYS, pSales), c: pSales ? '<span class="c ' + (sales / last * DAYS >= pSales ? 'up' : 'dn') + '">' + pmLab + ' ' + man(pSales) + ' · 이 속도면 ' + man(sales / last * DAYS) + '</span>' : '<span class="c">&nbsp;</span>', s: '' },
+          { l: '출석 (누적)', v: fmt(vis) + '<small>명</small>', a: 'var(--c1)', c: '<span class="c">하루 평균 ' + fmt(Math.round(vis / Math.max(1, last))) + '명</span>', s: '' },
+          { l: '주 1회 이상 출석', v: w1 == null ? '-' : fmt(w1) + '<small>명 · ' + Math.round(wr * 100) + '%</small>', a: light(wr), c: '<span class="c ' + lightTxt(wr) + '">● 유효 ' + fmt(lo && lo.valid) + '명 중</span>', s: '' },
+          { l: '신규 문의 → 방문 → 등록', v: fmt(inq) + ' → ' + fmt(tour) + ' → ' + fmt(join), a: acc(join, pv.nw), c: dl(join, pv.nw, fmt, pmLab + ' 등록'), s: '' },
+          { l: '재등록', v: fmt(rereg) + '<small>명</small>', a: acc(rereg, pv.re), c: dl(rereg, pv.re, fmt, pmLab), s: '' },
+          { l: '영업 활동량', v: fmt(A) + '<small>건</small>', a: 'var(--c1)', c: '<span class="c">오프라인 ' + fmt(upto.reduce((s, o)=> s + offOf(o), 0)) + ' · 온라인 ' + fmt(upto.reduce((s, o)=> s + onOf(o), 0)) + '</span>', s: '' } ];
+        head = mNum + '월 (' + last + '일까지)';
+        picker = '<span class="mkb-note">' + pmLab + ' 전체와 비교 · 이번 달은 진행 중</span>';
+        const lines = [];
+        if(pv.nw != null) lines.push('신규 ' + fmt(join) + '명 — ' + pmLab + ' 한 달 ' + fmt(pv.nw) + '명의 ' + Math.round(join / pv.nw * 100) + '%');
+        if(pv.re != null) lines.push('재등록 ' + fmt(rereg) + '명 — ' + pmLab + ' ' + fmt(pv.re) + '명의 ' + Math.round(rereg / pv.re * 100) + '%');
+        if(lo) lines.push('유효회원 ' + fmt(lo.valid) + '명' + (pv.v ? '(' + pmLab + ' ' + fmt(pv.v) + ')' : '') + ' · 목표 ' + fmt(VALID_GOAL) + '까지 ' + fmt(Math.max(0, VALID_GOAL - lo.valid)) + '명');
+        brief = lines.join(' · ');
+        chips = [['매출', man(sales), !pSales || sales / last * DAYS >= pSales], ['주1회+', wr == null ? '-' : Math.round(wr * 100) + '%', wr != null && wr >= 0.8, light(wr)], ['신규', fmt(join), pv.nw == null || join / last * DAYS >= pv.nw], ['재등록', fmt(rereg), pv.re == null || rereg / last * DAYS >= pv.re]];
+      }
+      const seg = '<div class="seg">' + [['d', '일간'], ['w', '주간'], ['m', '월간']].map((x)=> '<button type="button" data-bm="' + x[0] + '" class="' + (B.mode === x[0] ? 'on' : '') + '">' + x[1] + '</button>').join('') + '</div>';
+      const chipHtml = chips.map((c)=> '<span class="chipk"' + (c[3] ? ' style="--dot:' + c[3] + '"' : '') + '>' + (B.mode === 'd' && c[0] === '매출' ? B.day + '일 ' : '') + c[0] + ' <b>' + c[1] + '</b>' + (c[3] ? '<i class="dot"></i>' : '<span class="' + (c[2] ? 'up' : 'dn') + '">' + (c[2] ? '▲' : '▼') + '</span>') + '</span>').join('');
+      box.innerHTML = '<div class="mkb-row"><b class="mkb-t">보고 브리핑</b>' + seg + (B.open ? picker : '<span class="mkb-head">' + head + '</span>' + chipHtml) + '<span class="mkb-sp"></span><button type="button" class="mkb-tog" id="mkbTog">' + (B.open ? '접기 ▲' : '펼치기 ▼') + '</button></div>' +
+        (B.open ? '<div class="kt">' + T.map(tile).join('') + '</div>' + (brief ? '<div class="mk-ins"><b>' + head + ' 브리핑</b> · ' + brief + '</div>' : '') : '');
+      const save = ()=>{ try{ localStorage.setItem('rf_mkb', JSON.stringify({ open: B.open, mode: B.mode })); }catch(e){} };
+      $('mkbTog').onclick = ()=>{ B.open = !B.open; save(); mkBrief(); };
+      box.querySelectorAll('[data-bm]').forEach((b)=> b.onclick = ()=>{ B.mode = b.getAttribute('data-bm'); save(); mkBrief(); });
+      box.querySelectorAll('[data-bw]').forEach((b)=> b.onclick = ()=>{ B.week = +b.getAttribute('data-bw'); mkBrief(); });
+      const db = $('mkbDate'), cal = $('mkbCal');
+      if(db){ db.onclick = (e)=>{ e.stopPropagation(); cal.classList.toggle('hidden'); };
+        cal.querySelectorAll('[data-bd]').forEach((b)=> b.onclick = ()=>{ B.day = +b.getAttribute('data-bd'); mkBrief(); });
+        document.addEventListener('mousedown', function h(e){ if(!cal.contains(e.target) && e.target !== db){ cal.classList.add('hidden'); document.removeEventListener('mousedown', h); } }); }
+    }
+
+    $('kpiMain').innerHTML = '<div class="mk">' + briefHtml + strip + tiles + funnels +
       '<div class="mk-row mk-r3"><div class="mk-col">' + left + '</div>' + mid + '<div class="mk-col">' + right + '</div></div>' +
       prodHtml +
       '<div class="mk-row mk-rc">' + calCard + '<div class="mk-col"><div class="card" id="mkDay"></div>' + wk + '</div></div>' +
       '</div>';
-    mkDay(MKSEL);
+    mkDay(MKSEL); mkBrief();
     $('kpiMain').querySelectorAll('[data-mkd]').forEach((b)=> b.addEventListener('click', ()=>{ MKSEL = +b.getAttribute('data-mkd');
       $('kpiMain').querySelectorAll('[data-mkd]').forEach((x)=> x.classList.toggle('sel', x === b)); mkDay(MKSEL); }));
 
