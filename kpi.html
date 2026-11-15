@@ -877,12 +877,12 @@
         const row = rows[r], d = num(row[dayCol]);
         const dayTxt = String(row[p.cDay] || '').trim(), st = p.cSt >= 0 ? String(row[p.cSt] || '').trim() : '', mon = p.cMon >= 0 ? String(row[p.cMon] || '').trim() : '';
         const m = st.match(DATE_RE);
+        const sm = dayTxt.match(DATE_RE), sd = sm && +sm[1] === mNum ? +sm[2] : null;   // '시작' 칸에 날짜(11/16)를 적은 경우
         if(m && mon){ if(+m[1] === mNum) done.push({ t: mon, d: +m[2], s: '완료', cell: colL(p.cMon) + (r + 1) }); continue; }   // 최고 방식: 완료 칸에 날짜
         if(dayTxt && !sm && d >= 1 && d <= 31){
           const ts = dayTxt.split(/\n+/).map((x)=> x.trim()).filter(Boolean), ss = st.split(/\n+/).map((x)=> x.trim());
           ts.forEach((t, i)=>{ const s = ss[i] || (ts.length === 1 ? st : '') || ''; const o = { t, d, s: s || '기록', cell: colL(p.cDay) + (r + 1) }; (s === '완료' ? done : ing).push(o); });
         }
-        const sm = dayTxt.match(DATE_RE), sd = sm && +sm[1] === mNum ? +sm[2] : null;   // '시작' 칸에 날짜(11/16)를 적은 경우
         if(mon && !m && (sm || (st && !dayTxt)) && !/^\d/.test(st)){ const s2 = st || '진행중'; (s2 === '완료' ? done : ing).push({ t: mon.replace(/\s*\n\s*/g, ' '), d: sd, s: s2, cell: colL(p.cMon) + (r + 1) }); continue; }   // 최고 방식: 날짜 없이 상태만 적음
         if(mon && !m && !st.match(/^\d/)) todo.push({ t: mon.replace(/\s*\n\s*/g, ' '), cell: colL(p.cMon) + (r + 1) });
       }
