@@ -866,9 +866,9 @@
     const rows = parseCsv(await r.text());
     const h = rows.findIndex((row)=> row.some((c)=> norm(c) === 'DAY') && row.some((c)=> norm(c) === 'MONTH'));
     if(h < 1) throw new Error('WBS 머리줄을 찾지 못했어요');
-    const H = rows[h].map(norm), dayCol = H.indexOf('일');
+    const H = rows[h].map(norm), dayCol = H.indexOf('일');   // 사람별 첫 칸 이름은 DAY 또는 시작
     const people = [];
-    H.forEach((c, i)=>{ if(c !== 'DAY') return; let nm = ''; for(let k = i; k <= i + 2 && !nm; k++) nm = String((rows[h - 1] || [])[k] || '').trim(); if(!nm) return;
+    H.forEach((c, i)=>{ if(c !== 'DAY' && c !== '시작') return; let nm = ''; for(let k = i; k <= i + 2 && !nm; k++) nm = String((rows[h - 1] || [])[k] || '').trim(); if(!nm) return;
       people.push({ name: nm, cDay: i, cSt: H[i + 1] === '완료' ? i + 1 : -1, cMon: H.indexOf('MONTH', i) }); });
     const DATE_RE = /^(\d{1,2})\/(\d{1,2})$/;
     const P = people.map((p)=>{
@@ -878,11 +878,12 @@
         const dayTxt = String(row[p.cDay] || '').trim(), st = p.cSt >= 0 ? String(row[p.cSt] || '').trim() : '', mon = p.cMon >= 0 ? String(row[p.cMon] || '').trim() : '';
         const m = st.match(DATE_RE);
         if(m && mon){ if(+m[1] === mNum) done.push({ t: mon, d: +m[2], s: '완료', cell: colL(p.cMon) + (r + 1) }); continue; }   // 최고 방식: 완료 칸에 날짜
-        if(dayTxt && d >= 1 && d <= 31){
+        if(dayTxt && !sm && d >= 1 && d <= 31){
           const ts = dayTxt.split(/\n+/).map((x)=> x.trim()).filter(Boolean), ss = st.split(/\n+/).map((x)=> x.trim());
           ts.forEach((t, i)=>{ const s = ss[i] || (ts.length === 1 ? st : '') || ''; const o = { t, d, s: s || '기록', cell: colL(p.cDay) + (r + 1) }; (s === '완료' ? done : ing).push(o); });
         }
-        if(mon && !m && st && !dayTxt && !/^\d/.test(st)){ (st === '완료' ? done : ing).push({ t: mon.replace(/\s*\n\s*/g, ' '), d: null, s: st, cell: colL(p.cMon) + (r + 1) }); continue; }   // 최고 방식: 날짜 없이 상태만 적음
+        const sm = dayTxt.match(DATE_RE), sd = sm && +sm[1] === mNum ? +sm[2] : null;   // '시작' 칸에 날짜(11/16)를 적은 경우
+        if(mon && !m && (sm || (st && !dayTxt)) && !/^\d/.test(st)){ const s2 = st || '진행중'; (s2 === '완료' ? done : ing).push({ t: mon.replace(/\s*\n\s*/g, ' '), d: sd, s: s2, cell: colL(p.cMon) + (r + 1) }); continue; }   // 최고 방식: 날짜 없이 상태만 적음
         if(mon && !m && !st.match(/^\d/)) todo.push({ t: mon.replace(/\s*\n\s*/g, ' '), cell: colL(p.cMon) + (r + 1) });
       }
       const key = (x)=> x.replace(/\s+/g, '');
