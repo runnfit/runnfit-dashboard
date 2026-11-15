@@ -879,11 +879,12 @@
           const ts = dayTxt.split(/\n+/).map((x)=> x.trim()).filter(Boolean), ss = st.split(/\n+/).map((x)=> x.trim());
           ts.forEach((t, i)=>{ const s = ss[i] || (ts.length === 1 ? st : '') || ''; const o = { t, d, s: s || '기록', cell: colL(p.cDay) + (r + 1) }; (s === '완료' ? done : ing).push(o); });
         }
+        if(mon && !m && st && !dayTxt && !/^\d/.test(st)){ (st === '완료' ? done : ing).push({ t: mon.replace(/\s*\n\s*/g, ' '), d: null, s: st, cell: colL(p.cMon) + (r + 1) }); continue; }   // 최고 방식: 날짜 없이 상태만 적음
         if(mon && !m && !st.match(/^\d/)) todo.push({ t: mon.replace(/\s*\n\s*/g, ' '), cell: colL(p.cMon) + (r + 1) });
       }
       const key = (x)=> x.replace(/\s+/g, '');
       const doneKeys = new Set(done.map((x)=> key(x.t)));
-      return { name: p.name, done: done.sort((a, b)=> b.d - a.d), ing: ing.sort((a, b)=> b.d - a.d), todo: todo.filter((x)=> !doneKeys.has(key(x.t))) };
+      return { name: p.name, done: done.sort((a, b)=> (b.d || 0) - (a.d || 0)), ing: ing.sort((a, b)=> (b.d || 99) - (a.d || 99)), todo: todo.filter((x)=> !doneKeys.has(key(x.t))) };
     });
     const order = WBS_PEOPLE.map((x)=> x[0]);
     P.sort((a, b)=> (order.indexOf(a.name) + 1 || 99) - (order.indexOf(b.name) + 1 || 99));
@@ -894,12 +895,12 @@
     if(P) WBS = P; P = WBS; const box = $('wbsMain'); if(!box || !P) return;
     const stc = (s)=> s === '완료' ? 'var(--g)' : /보류/.test(s) ? '#9aa1b2' : /미완료/.test(s) ? 'var(--r)' : s === '기록' ? '#c3c8d4' : 'var(--y)';
     const link = (cell)=> 'https://docs.google.com/spreadsheets/d/' + WBS_ID + '/edit#gid=' + WBS_GID + '&range=' + cell;
-    const dd = (d)=> '<span class="wdd">' + d + ' ' + wdOf(d) + '</span>';
+    const dd = (d)=> d ? '<span class="wdd">' + d + ' ' + wdOf(d) + '</span>' : '<span class="wdd mu">날짜 없음</span>';
     const cnt = (p, d)=> p.done.filter((x)=> x.d === d).length;
     const any = (p, d)=> p.done.some((x)=> x.d === d) || p.ing.some((x)=> x.d === d);
     // 사람 카드
     let h = '<div class="wpc">' + P.map((p)=>{ const t = p.done.length, n = p.ing.filter((x)=> x.s !== '기록').length, td = p.todo.length, a = Math.max(1, t + n + td);
-      const last = [...p.done, ...p.ing].sort((x, y)=> y.d - x.d)[0];
+      const last = [...p.done, ...p.ing].filter((x)=> x.d).sort((x, y)=> y.d - x.d)[0];
       return '<button type="button" class="card wpp' + (WBS_PERSON === p.name ? ' on' : '') + '" data-wp="' + esc(p.name) + '" style="--c:' + p.color + '"><div class="nm"><span>' + esc(p.name) + '</span><small>' + (WBS_PERSON === p.name ? '닫기 ▲' : '누르면 업무 ▼') + '</small></div>' +
         '<div class="big">' + t + '<small>건 완료</small></div><div class="wbar"><i style="width:' + (t / a * 100) + '%;background:var(--g)"></i><i style="width:' + (n / a * 100) + '%;background:var(--y)"></i></div>' +
         '<div class="note">진행중 ' + n + ' · 앞으로 할 일 ' + td + '</div><div class="note">최근: <b>' + (last ? mNum + '/' + last.d + ' ' + esc(last.t) : '기록 없음') + '</b></div></button>'; }).join('') + '</div>';
