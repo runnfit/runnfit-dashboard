@@ -372,12 +372,14 @@
   .wbot{ display:grid; grid-template-columns:1.55fr 1fr; gap:12px; align-items:start; scroll-margin-top:70px; }
   .wcal{ display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:6px; }
   .wcal .h{ text-align:center; font-size:12px; color:var(--muted); font-weight:800; }
-  .wcal .d{ background:#fff; border:1px solid var(--line); border-radius:10px; height:92px; padding:6px 8px; position:relative; text-align:left; font:inherit; cursor:pointer; }
+  .wcal .d{ background:#fff; border:1px solid var(--line); border-radius:10px; min-height:92px; padding:6px 8px; position:relative; text-align:left; font:inherit; cursor:pointer; display:flex; flex-direction:column; align-items:stretch; }
   .wcal .d.fut{ background:#f7f8fb; color:#c3c8d4; } .wcal .d.today{ outline:2.5px solid var(--ink); } .wcal .d.sel{ outline:2.5px solid var(--navy); background:#f1f4fd; }
   .wcal .d b{ font-size:13px; } .wcal .tag{ font-size:10.5px; background:var(--ink); color:#fff; border-radius:4px; padding:0 5px; margin-left:4px; }
-  .wcal .ppl{ position:absolute; left:8px; right:8px; bottom:6px; display:grid; gap:2px; }
+  .wcal .ppl{ margin-top:auto; padding-top:6px; display:grid; gap:2px; }
   .wcal .ppl span{ display:flex; align-items:center; gap:4px; font-size:10.5px; font-weight:800; color:var(--muted); } .wcal .ppl i{ display:block; height:6px; border-radius:3px; background:var(--c); }
-  .wdp{ margin:8px 0; } .wdp b{ font-size:14px; }
+  .wdp{ margin:10px 0 12px; } .wdp > b{ display:block; font-size:14px; padding-bottom:4px; border-bottom:2px solid currentColor; margin-bottom:6px; }
+  .wdl{ display:flex; align-items:flex-start; gap:8px; padding:5px 2px; border-bottom:1px dashed #eef1f6; font-size:13.5px; font-weight:700; color:var(--ink); text-decoration:none; } .wdl:hover{ background:#f7f9ff; }
+  .wdl i{ flex:none; width:9px; height:9px; border-radius:50%; background:var(--s); margin-top:5px; } .wdl em{ font-style:normal; margin-left:auto; flex:none; font-size:11.5px; color:var(--muted); }
   .wchip{ display:inline-flex; align-items:center; gap:5px; background:#f3f5f9; border-radius:7px; padding:3px 8px; font-size:12.5px; font-weight:700; margin:3px 4px 0 0; color:var(--ink); text-decoration:none; } .wchip:hover{ background:#e8edf9; }
   .wchip i{ width:8px; height:8px; border-radius:50%; background:var(--s); }
   .wlg{ display:flex; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--muted); font-weight:700; margin-top:10px; }
@@ -929,7 +931,7 @@
     cal += '</div>';
     const D = WBS_DAY;
     const det = '<div class="card"><h2>' + mNum + '월 ' + D + '일 (' + wdOf(D) + ') <small>그날 한 일 · 누르면 시트 그 칸</small></h2>' + P.map((p)=>{ const its = [...p.done, ...p.ing].filter((x)=> x.d === D);
-      return '<div class="wdp"><b style="color:' + p.color + '">' + esc(p.name) + '</b><div>' + (its.map((x)=> '<a class="wchip" target="_blank" rel="noopener" href="' + link(x.cell) + '" style="--s:' + stc(x.s) + '"><i></i>' + esc(x.t) + (x.s !== '완료' ? ' · ' + esc(x.s) : '') + '</a>').join('') || '<span class="note">기록 없음</span>') + '</div></div>'; }).join('') + '</div>';
+      return '<div class="wdp"><b style="color:' + p.color + '">' + esc(p.name) + ' <small style="color:var(--muted);font-size:12px">' + its.length + '</small></b><div>' + (its.map((x)=> '<a class="wdl" target="_blank" rel="noopener" href="' + link(x.cell) + '" style="--s:' + stc(x.s) + '"><i></i><span>' + esc(x.t) + '</span><em>' + esc(x.s) + '</em></a>').join('') || '<span class="note">기록 없음</span>') + '</div></div>'; }).join('') + '</div>';
     h += '<div class="wbot"><div class="card"><h2>WBS 달력 <small>막대 = 사람별 완료 · 날짜를 누르면 오른쪽에 그날 업무</small></h2>' + cal + '<div class="wlg">' + P.map((p)=> '<span style="--k:' + p.color + '">' + esc(p.name) + '</span>').join('') + '</div></div><div>' + det +
       '<div class="wlg st"><span style="--k:var(--g)">완료</span><span style="--k:var(--y)">진행중</span><span style="--k:var(--r)">미완료</span><span style="--k:#9aa1b2">보류</span><span style="--k:#c3c8d4">기록(완료 칸 비어 있음)</span></div></div></div>';
     box.innerHTML = '<div class="wbs">' + h + '</div>';
