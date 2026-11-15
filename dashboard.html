@@ -398,6 +398,8 @@
   .left .beltcard{ flex:0 0 auto; min-height:0; padding:8px; border-radius:14px; margin-bottom:10px; }
   .left .beltcard h2{ font-size:16px; }
   .belttiles{ display:grid; grid-template-columns:repeat(5, 1fr); gap:6px; }
+  .beltbar{ grid-column:1 / -1; display:flex; height:20px; border-radius:6px; overflow:hidden; gap:2px; margin-top:4px; box-shadow:inset 0 0 0 1px #dfe4ee; }
+  .beltbar i{ display:flex; align-items:center; justify-content:center; font-style:normal; font-size:12px; font-weight:800; white-space:nowrap; overflow:hidden; min-width:0; }
   .belttiles .mempty{ grid-column:1 / -1; text-align:center; color:var(--muted); font-size:13px; padding:14px 0; }
   .bt{ font:inherit; background:#fff; border:1px solid var(--line); border-radius:12px; padding:6px 2px 6px; cursor:pointer; display:flex; flex-direction:column; align-items:center; gap:1px; color:var(--ink); transition:box-shadow .15s, border-color .15s; }
   .bt:hover, .bt:focus-visible{ border-color:#1f2f8a; box-shadow:0 0 0 3px rgba(31,47,138,.12); outline:none; }
@@ -1661,7 +1663,10 @@
     const tot = beltAll.length;   // 유효 회원 대비 비율
     box.innerHTML = BELTS.map((b, i)=> '<button type="button" class="bt' + (i < 2 ? ' focus' : '') + '" data-b="' + i + '" title="' + esc(b.name) + ' ' + beltRange(i) + ' · 누르면 안 나온 순서로 회원 카드">' +
       BELT_SVG(b.bg) + '<b>' + fmt(cnt[i]) + '<small>명</small></b>' +
-      '<span class="bl">' + esc(b.name) + '<i>|</i>' + beltRange(i) + '<i>|</i><strong>' + (tot ? Math.round(cnt[i] * 100 / tot) : 0) + '%</strong></span></button>').join('');
+      '<span class="bl">' + esc(b.name) + '<i>|</i>' + beltRange(i) + '<i>|</i><strong>' + (tot ? Math.round(cnt[i] * 100 / tot) : 0) + '%</strong></span></button>').join('') +
+      (tot ? '<div class="beltbar" aria-label="띠별 비율">' + BELTS.map((b, i)=>{ if(!cnt[i]) return ''; const pc = Math.round(cnt[i] * 100 / tot);
+        const dark = (()=>{ const h = String(b.bg || '').replace('#', ''); if(h.length < 6) return false; const r = parseInt(h.slice(0, 2), 16), g = parseInt(h.slice(2, 4), 16), bl = parseInt(h.slice(4, 6), 16); return (r * 299 + g * 587 + bl * 114) / 1000 < 150; })();
+        return '<i style="flex:' + cnt[i] + ';background:' + esc(b.bg) + ';color:' + (dark ? '#fff' : '#16213d') + '" title="' + esc(b.name) + ' ' + fmt(cnt[i]) + '명 · ' + pc + '%">' + (pc >= 5 ? pc + '%' : '') + '</i>'; }).join('') + '</div>' : '');
   }
   async function openBeltPop(i){
     if(!beltPop.classList.contains('hidden') && beltPop.getAttribute('data-b') === String(i)){ beltPop.classList.add('hidden'); return; }
