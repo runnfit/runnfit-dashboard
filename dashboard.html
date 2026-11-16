@@ -458,6 +458,7 @@
   .msr mark{ background:#fff1b8; color:inherit; border-radius:3px; padding:0 1px; }
   .msr-empty{ padding:12px; color:#5d6782; font-size:13.5px; font-weight:700; }
   .searchpop{ padding:14px; z-index:60; }
+  article.card[data-mid]{ cursor:pointer; } article.card[data-mid]:hover{ box-shadow:0 0 0 2px #18338c; }
   .grid .card[data-id]{ cursor:pointer; } .grid .card.open{ outline:3px solid #18338c; outline-offset:-3px; border-bottom-left-radius:0; border-bottom-right-radius:0; }
   .cardexp{ grid-column:1 / -1; margin-top:-10px; background:#fff; border:1px solid var(--line); border-top:0; border-radius:0 0 16px 16px; padding:6px 16px 14px; }
   .cardexp .spcols{ border-top:0; margin-top:0; }
@@ -1312,7 +1313,7 @@
 
   function absentCardHtml(m, i, opt){
     opt = opt || {};
-    const belt = m.belt;
+    const belt = m.belt || (m.total != null ? BELTS[0] : null);   // 0회도 흰 띠
     const light = belt ? belt.text === 'dark' : true;
     const panel = belt ? belt.bg : '#c9cfdb';
     const ink = belt ? (light ? '#0b1f4d' : '#fff') : '#0b1f4d';
@@ -1329,22 +1330,41 @@
     const tel = digits.length === 11 ? digits.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3') : digits.length === 10 ? digits.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3') : (m.phone || '');
     const msg = m.days == null ? '등록 후 한 번도 안 나왔어요! 먼저 연락해 주세요!' : m.days + '일째 안 나왔어요! 연락해서 안부를 물어주세요!';
     const photo = m.photo ? '<img src="' + esc(m.photo) + '" alt="" loading="lazy" referrerpolicy="no-referrer">' : '<span class="ph">' + PERSON + '</span>';
-    return '<article class="card">' +
+    const n30 = m.n30 != null ? m.n30 : v30Status.get(m.id);
+    const remainD = m.gymExp ? daysBetween(m.gymExp, todayKst()) : null;
+    return '<article class="card" data-mid="' + esc(m.id) + '" title="누르면 다짐에서 회원 정보 열기">' +
       '<div class="side' + (light ? ' light' : '') + '" style="--belt:' + esc(panel) + ';--belt-ink:' + ink + '">' +
-        (nbBadge(m.id) || (focus ? '<span class="focus" title="집중관리 회원 (흰 띠·노란 띠)" aria-label="집중관리 회원">★</span>' : '')) +
+        '<div class="avwrap">' +
+          '<span class="stat l' + (m.total >= 100 ? ' long' : '') + '">' + (m.total != null ? '<b>' + m.total + '</b><em>누적</em>' : '') + '</span>' +
+          '<div class="avatar">' + photo + '</div>' +
+          '<span class="stat r' + (m.days >= 100 ? ' long' : '') + '">' + (m.days != null ? '<b>' + m.days + '</b><em>일 전</em>' : '') + '</span>' +
+        '</div>' +
+        (nbBadge(m.id, n30 != null ? n30 : null) || (focus ? '<span class="focus" title="집중관리 회원 (흰 띠·노란 띠)" aria-label="집중관리 회원">★</span>' : '')) +
         '<div class="beltname">' + (belt ? esc(belt.name) : NA) + '</div>' +
-        '<div class="avatar">' + photo + '</div>' +
         '<div class="who">' + esc(m.name || '이름 확인 불가') + '</div>' +
       '</div>' +
       '<div class="main">' +
         '<div class="head2"><div class="time absent">' + (opt.head != null ? opt.head : (i + 1) + '. ' + daysText) + '</div><div class="regbox">' + lights + '<span class="reg">' + regText + '</span></div></div>' +
         '<div class="msgs">' + (tel ? '<p class="care phone"><button class="tel" data-tel="' + esc(tel) + '" title="누르면 번호가 복사돼요">📞 ' + esc(tel) + '</button><span class="copied"></span></p>' : '<p class="care">' + esc(msg) + '</p>') + '</div>' +
-        '<div class="boxes"><div class="box"><span>누적 ' + (m.total != null ? '<b>' + m.total + '</b>회' : na) + '</span><span class="sep"></span><span>마지막 출석 <b>' + (m.recent == null ? '-' : m.days === 0 ? '오늘' : m.days + '일 전') + '</b></span></div></div>' +
+        '<div class="boxes"><div class="box"><span>누적 ' + (m.total != null ? '<b>' + m.total + '</b>회' : na) + '</span><span class="sep"></span><span>30일 <b>' + (n30 != null ? n30 : '-') + '</b>회</span><span class="sep"></span><span>주 평균 <b>' + (n30 != null ? Math.round(n30 / 30 * 7 * 10) / 10 : '-') + '</b>회</span></div>' +
+          '<div class="box"><span>' + (m.recent == null ? '출석 기록 <b>없음</b>' : m.days === 0 ? '<b>오늘</b> 출석' : '<b>' + m.days + '</b>일 전 출석') + '</span><span class="sep"></span><span' + (remainD != null && remainD <= 7 ? ' class="warn"' : '') + '>' + (remainD == null ? '잔여 ' + na : remainD >= 0 ? '잔여 <b>' + remainD + '</b>일' : '<b>만료</b>') + '</span></div></div>' +
         '<div class="foot"><span class="wl"><span>운동복 ' + (m.wear ? 'O' : 'X') + '</span><span>사물함 ' + (m.locker ? 'O' : 'X') + '</span></span>' +
           '<span>헬스 만료 ' + (m.gymExp ? dot(m.gymExp) : NA) + '</span></div>' +
       '</div>' +
     '</article>';
   }
+
+  // 회원 카드(출석 카드 모양)를 누르면 다짐 회원 화면을 새 탭으로
+  function dagymMemberUrl(id){
+    let g = ''; try{ g = new URLSearchParams(window.top.location.search).get('gymId') || ''; }catch(e){}
+    if(!g) g = new URLSearchParams(location.search).get('gymId') || '';
+    return 'https://www.dagym-manager.com/member/' + encodeURIComponent(id) + (g ? '?gymId=' + encodeURIComponent(g) : '');
+  }
+  document.addEventListener('click', (e)=>{
+    if(e.target.closest('button, a, .tel')) return;
+    const c = e.target.closest('article.card[data-mid]') || e.target.closest('.nbn[data-mid]');
+    if(c) window.open(dagymMemberUrl(c.getAttribute('data-mid')), '_blank', 'noopener');
+  });
 
   const absTile = $('kAbsentHalf'), absPop = $('absentPop');
   let absReq = 0;
@@ -1741,7 +1761,7 @@
       const v = c.visits == null ? '-' : c.visits;
       const w = c.visits == null ? 0 : Math.min(100, c.visits / 16 * 100);
       return '<div class="nbr ' + c.st + '" role="listitem">' +
-        '<span class="nbn" data-i="' + i + '">' + '<i class="bd" style="background:' + esc(c.belt ? c.belt.bg : '#d3d7e0') + '" title="' + esc(c.belt ? c.belt.name + ' · 누적 ' + c.total + '회' : '띠 확인 불가') + '"></i>' + esc(c.name) + '</span>' +
+        '<span class="nbn" data-i="' + i + '" data-mid="' + esc(c.id) + '">' + '<i class="bd" style="background:' + esc(c.belt ? c.belt.bg : '#d3d7e0') + '" title="' + esc(c.belt ? c.belt.name + ' · 누적 ' + c.total + '회' : '띠 확인 불가') + '"></i>' + esc(c.name) + '</span>' +
         '<span class="nbd">' + c.day + '일째</span>' +
         '<span class="nbb"><i style="width:' + w.toFixed(0) + '%"></i><em style="left:' + (NB_WARN / 16 * 100) + '%"></em><em style="left:' + (NB_SETTLE / 16 * 100) + '%"></em></span>' +
         '<span class="nbv">' + v + '회</span>' +
@@ -1790,7 +1810,7 @@
       const w = Math.min(100, c.n30 / 16 * 100);
       const last = c.days == null ? '-' : c.days === 0 ? '오늘' : c.days === 1 ? '어제' : c.days + '일 전';
       return '<div class="nbr ' + c.st + '" role="listitem">' +
-        '<span class="nbn" data-i="' + i + '">' + '<i class="bd" style="background:' + esc(c.belt ? c.belt.bg : c.total != null ? BELTS[0].bg : '#d3d7e0') + '" title="' + esc(c.total != null ? (c.belt ? c.belt.name : BELTS[0].name) + ' · 누적 ' + c.total + '회' : '띠 확인 중') + '"></i>' + esc(c.name) + '</span>' +
+        '<span class="nbn" data-i="' + i + '" data-mid="' + esc(c.id) + '">' + '<i class="bd" style="background:' + esc(c.belt ? c.belt.bg : c.total != null ? BELTS[0].bg : '#d3d7e0') + '" title="' + esc(c.total != null ? (c.belt ? c.belt.name : BELTS[0].name) + ' · 누적 ' + c.total + '회' : '띠 확인 중') + '"></i>' + esc(c.name) + '</span>' +
         '<span class="nbd">' + last + '</span>' +
         '<span class="nbb"><i style="width:' + w.toFixed(0) + '%"></i><em style="left:' + (VR_WARN / 16 * 100) + '%"></em><em style="left:' + (VR_OK / 16 * 100) + '%"></em></span>' +
         '<span class="nbv">' + c.n30 + '회</span>' +
