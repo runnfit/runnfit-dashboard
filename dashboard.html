@@ -450,22 +450,25 @@
   .msr mark{ background:#fff1b8; color:inherit; border-radius:3px; padding:0 1px; }
   .msr-empty{ padding:12px; color:#5d6782; font-size:13.5px; font-weight:700; }
   .searchpop{ padding:14px; z-index:60; }
-  .searchpop .notes{ margin-top:12px; border-top:1px solid #dfe4ee; padding-top:10px; }
-  .searchpop .nh{ display:flex; align-items:baseline; gap:8px; margin-bottom:8px; } .searchpop .nh b{ font-size:15px; } .searchpop .nh span{ color:#5d6782; font-weight:700; font-size:13px; }
-  .searchpop .nh a{ margin-left:auto; font-size:13px; font-weight:800; color:#18338c; text-decoration:none; }
-  .searchpop .note{ border:1px solid #dfe4ee; border-radius:10px; padding:9px 12px; margin-bottom:8px; background:#fff; }
-  .searchpop .note.pin{ border-color:#f5b82e; background:#fffbef; }
-  .searchpop .nt{ display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; } .searchpop .nt b{ font-size:14px; } .searchpop .nt span{ font-size:12px; color:#5d6782; font-weight:700; margin-left:auto; }
-  .searchpop .pinb{ font-size:11.5px; font-weight:800; color:#8a5a00; margin-left:0 !important; }
-  .searchpop .nc{ margin-top:4px; font-size:13.5px; line-height:1.55; white-space:pre-wrap; color:#16213d; }
-  .searchpop .spcols{ display:grid; grid-template-columns:1fr 1.3fr; gap:14px; margin-top:12px; border-top:1px solid #dfe4ee; padding-top:10px; }
-  .searchpop .spcols .notes{ margin-top:0; border-top:0; padding-top:0; max-height:360px; overflow:auto; }
-  .searchpop .atts .nh{ display:flex; align-items:baseline; gap:8px; margin-bottom:8px; } .searchpop .atts .nh b{ font-size:15px; } .searchpop .atts .nh span{ color:#5d6782; font-weight:700; font-size:13px; }
-  .searchpop .strip{ display:grid; grid-template-columns:repeat(28, 1fr); gap:2px; } .searchpop .strip i{ height:18px; border-radius:3px; background:#eef1f7; } .searchpop .strip i.we{ background:#e6e9f1; } .searchpop .strip i.on{ background:#2fb36b; } .searchpop .strip i.td{ outline:2px solid #16213d; }
-  .searchpop .stripl{ display:flex; justify-content:space-between; font-size:11px; color:#9aa1b2; font-weight:700; margin:2px 0 8px; }
-  .searchpop .alist{ max-height:290px; overflow:auto; border:1px solid #dfe4ee; border-radius:10px; }
-  .searchpop .ar{ display:grid; grid-template-columns:1fr auto auto; gap:12px; padding:7px 12px; border-bottom:1px solid #eef1f6; font-size:13.5px; font-variant-numeric:tabular-nums; } .searchpop .ar:last-child{ border-bottom:0; }
-  .searchpop .ar span{ color:#5d6782; font-weight:700; } .searchpop .ar em{ font-style:normal; color:#5d6782; font-size:12px; font-weight:700; min-width:48px; text-align:right; }
+  .grid .card[data-id]{ cursor:pointer; } .grid .card.open{ outline:3px solid #18338c; outline-offset:-3px; border-bottom-left-radius:0; border-bottom-right-radius:0; }
+  .cardexp{ grid-column:1 / -1; margin-top:-10px; background:#fff; border:1px solid var(--line); border-top:0; border-radius:0 0 16px 16px; padding:6px 16px 14px; }
+  .cardexp .spcols{ border-top:0; margin-top:0; }
+  :is(.searchpop,.cardexp) .notes{ margin-top:12px; border-top:1px solid #dfe4ee; padding-top:10px; }
+  :is(.searchpop,.cardexp) .nh{ display:flex; align-items:baseline; gap:8px; margin-bottom:8px; } :is(.searchpop,.cardexp) .nh b{ font-size:15px; } :is(.searchpop,.cardexp) .nh span{ color:#5d6782; font-weight:700; font-size:13px; }
+  :is(.searchpop,.cardexp) .nh a{ margin-left:auto; font-size:13px; font-weight:800; color:#18338c; text-decoration:none; }
+  :is(.searchpop,.cardexp) .note{ border:1px solid #dfe4ee; border-radius:10px; padding:9px 12px; margin-bottom:8px; background:#fff; }
+  :is(.searchpop,.cardexp) .note.pin{ border-color:#3b5bd6; background:#eef2ff; }
+  :is(.searchpop,.cardexp) .nt{ display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; } :is(.searchpop,.cardexp) .nt b{ font-size:14px; } :is(.searchpop,.cardexp) .nt span{ font-size:12px; color:#5d6782; font-weight:700; margin-left:auto; }
+  :is(.searchpop,.cardexp) .pinb{ font-size:11.5px; font-weight:800; color:#1f3fb3; margin-left:0 !important; }
+  :is(.searchpop,.cardexp) .nc{ margin-top:4px; font-size:13.5px; line-height:1.55; white-space:pre-wrap; color:#16213d; }
+  :is(.searchpop,.cardexp) .spcols{ display:grid; grid-template-columns:1fr 1.3fr; gap:14px; margin-top:12px; border-top:1px solid #dfe4ee; padding-top:10px; }
+  :is(.searchpop,.cardexp) .spcols .notes{ margin-top:0; border-top:0; padding-top:0; max-height:360px; overflow:auto; }
+  :is(.searchpop,.cardexp) .atts .nh{ display:flex; align-items:baseline; gap:8px; margin-bottom:8px; } :is(.searchpop,.cardexp) .atts .nh b{ font-size:15px; } :is(.searchpop,.cardexp) .atts .nh span{ color:#5d6782; font-weight:700; font-size:13px; }
+  :is(.searchpop,.cardexp) .strip{ display:grid; grid-template-columns:repeat(28, 1fr); gap:2px; } :is(.searchpop,.cardexp) .strip i{ height:18px; border-radius:3px; background:#eef1f7; } :is(.searchpop,.cardexp) .strip i.we{ background:#e6e9f1; } :is(.searchpop,.cardexp) .strip i.on{ background:#2fb36b; } :is(.searchpop,.cardexp) .strip i.td{ outline:2px solid #16213d; }
+  :is(.searchpop,.cardexp) .stripl{ display:flex; justify-content:space-between; font-size:11px; color:#9aa1b2; font-weight:700; margin:2px 0 8px; }
+  :is(.searchpop,.cardexp) .alist{ max-height:290px; overflow:auto; border:1px solid #dfe4ee; border-radius:10px; }
+  :is(.searchpop,.cardexp) .ar{ display:grid; grid-template-columns:1fr auto auto; gap:12px; padding:7px 12px; border-bottom:1px solid #eef1f6; font-size:13.5px; font-variant-numeric:tabular-nums; } :is(.searchpop,.cardexp) .ar:last-child{ border-bottom:0; }
+  :is(.searchpop,.cardexp) .ar span{ color:#5d6782; font-weight:700; } :is(.searchpop,.cardexp) .ar em{ font-style:normal; color:#5d6782; font-size:12px; font-weight:700; min-width:48px; text-align:right; }
   @media (max-width:1400px){ .topbar .motto{ display:none; } }
 </style>
 </head>
@@ -875,6 +878,7 @@
     if(q && !shown.length){ showNotice('"<b>' + esc(q) + '</b>" 이름의 출석 회원이 없어요.'); grid.innerHTML = ''; return; }
     hideNotice();
     grid.innerHTML = shown.map(cardHtml).join('');
+    if(typeof placeExp === 'function') placeExp();
   }
 
   function showNotice(html){ notice.innerHTML = html; notice.classList.remove('hidden'); }
@@ -1534,6 +1538,7 @@
 
 
   // ================= 맨 위 회원 검색 (이름 · 전화번호 뒷자리) → 회원 카드 + 노트 =================
+  let memberDetailHtml = null;   // 오늘 출석 카드 펼치기에서도 같이 씀
   (function memberSearch(){
     const inp = $('mSearch'), list = $('mSearchList'); if(!inp || !list) return;
     const pop = document.createElement('div');
@@ -1578,6 +1583,19 @@
       return '<div class="atts"><div class="nh"><b>최근 출석</b><span>30일 ' + n30 + '회 · 주 평균 ' + (Math.round(n30 / 30 * 7 * 10) / 10) + '회</span></div><div class="strip">' + strip + '</div><div class="stripl"><span>4주 전</span><span>오늘</span></div>' +
         (rowsH ? '<div class="alist">' + rowsH + '</div>' : '<div class="popempty">최근 90일 출석이 없어요</div>') + '</div>';
     }
+    async function detailHtml(m){
+      const ATT_Q = 'query RunFitStaffSearchAtt($id: String!, $d: DateFilterInput!) { managerMembers { attendances(memberId: $id, date: $d, paging: {limit: 300, offset: 0}) { status attendAt } } }';
+      const [nd, ad] = await Promise.all([gql(NOTE_Q, { id: m.id, paging: { limit: 20, offset: 0 }, sortField: 'createdAt', sortType: 'DESC' }).catch((e)=>{ if(e instanceof AuthError) throw e; return null; }),
+        gql(ATT_Q, { id: m.id, d: { gte: new Date(Date.now() - 90 * 864e5).toISOString(), lte: new Date(Date.now() + 36e5).toISOString() } }).catch((e)=>{ if(e instanceof AuthError) throw e; return null; })]);
+      const atts = ((ad && ad.managerMembers && ad.managerMembers.attendances) || []).filter((a)=> a.status === 'ATTEND' && a.attendAt).map((a)=> Date.parse(a.attendAt)).sort((a, b)=> b - a);
+      const np = nd && nd.managerMembers && nd.managerMembers.notesPaged, notes = (np && np.data) || [];
+      notes.sort((a, b)=> (b.pinnedAt ? 1 : 0) - (a.pinnedAt ? 1 : 0));
+      const link = 'https://www.dagym-manager.com/member/' + encodeURIComponent(m.id) + (gymId ? '?gymId=' + encodeURIComponent(gymId) + '&tab=notes' : '?tab=notes');
+      return '<div class="spcols">' + attSection(atts) +
+        '<div class="notes"><div class="nh"><b>노트 · 메모</b><span>' + (np ? np.count + '개' : '') + '</span><a href="' + link + '">다짐에서 열기 ↗</a></div>' +
+        (notes.length ? notes.map((n)=> '<div class="note' + (n.pinnedAt ? ' pin' : '') + '"><div class="nt">' + (n.pinnedAt ? '<span class="pinb">📌 고정</span>' : '') + '<b>' + esc(n.title || '(제목 없음)') + '</b><span>' + fmtDate(n.createdAt) + (n.account && n.account.name ? ' · ' + esc(n.account.name) : '') + '</span></div>' + (n.content ? '<div class="nc">' + esc(n.content) + '</div>' : '') + '</div>').join('') : '<div class="popempty">작성된 노트가 없어요</div>') + '</div></div>';
+    }
+    memberDetailHtml = detailHtml;
     async function openMember(m){
       list.classList.add('hidden');
       ['rankPop', 'absentPop', 'validPop', 'beltPop', 'todayPop'].forEach((id)=>{ const el = $(id); if(el) el.classList.add('hidden'); });
@@ -1586,18 +1604,9 @@
       pop.innerHTML = '<div class="pophead"><b>회원 검색</b><button type="button" class="popx" aria-label="닫기">✕</button></div><div class="popempty">불러오는 중…</div>';
       pop.classList.remove('hidden');
       try{
-        const ATT_Q = 'query RunFitStaffSearchAtt($id: String!, $d: DateFilterInput!) { managerMembers { attendances(memberId: $id, date: $d, paging: {limit: 300, offset: 0}) { status attendAt } } }';
-        const [, nd, ad] = await Promise.all([m.total == null ? enrichMembers([m], true) : null, gql(NOTE_Q, { id: m.id, paging: { limit: 20, offset: 0 }, sortField: 'createdAt', sortType: 'DESC' }).catch(()=> null),
-          gql(ATT_Q, { id: m.id, d: { gte: new Date(Date.now() - 90 * 864e5).toISOString(), lte: new Date(Date.now() + 36e5).toISOString() } }).catch(()=> null)]);
-        const atts = ((ad && ad.managerMembers && ad.managerMembers.attendances) || []).filter((a)=> a.status === 'ATTEND' && a.attendAt).map((a)=> Date.parse(a.attendAt)).sort((a, b)=> b - a);
-        const attHtml = attSection(atts);
-        const np = nd && nd.managerMembers && nd.managerMembers.notesPaged, notes = (np && np.data) || [];
-        notes.sort((a, b)=> (b.pinnedAt ? 1 : 0) - (a.pinnedAt ? 1 : 0));
-        const link = 'https://www.dagym-manager.com/member/' + encodeURIComponent(m.id) + (gymId ? '?gymId=' + encodeURIComponent(gymId) + '&tab=notes' : '?tab=notes');
+        const [, det] = await Promise.all([m.total == null ? enrichMembers([m], true) : null, detailHtml(m)]);
         pop.innerHTML = '<div class="pophead"><b>회원 검색</b><span class="sub">' + esc(m.name) + '</span><button type="button" class="popx" aria-label="닫기">✕</button></div>' +
-          absentCardHtml(m, 0, { head: lastText(m) }) + '<div class="spcols">' + attHtml +
-          '<div class="notes"><div class="nh"><b>노트 · 메모</b><span>' + (np ? np.count + '개' : '') + '</span><a href="' + link + '">다짐에서 열기 ↗</a></div>' +
-          (notes.length ? notes.map((n)=> '<div class="note' + (n.pinnedAt ? ' pin' : '') + '"><div class="nt">' + (n.pinnedAt ? '<span class="pinb">📌 고정</span>' : '') + '<b>' + esc(n.title || '(제목 없음)') + '</b><span>' + fmtDate(n.createdAt) + (n.account && n.account.name ? ' · ' + esc(n.account.name) : '') + '</span></div>' + (n.content ? '<div class="nc">' + esc(n.content) + '</div>' : '') + '</div>').join('') : '<div class="popempty">작성된 노트가 없어요</div>') + '</div></div>';
+          absentCardHtml(m, 0, { head: lastText(m) }) + det;
       }catch(e){ if(e instanceof AuthError){ lockScreen(); return; } pop.innerHTML = '<div class="pophead"><b>회원 검색</b><button type="button" class="popx" aria-label="닫기">✕</button></div><div class="popempty">불러오지 못했어요</div>'; }
     }
     inp.addEventListener('input', ()=>{ clearTimeout(timer); const q = inp.value.trim(); if(q.replace(/\s/g, '').length < 2){ list.classList.add('hidden'); rows = []; return; } timer = setTimeout(()=> search(q), 300); });
@@ -1614,6 +1623,36 @@
     document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && !pop.classList.contains('hidden')){ e.stopPropagation(); pop.classList.add('hidden'); }
       if(e.key === '/' && document.activeElement !== inp && !/INPUT|TEXTAREA/.test((document.activeElement || {}).tagName || '')){ e.preventDefault(); inp.focus(); inp.select(); } }, true);
   })();
+
+  // ================= 오늘 출석 카드 누르면 아래로 펼치기 (최근 출석 · 노트) =================
+  let expId = null; const cexpCache = new Map();   // memberId → { t, html }
+  function placeExp(){
+    grid.querySelectorAll('.card.open').forEach((el)=> el.classList.remove('open'));
+    const old = grid.querySelector('.cardexp'); if(old) old.remove();
+    if(!expId) return;
+    const card = grid.querySelector('.card[data-id="' + CSS.escape(expId) + '"]'); if(!card){ return; }
+    card.classList.add('open');
+    const box = document.createElement('div'); box.className = 'cardexp';
+    const c = cexpCache.get(expId);
+    box.innerHTML = c ? c.html : '<div class="popempty">불러오는 중…</div>';
+    card.after(box);
+  }
+  async function toggleExp(id){
+    if(expId === id){ expId = null; placeExp(); return; }
+    expId = id; placeExp();
+    const c = cexpCache.get(id);
+    if(c && Date.now() - c.t < 120e3) return;
+    try{
+      const html = await memberDetailHtml({ id });
+      cexpCache.set(id, { t: Date.now(), html });
+    }catch(e){ if(e instanceof AuthError){ lockScreen(); return; } cexpCache.set(id, { t: 0, html: '<div class="popempty">불러오지 못했어요</div>' }); }
+    if(expId === id) placeExp();
+  }
+  grid.addEventListener('click', (e)=>{
+    if(e.target.closest('a, button, .cardexp')) return;
+    const card = e.target.closest('.card[data-id]'); if(!card) return;
+    toggleExp(card.getAttribute('data-id'));
+  });
 
   // ---------- 이름에 마우스를 올리면 회원 카드 ----------
   const hoverCard = document.createElement('div');
