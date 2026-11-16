@@ -523,6 +523,7 @@
               <span>🔴 <b>위험</b> 5회 이하 → 집중관리 필요해요!</span>
             </div>
             <p class="note">👥 <b>유효회원 화면</b>은 최근 30일 출석으로 봐요 · 🟢 <b>12회 이상</b> · 🟡 <b>8~11회</b> · 🔴 <b>0~7회</b></p>
+            <p class="note">💡 <b>출석 카드 불</b> · 등록 30일 안 회원은 위 신규 기준, <b>그 밖의 모든 회원</b>은 최근 30일 출석으로 떠요 · 🟢 <b>12회 이상</b> · 🟡 <b>8~11회</b> · 🔴 <b>0~7회</b> <small>(유효회원 화면도 같은 기준)</small></p>
             <p class="note">💡 <b>30일 지난 흰·노란 띠</b>도 같은 기준이에요. 등록 후 <b>한 달 평균 출석</b>으로 출석 카드에 🔴🟡🟢 불이 떠요.</p>
             <p class="sec">🔮 ‘예상’은 뭐예요?</p>
             <div class="nbt-q">지금 오는 속도 그대로 <b>30일을 다니면 몇 번 오게 될지</b>예요.</div>
@@ -791,14 +792,17 @@
   // 신규회원(등록 30일 안) 상태: 카드 왼쪽 위 별 자리에 🔴🟡🟢 불로 표시
   // 30일 지난 흰·노란 띠도 같은 기준(한 달 평균 출석: 5회 이하 위험 · 6~11회 주의 · 12회 이상 정착)
   const nbStatus = new Map(), oldStatus = new Map();
-  function nbBadge(id){
+  const v30Status = new Map();   // 유효회원 최근 30일 출석 횟수 (memberId → n30)
+  function nbBadge(id, n30){
     if(!id) return '';
     const L = { risk: '위험', warn: '주의', ok: '정착' };
     const s = nbStatus.get(id);
     if(s && s.st !== 'na') return '<span class="nblight ' + s.st + '" title="신규회원 ' + L[s.st] + ' · ' + s.day + '일째 · 첫 30일 ' + s.visits + '회 출석" aria-label="신규회원 ' + L[s.st] + '"></span>';
-    const o = oldStatus.get(id);
-    if(o) return '<span class="nblight ' + o.st + '" title="' + L[o.st] + ' · 등록 ' + o.day + '일째 · 누적 ' + o.total + '회 · 한 달 평균 ' + o.pace + '회" aria-label="' + L[o.st] + '"></span>';
-    return '';
+    // 그 밖의 모든 회원: 최근 30일 출석 0~7 위험 · 8~11 주의 · 12회 이상 정착
+    const n = n30 != null ? n30 : v30Status.get(id);
+    if(n == null) return '';
+    const st = n >= 12 ? 'ok' : n >= 8 ? 'warn' : 'risk';
+    return '<span class="nblight ' + st + '" title="' + L[st] + ' · 최근 30일 ' + n + '회 출석" aria-label="' + L[st] + '"></span>';
   }
   const grid = $('grid'), notice = $('notice');
   let viewDate = todayKst();
@@ -858,7 +862,7 @@
           '<div class="avatar">' + photo + '</div>' +
           '<span class="stat r' + (d && d.gap.kind === 'days' && d.gap.days >= 100 ? ' long' : '') + '">' + (!d ? '' : d.gap.kind === 'days' ? '<b>' + d.gap.days + '</b><em>일 만</em>' : d.gap.kind === 'first' ? '<b>첫</b><em>출석</em>' : '') + '</span>' +
         '</div>' +
-        (nbBadge(c.id) || (focus ? '<span class="focus" title="집중관리 회원 (흰 띠·노란 띠)" aria-label="집중관리 회원">★</span>' : '')) +
+        (nbBadge(c.id, d && d.n30 != null ? d.n30 : null) || (focus ? '<span class="focus" title="집중관리 회원 (흰 띠·노란 띠)" aria-label="집중관리 회원">★</span>' : '')) +
         '<div class="beltname">' + (!d ? '확인 중…' : belt ? esc(belt.name) : NA) + '</div>' +
         '<div class="who">' + (milestone ? '🎉' : '') + esc(c.name || '이름 확인 불가') + '</div>' +
       '</div>' +
@@ -1049,7 +1053,7 @@
       $('kMonth').textContent = monthKnown ? fmt(monthSum) + '명' : NA;
       drawChart(days, today);
       loadNewbies(today);   // 신규회원 첫 30일 (뒤에서)
-      if(nbMode === 'valid') loadValid30(today);
+      loadValid30(today);   // 유효회원 최근 30일 (출석 카드 불 · 전환 화면)
       loadBeltCounts();     // 띠별 회원 수 (뒤에서)
     }catch(e){
       if(e instanceof AuthError) lockScreen();
@@ -1219,7 +1223,7 @@
     const photo = m.photo ? '<img src="' + esc(m.photo) + '" alt="" loading="lazy" referrerpolicy="no-referrer">' : '<span class="ph">' + PERSON + '</span>';
     return '<article class="card' + (m.rank <= 3 ? ' top3' : '') + '">' +
       '<div class="side' + (light ? ' light' : '') + '" style="--belt:' + esc(panel) + ';--belt-ink:' + ink + '">' +
-        (nbBadge(m.id) || (focus ? '<span class="focus" title="집중관리 회원 (흰 띠·노란 띠)" aria-label="집중관리 회원">★</span>' : '')) +
+        (nbBadge(m.id, m.n30) || (focus ? '<span class="focus" title="집중관리 회원 (흰 띠·노란 띠)" aria-label="집중관리 회원">★</span>' : '')) +
         '<div class="beltname">' + (belt ? esc(belt.name) : NA) + '</div>' +
         '<div class="avatar">' + photo + '</div>' +
         '<div class="who">' + esc(m.name || '이름 확인 불가') + '</div>' +
@@ -1754,7 +1758,7 @@
   async function loadValid30(today, force){
     const box = $('newbies'); if(!box || vrBusy || (!force && Date.now() - vrAt < 10 * 60e3)) return;
     vrBusy = true;
-    if(!vrAt) box.innerHTML = '<div class="mempty">불러오는 중…</div>';
+    if(!vrAt && nbMode === 'valid') box.innerHTML = '<div class="mempty">불러오는 중…</div>';
     try{
       const all = (await loadValidMembers()).map((m)=> toMember(m, today));
       const gte = new Date(dayStart(addDays(today, -29))).toISOString(), lte = new Date(Date.now() + 36e5).toISOString();
@@ -1769,8 +1773,10 @@
       const ord = { risk: 0, warn: 1, ok: 2 };
       all.sort((a, b)=> ord[a.st] - ord[b.st] || a.n30 - b.n30 || (b.days == null ? 1e9 : b.days) - (a.days == null ? 1e9 : a.days));
       vrList = all; vrAt = Date.now();
+      v30Status.clear(); all.forEach((m)=> v30Status.set(m.id, m.n30));
+      render();   // 출석 카드 불 반영
       drawValid30();
-    }catch(e){ if(e instanceof AuthError) lockScreen(); else if(!vrAt) box.innerHTML = '<div class="mempty">' + NA + '</div>'; }
+    }catch(e){ if(e instanceof AuthError) lockScreen(); else if(!vrAt && nbMode === 'valid') box.innerHTML = '<div class="mempty">' + NA + '</div>'; }
     finally{ vrBusy = false; }
   }
   function drawValid30(){
