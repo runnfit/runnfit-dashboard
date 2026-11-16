@@ -472,7 +472,7 @@
   :is(.searchpop,.cardexp) .spcols{ display:grid; grid-template-columns:1fr 1.3fr; gap:14px; margin-top:12px; border-top:1px solid #dfe4ee; padding-top:10px; }
   :is(.searchpop,.cardexp) .spcols .notes{ margin-top:0; border-top:0; padding-top:0; max-height:360px; overflow:auto; }
   :is(.searchpop,.cardexp) .atts .nh{ display:flex; align-items:baseline; gap:8px; margin-bottom:8px; } :is(.searchpop,.cardexp) .atts .nh b{ font-size:15px; } :is(.searchpop,.cardexp) .atts .nh span{ color:#5d6782; font-weight:700; font-size:13px; }
-  :is(.searchpop,.cardexp) .strip{ display:grid; grid-template-columns:repeat(28, 1fr); gap:2px; } :is(.searchpop,.cardexp) .strip i{ height:18px; border-radius:3px; background:#eef1f7; } :is(.searchpop,.cardexp) .strip i.we{ background:#e6e9f1; } :is(.searchpop,.cardexp) .strip i.on{ background:#2fb36b; } :is(.searchpop,.cardexp) .strip i.td{ outline:2px solid #16213d; }
+  :is(.searchpop,.cardexp) .strip{ display:grid; grid-template-columns:repeat(28, 1fr); gap:2px; } :is(.searchpop,.cardexp) .strip i{ height:18px; border-radius:3px; background:#eef1f7; } :is(.searchpop,.cardexp) .strip i.we{ background:#e6e9f1; } :is(.searchpop,.cardexp) .strip i.on{ background:#2fb36b; } :is(.searchpop,.cardexp) .strip.warn i.on{ background:#f5b82e; } :is(.searchpop,.cardexp) .strip.risk i.on{ background:#e5484d; } :is(.searchpop,.cardexp) .strip i.td{ outline:2px solid #16213d; }
   :is(.searchpop,.cardexp) .stripl{ display:flex; justify-content:space-between; font-size:11px; color:#9aa1b2; font-weight:700; margin:2px 0 8px; }
   :is(.searchpop,.cardexp) .alist{ max-height:290px; overflow:auto; border:1px solid #dfe4ee; border-radius:10px; }
   :is(.searchpop,.cardexp) .ar{ display:grid; grid-template-columns:1fr auto auto; gap:12px; padding:7px 12px; border-bottom:1px solid #eef1f6; font-size:13.5px; font-variant-numeric:tabular-nums; } :is(.searchpop,.cardexp) .ar:last-child{ border-bottom:0; }
@@ -509,34 +509,32 @@
       <div class="chartcard chartslot nbcard" id="chartSlot">
         <div class="ch nbhead" tabindex="0"><div class="nbseg" role="tablist"><button type="button" role="tab" data-v="new" class="on" aria-selected="true">신규회원<small>등록 후 첫 30일</small></button><button type="button" role="tab" data-v="valid" aria-selected="false">유효회원<small>최근 30일 출석</small></button></div><span class="nbinfo">ⓘ 기준 보기</span>
           <div class="nbtip" role="tooltip">
-            <p class="t1">첫 30일에 <b>6번</b> 넘게 오면<br>재등록이 <b>2배</b> 늘어요!</p>
+            <p class="t1">첫 30일에 <b>8번</b> 이상 오면<br>재등록이 <b>2배</b> 늘어요!</p>
             <div class="nbt-bars">
-              <div><span>0~5회</span><i style="width:25%"></i><b>13%</b></div>
-              <div><span>6~11회</span><i style="width:61%"></i><b>31%</b></div>
-              <div><span>12~15회</span><i style="width:75%"></i><b>38%</b></div>
-              <div><span>16회 이상</span><i style="width:100%"></i><b>51%</b></div>
+              <div><span>0~7회</span><i style="width:32%"></i><b>16%</b></div>
+              <div><span>8~11회</span><i style="width:68%"></i><b>34%</b></div>
+              <div><span>12~15회</span><i style="width:78%"></i><b>39%</b></div>
+              <div><span>16회 이상</span><i style="width:100%"></i><b>50%</b></div>
             </div>
             <p class="cap">첫 30일 출석 횟수별 재등록률</p>
             <div class="nbt-legend">
-              <span>🟢 <b>정착</b> 12회 이상 <small>(주 3회)</small></span>
-              <span>🟡 <b>주의</b> 6~11회</span>
-              <span>🔴 <b>위험</b> 5회 이하 → 집중관리 필요해요!</span>
+              <span>🟢 <b>습관</b> 12회 이상 <small>(주 3회)</small></span>
+              <span>🟡 <b>주의</b> 8~11회</span>
+              <span>🔴 <b>위험</b> 0~7회 → 집중관리 필요해요!</span>
             </div>
-            <p class="note">👥 <b>유효회원 화면</b>은 최근 30일 출석으로 봐요 · 🟢 <b>12회 이상</b> · 🟡 <b>8~11회</b> · 🔴 <b>0~7회</b></p>
-            <p class="note">💡 <b>출석 카드 불</b> · 등록 30일 안 회원은 위 신규 기준, <b>그 밖의 모든 회원</b>은 최근 30일 출석으로 떠요 · 🟢 <b>12회 이상</b> · 🟡 <b>8~11회</b> · 🔴 <b>0~7회</b> <small>(유효회원 화면도 같은 기준)</small></p>
-            <p class="note">💡 <b>30일 지난 흰·노란 띠</b>도 같은 기준이에요. 등록 후 <b>한 달 평균 출석</b>으로 출석 카드에 🔴🟡🟢 불이 떠요.</p>
+            <p class="note">💡 <b>출석 카드 불 · 유효회원 화면</b>도 같은 기준이에요. 등록 30일 안 회원은 <b>예상 횟수</b>로, 그 밖의 모든 회원은 <b>최근 30일 출석</b>으로 봐요.</p>
             <p class="sec">🔮 ‘예상’은 뭐예요?</p>
             <div class="nbt-q">지금 오는 속도 그대로 <b>30일을 다니면 몇 번 오게 될지</b>예요.</div>
             <div class="nbt-ex">
               <div><span>10일 동안 4번 왔어요</span><b>→ 30일이면 12번 🟢</b></div>
-              <div><span>10일 동안 2번 왔어요</span><b>→ 30일이면 6번 🟡</b></div>
+              <div><span>10일 동안 3번 왔어요</span><b>→ 30일이면 9번 🟡</b></div>
               <div><span>15일 동안 2번 왔어요</span><b>→ 30일이면 4번 🔴</b></div>
             </div>
             <p class="note">등록하고 열흘 안에는 <b>10일 기준</b>으로 봐요. 첫날 한 번 왔다고 바로 초록불이 되지 않게요.</p>
             <p class="sec">📋 위에 있을수록 먼저 연락하세요</p>
-            <p class="nbt-ord">🔴 → 🟡 → 🟢 순, 같은 색이면 <b>예상 횟수가 적은</b> 회원부터</p>
+            <p class="nbt-ord">🔴 → 🟡 → 🟢 순, 같은 색이면 <b>횟수가 적은</b> 회원부터</p>
             <div class="nbt-live">⏱ 오늘 기준으로 실시간으로 바뀌어요 <small>(10분마다 새로 계산)</small></div>
-            <p class="note src">2025년 4월 이후 처음 등록한 회원 750명 분석</p>
+            <p class="note src">2025년 4월 이후 처음 등록하고 첫 이용권이 끝난 회원 794명 분석</p>
           </div>
         </div>
         <div id="newbies" class="newbies"><div class="mempty">불러오는 중…</div></div>
@@ -790,15 +788,15 @@
   // ================= 화면 =================
   const $ = (id)=> document.getElementById(id);
   // 신규회원(등록 30일 안) 상태: 카드 왼쪽 위 별 자리에 🔴🟡🟢 불로 표시
-  // 30일 지난 흰·노란 띠도 같은 기준(한 달 평균 출석: 5회 이하 위험 · 6~11회 주의 · 12회 이상 정착)
+  // 30일 지난 흰·노란 띠도 같은 기준(한 달 평균 출석: 5회 이하 위험 · 6~11회 주의 · 12회 이상 습관)
   const nbStatus = new Map(), oldStatus = new Map();
   const v30Status = new Map();   // 유효회원 최근 30일 출석 횟수 (memberId → n30)
   function nbBadge(id, n30){
     if(!id) return '';
-    const L = { risk: '위험', warn: '주의', ok: '정착' };
+    const L = { risk: '위험', warn: '주의', ok: '습관' };
     const s = nbStatus.get(id);
     if(s && s.st !== 'na') return '<span class="nblight ' + s.st + '" title="신규회원 ' + L[s.st] + ' · ' + s.day + '일째 · 첫 30일 ' + s.visits + '회 출석" aria-label="신규회원 ' + L[s.st] + '"></span>';
-    // 그 밖의 모든 회원: 최근 30일 출석 0~7 위험 · 8~11 주의 · 12회 이상 정착
+    // 그 밖의 모든 회원: 최근 30일 출석 0~7 위험 · 8~11 주의 · 12회 이상 습관
     const n = n30 != null ? n30 : v30Status.get(id);
     if(n == null) return '';
     const st = n >= 12 ? 'ok' : n >= 8 ? 'warn' : 'risk';
@@ -1587,7 +1585,7 @@
       }catch(e){ if(e instanceof AuthError){ lockScreen(); return; } list.innerHTML = '<div class="msr-empty">검색하지 못했어요</div>'; }
     }
     const WDK = '일월화수목금토';
-    function attSection(atts){
+    function attSection(atts, id){
       const today = todayKst(), days = new Set(atts.map((t)=> kstDate(t)));
       const n30 = [...days].filter((d)=> d > addDays(today, -30)).length, n90 = days.size;
       let strip = '';
@@ -1606,7 +1604,7 @@
       const np = nd && nd.managerMembers && nd.managerMembers.notesPaged, notes = (np && np.data) || [];
       notes.sort((a, b)=> (b.pinnedAt ? 1 : 0) - (a.pinnedAt ? 1 : 0));
       const link = 'https://www.dagym-manager.com/member/' + encodeURIComponent(m.id) + (gymId ? '?gymId=' + encodeURIComponent(gymId) + '&tab=notes' : '?tab=notes');
-      return '<div class="spcols">' + attSection(atts) +
+      return '<div class="spcols">' + attSection(atts, m.id) +
         '<div class="notes"><div class="nh"><b>노트 · 메모</b><span>' + (np ? np.count + '개' : '') + '</span><a href="' + link + '">다짐에서 열기 ↗</a></div>' +
         (notes.length ? notes.map((n)=> '<div class="note' + (n.pinnedAt ? ' pin' : '') + '"><div class="nt">' + (n.pinnedAt ? '<span class="pinb">📌 고정</span>' : '') + '<b>' + esc(n.title || '(제목 없음)') + '</b><span>' + fmtDate(n.createdAt) + (n.account && n.account.name ? ' · ' + esc(n.account.name) : '') + '</span></div>' + (n.content ? '<div class="nc">' + esc(n.content) + '</div>' : '') + '</div>').join('') : '<div class="popempty">작성된 노트가 없어요</div>') + '</div></div>';
     }
@@ -1694,7 +1692,7 @@
 
   // ================= 신규회원 첫 30일 (비워둔 왼쪽 아래 자리) =================
   // 기준(2025.4 이후 첫 등록 750명 분석): 첫 30일 출석 0~5회 재등록 13% · 6~11회 31% · 12~15회 38% · 16회+ 51%
-  const NB_SETTLE = 12, NB_WARN = 6;
+  const NB_SETTLE = 12, NB_WARN = 8;
     const NB_ATT_Q = 'query RunFitStaffNewAtt($id: String!, $d: DateFilterInput!) { managerMembers { attendances(memberId: $id, date: $d, paging: {limit: 300, offset: 0}) { status attendAt } } }';
   let nbAt = 0, nbBusy = false, nbList = [];
   async function loadNewbies(today){
@@ -1733,11 +1731,11 @@
   function drawNewbies(list){
     const box = $('newbies'); if(!box || nbMode !== 'new') return;
     const n = (s)=> list.filter((c)=> c.st === s).length;
-    const LBL = { ok: '정착', warn: '주의', risk: '위험', na: '확인 불가' };
+    const LBL = { ok: '습관', warn: '주의', risk: '위험', na: '확인 불가' };
     let s = '<div class="nbsum">' +
-      '<div class="nbs risk"><b>' + n('risk') + '</b><span>🔴 위험</span></div>' +
-      '<div class="nbs warn"><b>' + n('warn') + '</b><span>🟡 주의</span></div>' +
-      '<div class="nbs ok"><b>' + n('ok') + '</b><span>🟢 정착</span></div></div>';
+      '<div class="nbs risk"><b>' + n('risk') + '</b><span>위험 0~7회</span></div>' +
+      '<div class="nbs warn"><b>' + n('warn') + '</b><span>주의 8~11회</span></div>' +
+      '<div class="nbs ok"><b>' + n('ok') + '</b><span>습관 12회↑</span></div></div>';
     if(!list.length) s += '<div class="mempty">첫 30일 신규회원이 없어요</div>';
     else s += '<div class="nblist" role="list">' + list.map((c, i)=>{
       const v = c.visits == null ? '-' : c.visits;
@@ -1752,7 +1750,7 @@
     box.innerHTML = s;
   }
   // ================= 유효회원 최근 30일 (신규회원과 버튼으로 전환) =================
-  const VR_WARN = 8, VR_OK = 12;   // 0~7 위험 · 8~11 주의 · 12회 이상 정착
+  const VR_WARN = 8, VR_OK = 12;   // 0~7 위험 · 8~11 주의 · 12회 이상 습관
   let nbMode = 'new'; try{ if(localStorage.getItem('rf_nbmode') === 'valid') nbMode = 'valid'; }catch(e){}
   let vrAt = 0, vrBusy = false, vrList = [];
   async function loadValid30(today, force){
@@ -1783,11 +1781,11 @@
     const box = $('newbies'); if(!box || nbMode !== 'valid' || !vrAt) return;
     const list = vrList, n = (s)=> list.filter((c)=> c.st === s).length;
     const bm = new Map((beltAll || []).map((m)=> [m.id, m])); list.forEach((m)=>{ const b = bm.get(m.id); if(b){ m.total = b.total; m.belt = b.belt; } });
-    const LBL = { ok: '정착', warn: '주의', risk: '위험' };
+    const LBL = { ok: '습관', warn: '주의', risk: '위험' };
     let s = '<div class="nbsum">' +
       '<div class="nbs risk"><b>' + n('risk') + '</b><span>위험 0~7회</span></div>' +
       '<div class="nbs warn"><b>' + n('warn') + '</b><span>주의 8~11회</span></div>' +
-      '<div class="nbs ok"><b>' + n('ok') + '</b><span>정착 12회↑</span></div></div>';
+      '<div class="nbs ok"><b>' + n('ok') + '</b><span>습관 12회↑</span></div></div>';
     s += '<div class="nblist" role="list">' + list.map((c, i)=>{
       const w = Math.min(100, c.n30 / 16 * 100);
       const last = c.days == null ? '-' : c.days === 0 ? '오늘' : c.days === 1 ? '어제' : c.days + '일 전';
