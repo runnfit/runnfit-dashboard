@@ -755,7 +755,7 @@
     }
     // 최근 30일 출석 횟수 (그날 포함 30일, 출석왕과 같은 기준: 같은 날 재입장도 1회)
     const from30 = dayStart(addDays(card.date, -29));
-    const n30 = attend.filter((x)=> x >= from30 && x <= end).length;
+    const n30 = new Set(attend.filter((x)=> x >= from30 && x <= end).map((x)=> kstDate(x))).size;   // 같은 날 두 번 찍어도 1회
     return { count, belt: getBelt(count), gap, reg, n30 };
   }
 
