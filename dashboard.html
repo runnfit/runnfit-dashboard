@@ -376,7 +376,8 @@
   .newbies .mempty{ flex:1; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px; }
   .nbsum{ display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin-bottom:8px; }
   .nbs{ border-radius:10px; padding:7px 8px; display:flex; align-items:baseline; gap:6px; }
-  .nbs{ align-items:center !important; gap:8px !important; } .nbs b{ font-size:24px; font-weight:800; line-height:1; } .nbs span{ font-size:13px; font-weight:800; color:#4a5164; line-height:1.2; } .nbs span small{ display:block; font-size:11.5px; font-weight:700; color:#7a8295; }
+  button.nbs{ border:0; font:inherit; cursor:pointer; flex-direction:column; align-items:center !important; justify-content:center; gap:4px !important; padding:9px 6px; text-align:center; transition:transform .12s, box-shadow .12s; } button.nbs:hover{ transform:translateY(-1px); box-shadow:0 3px 10px rgba(15,23,60,.12); } .nbs b{ font-size:26px; font-weight:900; line-height:1; } .nbs span{ font-size:12.5px; font-weight:800; color:#4a5164; white-space:nowrap; }
+  .exppop .pophead .pdot{ width:14px; height:14px; border-radius:50%; display:inline-block; align-self:center; box-shadow:0 0 0 2px #fff, 0 0 0 3px rgba(0,0,0,.08); }
   .nbs.risk{ background:#fdecec; } .nbs.risk b{ color:#b4232f; }
   .nbs.warn{ background:#fdf5e1; } .nbs.warn b{ color:#a16207; }
   .nbs.ok{ background:#e9f7ef; } .nbs.ok b{ color:#0a7d3c; }
@@ -1753,9 +1754,9 @@
     const n = (s)=> list.filter((c)=> c.st === s).length;
     const LBL = { ok: '습관', warn: '주의', risk: '위험', na: '확인 불가' };
     let s = '<div class="nbsum">' +
-      '<div class="nbs risk"><b>' + n('risk') + '</b><span>위험<small>0~7회</small></span></div>' +
-      '<div class="nbs warn"><b>' + n('warn') + '</b><span>주의<small>8~11회</small></span></div>' +
-      '<div class="nbs ok"><b>' + n('ok') + '</b><span>습관<small>12회 이상</small></span></div></div>';
+      '<button type="button" class="nbs risk" data-st="risk"><b>' + n('risk') + '</b><span>위험 0~7회</span></button>' +
+      '<button type="button" class="nbs warn" data-st="warn"><b>' + n('warn') + '</b><span>주의 8~11회</span></button>' +
+      '<button type="button" class="nbs ok" data-st="ok"><b>' + n('ok') + '</b><span>습관 12회 이상</span></button></div>';
     if(!list.length) s += '<div class="mempty">첫 30일 신규회원이 없어요</div>';
     else s += '<div class="nblist" role="list">' + list.map((c, i)=>{
       const v = c.visits == null ? '-' : c.visits;
@@ -1803,9 +1804,9 @@
     const bm = new Map((beltAll || []).map((m)=> [m.id, m])); list.forEach((m)=>{ const b = bm.get(m.id); if(b){ m.total = b.total; m.belt = b.belt; } });
     const LBL = { ok: '습관', warn: '주의', risk: '위험' };
     let s = '<div class="nbsum">' +
-      '<div class="nbs risk"><b>' + n('risk') + '</b><span>위험<small>0~7회</small></span></div>' +
-      '<div class="nbs warn"><b>' + n('warn') + '</b><span>주의<small>8~11회</small></span></div>' +
-      '<div class="nbs ok"><b>' + n('ok') + '</b><span>습관<small>12회 이상</small></span></div></div>';
+      '<button type="button" class="nbs risk" data-st="risk"><b>' + n('risk') + '</b><span>위험 0~7회</span></button>' +
+      '<button type="button" class="nbs warn" data-st="warn"><b>' + n('warn') + '</b><span>주의 8~11회</span></button>' +
+      '<button type="button" class="nbs ok" data-st="ok"><b>' + n('ok') + '</b><span>습관 12회 이상</span></button></div>';
     s += '<div class="nblist" role="list">' + list.map((c, i)=>{
       const w = Math.min(100, c.n30 / 16 * 100);
       const last = c.days == null ? '-' : c.days === 0 ? '오늘' : c.days === 1 ? '어제' : c.days + '일 전';
@@ -1945,6 +1946,33 @@
       beltPop.innerHTML = head('') + '<div class="popempty">' + NA + ' · 잠시 후 다시 눌러주세요</div>';
     }
   }
+  // 위험·주의·습관 칸을 누르면 그 회원들 카드 (띠 칸과 같은 창)
+  async function openStatusPop(st){
+    const key = 'st-' + nbMode + '-' + st;
+    if(!beltPop.classList.contains('hidden') && beltPop.getAttribute('data-b') === key){ beltPop.classList.add('hidden'); return; }
+    closeExpPop(true);
+    ['rankPop', 'absentPop', 'todayPop', 'validPop'].forEach((id)=>{ if($(id)) $(id).classList.add('hidden'); });
+    const L = $('summary').getBoundingClientRect();
+    beltPop.style.left = Math.round(L.right + 14) + 'px'; beltPop.style.top = '70px';
+    beltPop.setAttribute('data-b', key); beltPop.classList.remove('hidden');
+    const my = ++beltReq, valid = nbMode === 'valid';
+    const NAME = { risk: '위험', warn: '주의', ok: '습관' }, RANGE = { risk: '0~7회', warn: '8~11회', ok: '12회 이상' };
+    const COL = { risk: '#e5484d', warn: '#f5b82e', ok: '#2fb36b' };
+    const head = (extra)=> '<div class="pophead"><span class="pdot" style="background:' + COL[st] + '"></span>' + (valid ? '유효회원' : '신규회원') + ' · ' + NAME[st] + ' ' + extra + '<button class="popx" aria-label="닫기">✕</button></div>';
+    beltPop.innerHTML = head('<small>불러오는 중…</small>');
+    try{
+      const arr = (valid ? vrList : nbList).filter((m)=> m.st === st);
+      const need = arr.filter((m)=> (m.total == null || m.reg.kind === 'na') && !m._regDone);
+      if(need.length){ await enrichMembers(need, true); need.forEach((m)=> m._regDone = true); }
+      if(my !== beltReq) return;
+      beltPop.innerHTML = head('<b>' + arr.length + '명</b><small>' + (valid ? '최근 30일 ' : '첫 30일 예상 ') + RANGE[st] + ' · 횟수 적은 순서 · 번호 누르면 복사</small>') +
+        (arr.length ? '<div class="grid">' + arr.map((m, x)=> absentCardHtml(m, x, { head: (x + 1) + '. ' + (valid ? '최근 30일 ' + m.n30 + '회 · ' + lastText(m) : m.day + '일째 · 첫 30일 ' + (m.visits == null ? '-' : m.visits) + '회 (예상 ' + (m.pace == null ? '-' : m.pace) + '회)') })).join('') + '</div>' : '<div class="popempty">없어요</div>');
+    }catch(e){
+      if(e instanceof AuthError){ lockScreen(); beltPop.classList.add('hidden'); return; }
+      beltPop.innerHTML = head('') + '<div class="popempty">' + NA + ' · 잠시 후 다시 눌러주세요</div>';
+    }
+  }
+  if($('newbies') && beltPop) $('newbies').addEventListener('click', (e)=>{ const t = e.target.closest('.nbs[data-st]'); if(t){ e.stopPropagation(); openStatusPop(t.getAttribute('data-st')); } });
   if($('beltTiles') && beltPop){
     $('beltTiles').addEventListener('click', (e)=>{ const t = e.target.closest('.bt'); if(t){ e.stopPropagation(); openBeltPop(+t.getAttribute('data-b')); } });
     beltPop.addEventListener('click', (e)=>{ if(e.target.closest('.popx')){ beltPop.classList.add('hidden'); return; } copyTel(e); });
