@@ -376,7 +376,7 @@
   .newbies .mempty{ flex:1; display:flex; align-items:center; justify-content:center; color:var(--muted); font-size:13px; }
   .nbsum{ display:grid; grid-template-columns:repeat(3, 1fr); gap:6px; margin-bottom:8px; }
   .nbs{ border-radius:10px; padding:7px 8px; display:flex; align-items:baseline; gap:6px; }
-  button.nbs{ border:0; font:inherit; cursor:pointer; flex-direction:column; align-items:center !important; justify-content:center; gap:4px !important; padding:9px 6px; text-align:center; transition:transform .12s, box-shadow .12s; } button.nbs:hover{ transform:translateY(-1px); box-shadow:0 3px 10px rgba(15,23,60,.12); } .nbs b{ font-size:26px; font-weight:900; line-height:1; } .nbs span{ font-size:12.5px; font-weight:800; color:#4a5164; white-space:nowrap; }
+  button.nbs{ border:0; font:inherit; cursor:pointer; flex-direction:column; align-items:center !important; justify-content:center; gap:4px !important; padding:9px 6px; text-align:center; transition:transform .12s, box-shadow .12s; } button.nbs:hover{ transform:translateY(-1px); box-shadow:0 3px 10px rgba(15,23,60,.12); } .nbs b{ font-size:26px; font-weight:900; line-height:1; } .nbs span{ font-size:12.5px; font-weight:800; color:#4a5164; white-space:nowrap; } .nbs b small{ font-size:13px; font-weight:800; margin-left:2px; } .nbs span i{ font-style:normal; color:#c3c8d4; margin:0 6px; } .nbs span strong{ font-weight:900; } .nbs.risk span strong{ color:#b4232f; } .nbs.warn span strong{ color:#a16207; } .nbs.ok span strong{ color:#0a7d3c; }
   .exppop .pophead .pdot{ width:14px; height:14px; border-radius:50%; display:inline-block; align-self:center; box-shadow:0 0 0 2px #fff, 0 0 0 3px rgba(0,0,0,.08); }
   .nbs.risk{ background:#fdecec; } .nbs.risk b{ color:#b4232f; }
   .nbs.warn{ background:#fdf5e1; } .nbs.warn b{ color:#a16207; }
@@ -1754,9 +1754,9 @@
     const n = (s)=> list.filter((c)=> c.st === s).length;
     const LBL = { ok: '습관', warn: '주의', risk: '위험', na: '확인 불가' };
     let s = '<div class="nbsum">' +
-      '<button type="button" class="nbs risk" data-st="risk"><b>' + n('risk') + '</b><span>위험 0~7회</span></button>' +
-      '<button type="button" class="nbs warn" data-st="warn"><b>' + n('warn') + '</b><span>주의 8~11회</span></button>' +
-      '<button type="button" class="nbs ok" data-st="ok"><b>' + n('ok') + '</b><span>습관 12회 이상</span></button></div>';
+      '<button type="button" class="nbs risk" data-st="risk"><b>' + n('risk') + '<small>명</small></b><span>위험 0~7회<i>|</i><strong>' + (list.length ? Math.round(n('risk') * 100 / list.length) : 0) + '%</strong></span></button>' +
+      '<button type="button" class="nbs warn" data-st="warn"><b>' + n('warn') + '<small>명</small></b><span>주의 8~11회<i>|</i><strong>' + (list.length ? Math.round(n('warn') * 100 / list.length) : 0) + '%</strong></span></button>' +
+      '<button type="button" class="nbs ok" data-st="ok"><b>' + n('ok') + '<small>명</small></b><span>습관 12회 이상<i>|</i><strong>' + (list.length ? Math.round(n('ok') * 100 / list.length) : 0) + '%</strong></span></button></div>';
     if(!list.length) s += '<div class="mempty">첫 30일 신규회원이 없어요</div>';
     else s += '<div class="nblist" role="list">' + list.map((c, i)=>{
       const v = c.visits == null ? '-' : c.visits;
@@ -1804,9 +1804,9 @@
     const bm = new Map((beltAll || []).map((m)=> [m.id, m])); list.forEach((m)=>{ const b = bm.get(m.id); if(b){ m.total = b.total; m.belt = b.belt; } });
     const LBL = { ok: '습관', warn: '주의', risk: '위험' };
     let s = '<div class="nbsum">' +
-      '<button type="button" class="nbs risk" data-st="risk"><b>' + n('risk') + '</b><span>위험 0~7회</span></button>' +
-      '<button type="button" class="nbs warn" data-st="warn"><b>' + n('warn') + '</b><span>주의 8~11회</span></button>' +
-      '<button type="button" class="nbs ok" data-st="ok"><b>' + n('ok') + '</b><span>습관 12회 이상</span></button></div>';
+      '<button type="button" class="nbs risk" data-st="risk"><b>' + n('risk') + '<small>명</small></b><span>위험 0~7회<i>|</i><strong>' + (list.length ? Math.round(n('risk') * 100 / list.length) : 0) + '%</strong></span></button>' +
+      '<button type="button" class="nbs warn" data-st="warn"><b>' + n('warn') + '<small>명</small></b><span>주의 8~11회<i>|</i><strong>' + (list.length ? Math.round(n('warn') * 100 / list.length) : 0) + '%</strong></span></button>' +
+      '<button type="button" class="nbs ok" data-st="ok"><b>' + n('ok') + '<small>명</small></b><span>습관 12회 이상<i>|</i><strong>' + (list.length ? Math.round(n('ok') * 100 / list.length) : 0) + '%</strong></span></button></div>';
     s += '<div class="nblist" role="list">' + list.map((c, i)=>{
       const w = Math.min(100, c.n30 / 16 * 100);
       const last = c.days == null ? '-' : c.days === 0 ? '오늘' : c.days === 1 ? '어제' : c.days + '일 전';
