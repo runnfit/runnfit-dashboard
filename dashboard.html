@@ -1613,7 +1613,7 @@
         strip += '<i class="' + (days.has(d) ? 'on' : '') + (d === today ? ' td' : '') + (wd === 0 || wd === 6 ? ' we' : '') + '" title="' + d.slice(5).replace('-', '/') + '(' + WDK[wd] + ')' + (days.has(d) ? ' 출석' : '') + '"></i>'; }
       const seen = new Set(), rowsH = atts.filter((t)=>{ const d = kstDate(t); if(seen.has(d)) return false; seen.add(d); return true; }).slice(0, 40).map((t)=>{ const d = kstDate(t), wd = new Date(t + 9 * 36e5).getUTCDay(), hm = new Date(t + 9 * 36e5).toISOString().slice(11, 16);
         const ago = daysBetween(today, d); return '<div class="ar"><b>' + d.slice(5).replace('-', '.') + ' (' + WDK[wd] + ')</b><span>' + hm + '</span><em>' + (ago === 0 ? '오늘' : ago + '일 전') + '</em></div>'; }).join('');
-      return '<div class="atts"><div class="nh"><b>최근 출석</b><span>30일 ' + n30 + '회 · 주 평균 ' + (Math.round(n30 / 30 * 7 * 10) / 10) + '회</span></div><div class="strip">' + strip + '</div><div class="stripl"><span>4주 전</span><span>오늘</span></div>' +
+      return '<div class="atts"><div class="nh"><b>최근 출석</b><span>30일 ' + n30 + '회 · 주 평균 ' + (Math.round(n30 / 30 * 7 * 10) / 10) + '회</span></div><div class="strip ' + (()=>{ const ns = id && nbStatus.get(id); if(ns && ns.st !== 'na') return ns.st; return n30 >= 12 ? 'ok' : n30 >= 8 ? 'warn' : 'risk'; })() + '">' + strip + '</div><div class="stripl"><span>4주 전</span><span>오늘</span></div>' +
         (rowsH ? '<div class="alist">' + rowsH + '</div>' : '<div class="popempty">최근 90일 출석이 없어요</div>') + '</div>';
     }
     async function detailHtml(m){
