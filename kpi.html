@@ -331,7 +331,7 @@
   .cg button.on{ background:var(--navy); color:#fff; } .cg button.on::after{ background:#fff; }
   .cg .f{ color:#c3c8d4; }
   .cgn{ font-size:11.5px; color:var(--muted); margin-top:8px; }
-  .kt{ display:grid; grid-template-columns:repeat(6, minmax(0,1fr)); gap:10px; margin-top:12px; }
+  .kt{ display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:10px; margin-top:12px; }
   .kt .k{ border:1px solid var(--line); border-radius:12px; padding:10px 12px 8px 14px; position:relative; overflow:hidden; min-width:0; }
   .kt .k::before{ content:''; position:absolute; left:0; top:0; bottom:0; width:4px; background:var(--a); }
   .kt .l{ font-size:12.5px; color:var(--muted); font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
@@ -341,7 +341,7 @@
   .sp7{ display:flex; align-items:flex-end; gap:3px; height:28px; margin-top:8px; }
   .sp7 i{ flex:1; background:#dfe5f6; border-radius:2px 2px 0 0; } .sp7 i.on{ background:var(--a); }
   .sp7d{ display:flex; gap:3px; font-size:9.5px; color:#9aa1b2; margin-top:2px; } .sp7d span{ flex:1; text-align:center; }
-  @media (max-width:1200px){ .kt{ grid-template-columns:repeat(3, minmax(0,1fr)); } }
+  @media (max-width:1200px){ .kt{ grid-template-columns:repeat(4, minmax(0,1fr)); } }
   /* WBS */
   #wbsMain{ padding:14px 22px 28px; }
   .wbs{ display:grid; gap:12px; }
@@ -744,6 +744,9 @@
         const accent = (v, b)=> b == null ? 'var(--c1)' : v >= b ? 'var(--g)' : 'var(--r)';
         T = [
           { l: '매출', v: man(sv), a: accent(sv, aS), c: dl(sv, aS, man, lab), s: spark(win.map((x)=> sale(x.d)), wl, on) },
+          (()=>{ const pv = upto.filter((x)=> x.d < d && x.valid > 0).pop(), v = o.valid || null, df = v && pv ? v - pv.valid : null;
+            return { l: '유효 회원', v: v ? fmt(v) + '<small>명 · ' + Math.round(v / VALID_GOAL * 100) + '%</small>' : '<span class="miss" style="font-size:15px">미입력</span>', a: v ? (v >= VALID_GOAL ? 'var(--g)' : 'var(--y)') : '#c3c8d4',
+              c: '<span class="c ' + (df == null ? '' : df >= 0 ? 'up' : 'dn') + '">' + (df == null ? '목표 ' + fmt(VALID_GOAL) + '명' : (df >= 0 ? '▲ +' : '▼ ') + df + ' 전날 대비 · 목표까지 ' + fmt(Math.max(0, VALID_GOAL - v))) + '</span>', s: spark(win.map((x)=> x.valid || 0), wl, on) }; })(),
           { l: '출석', v: fmt(o.visit || 0) + '<small>명</small>', a: accent(o.visit || 0, av((x)=> x.visit)), c: dl(o.visit || 0, av((x)=> x.visit), (x)=> fmt(Math.round(x)), lab), s: spark(win.map((x)=> x.visit), wl, on) },
           { l: '주 1회 이상 출석', v: (w1 == null ? '<span class="miss" style="font-size:15px">미입력</span>' : fmt(w1) + '<small>명 · ' + Math.round(wr * 100) + '%</small>'), a: light(wr), c: '<span class="c ' + lightTxt(wr) + '">' + (wr == null ? '시트 7일 미출석 칸이 비어 있어요' : wr >= 0.8 ? '● 좋음 (80% 이상)' : wr >= 0.7 ? '● 주의 (70~79%)' : '● 위험 (70% 미만)') + '</span>', s: spark(win.map((x)=> wk1(x) && x.valid ? wk1(x) / x.valid * 100 : 0), wl, on) },
           { l: '신규 문의 → 방문 → 등록', v: fmt(o.inq || 0) + ' → ' + fmt(o.tour || 0) + ' → ' + fmt(o.join || 0), a: accent(o.join || 0, av((x)=> x.join)), c: dl(o.join || 0, av((x)=> x.join), r1, lab + ' 등록'), s: spark(win.map((x)=> x.join), wl, on) },
@@ -777,6 +780,9 @@
         const P = (k)=> prv ? prv[k] : null;
         T = [
           { l: '매출', v: man(cur.s), a: acc(cur.s, P('s')), c: dl(cur.s, P('s'), man, '지난주'), s: spark(wv((o, d)=> sale(d)), wl, w) },
+          (()=>{ const v = lo && lo.valid, pvv = plo && plo.valid, df = v && pvv ? v - pvv : null;
+            return { l: '유효 회원 (주말 기준)', v: v ? fmt(v) + '<small>명</small>' : '-', a: v ? (v >= VALID_GOAL ? 'var(--g)' : 'var(--y)') : '#c3c8d4',
+              c: '<span class="c ' + (df == null ? '' : df >= 0 ? 'up' : 'dn') + '">' + (df == null ? '목표 ' + fmt(VALID_GOAL) + '명' : (df >= 0 ? '▲ +' : '▼ ') + df + ' 지난주 대비') + '</span>', s: spark(wl.map((_, i)=>{ const x = weeks[i].map((dd)=> byD[dd]).filter((o)=> o && o.valid > 0 && o.d <= last).pop(); return x ? x.valid : 0; }), wl, w) }; })(),
           { l: '출석 (주 합계)', v: fmt(cur.v) + '<small>명</small>', a: acc(cur.v, P('v')), c: dl(cur.v, P('v'), fmt, '지난주'), s: spark(wv((o)=> o.visit), wl, w) },
           { l: '주 1회 이상 출석', v: w1 == null ? '-' : fmt(w1) + '<small>명 · ' + Math.round(wr * 100) + '%</small>', a: light(wr), c: pwr != null && wr != null ? '<span class="c ' + lightTxt(wr) + '">● 지난주 ' + Math.round(pwr * 100) + '%</span>' : '<span class="c ' + lightTxt(wr) + '">●</span>', s: '' },
           { l: '신규 문의 → 방문 → 등록', v: fmt(cur.q) + ' → ' + fmt(cur.t) + ' → ' + fmt(cur.j), a: acc(cur.j, P('j')), c: dl(cur.j, P('j'), fmt, '지난주 등록'), s: spark(wv((o)=> o.join), wl, w) },
@@ -799,6 +805,9 @@
         const pmLab = (pm + 1) + '월';
         T = [
           { l: '매출 (' + last + '일까지)', v: man(sales), a: acc(sales / last * DAYS, pSales), c: pSales ? '<span class="c ' + (sales / last * DAYS >= pSales ? 'up' : 'dn') + '">' + pmLab + ' ' + man(pSales) + ' · 이 속도면 ' + man(sales / last * DAYS) + '</span>' : '<span class="c">&nbsp;</span>', s: '' },
+          (()=>{ const v = lo && lo.valid, pvv = pv.v, df = v && pvv ? v - pvv : null;
+            return { l: '유효 회원', v: v ? fmt(v) + '<small>명 · ' + Math.round(v / VALID_GOAL * 100) + '%</small>' : '-', a: v ? (v >= VALID_GOAL ? 'var(--g)' : 'var(--y)') : '#c3c8d4',
+              c: '<span class="c ' + (df == null ? '' : df >= 0 ? 'up' : 'dn') + '">' + (df == null ? '목표 ' + fmt(VALID_GOAL) + '명' : (df >= 0 ? '▲ +' : '▼ ') + df + ' ' + pmLab + ' 대비 · 목표까지 ' + fmt(Math.max(0, VALID_GOAL - v))) + '</span>', s: '' }; })(),
           { l: '출석 (누적)', v: fmt(vis) + '<small>명</small>', a: 'var(--c1)', c: '<span class="c">하루 평균 ' + fmt(Math.round(vis / Math.max(1, last))) + '명</span>', s: '' },
           { l: '주 1회 이상 출석', v: w1 == null ? '-' : fmt(w1) + '<small>명 · ' + Math.round(wr * 100) + '%</small>', a: light(wr), c: '<span class="c ' + lightTxt(wr) + '">● 유효 ' + fmt(lo && lo.valid) + '명 중</span>', s: '' },
           { l: '신규 문의 → 방문 → 등록', v: fmt(inq) + ' → ' + fmt(tour) + ' → ' + fmt(join), a: acc(join, pv.nw), c: dl(join, pv.nw, fmt, pmLab + ' 등록'), s: '' },
