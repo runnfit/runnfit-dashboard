@@ -869,8 +869,8 @@
       '<div class="main">' +
         '<div class="head2"><div class="time">' + hhmm(c.t) + '</div><div class="regbox">' + lights + '<span class="reg">' + regText + '</span></div></div>' +
         (msgs.length ? '<div class="msgs">' + msgs.map((m)=> '<p class="' + m.k + '">' + esc(m.t) + '</p>').join('') + '</div>' : '') +
-        '<div class="boxes"><div class="box"><span>' + count + '</span><span class="sep"></span><span>' + (!d ? wait : '30일 <b>' + (d.n30 != null ? d.n30 : '-') + '</b>회') + '</span><span class="sep"></span><span>' + remain + '</span></div>' +
-        '<div class="box"><span>' + gap + '</span></div></div>' +
+        '<div class="boxes"><div class="box"><span>' + count + '</span><span class="sep"></span><span>' + (!d ? wait : '30일 <b>' + (d.n30 != null ? d.n30 : '-') + '</b>회') + '</span><span class="sep"></span><span>' + (!d ? wait : '주 평균 <b>' + (d.n30 != null ? Math.round(d.n30 / 30 * 7 * 10) / 10 : '-') + '</b>회') + '</span></div>' +
+        '<div class="box"><span>' + gap + '</span><span class="sep"></span><span>' + remain + '</span></div></div>' +
         '<div class="foot"><span class="wl"><span>운동복 ' + (c.wear ? 'O' : 'X') + '</span><span>사물함 ' + (c.locker ? 'O' : 'X') + '</span></span>' +
           '<span>헬스 만료 ' + (c.expiry ? dot(c.expiry.date) : NA) + '</span></div>' +
       '</div>' +
