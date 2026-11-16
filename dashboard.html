@@ -1704,7 +1704,7 @@
     hoverCard.style.left = Math.round(L.right + 14) + 'px';   // 다른 카드 창과 같은 자리·같은 크기
     hoverCard.style.top = Math.round(Math.max(70, Math.min(r.top - 80, innerHeight - 320))) + 'px';
     const my = ++hcReq;
-    if(m.total == null && !m._loading){ m._loading = true; hoverCard.innerHTML = '<div class="popempty">불러오는 중…</div>'; hoverCard.classList.remove('hidden');
+    if((m.total == null || (m.reg && m.reg.kind === 'na' && !m._regTried)) && !m._loading){ m._regTried = true; m._loading = true; hoverCard.innerHTML = '<div class="popempty">불러오는 중…</div>'; hoverCard.classList.remove('hidden');
       try{ await enrichMembers([m], true); }catch(e){ if(e instanceof AuthError){ lockScreen(); return; } } m._loading = false; if(my !== hcReq) return; }
     hoverCard.innerHTML = absentCardHtml(m, 0, { head: head });
     hoverCard.classList.remove('hidden');
