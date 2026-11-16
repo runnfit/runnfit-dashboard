@@ -129,26 +129,26 @@
   .right .count{ padding:8px 14px; font-size:16px; border-radius:12px; } .right .count b{ font-size:21px; }
   /* 오른쪽 2/3: 카드 1열 · 숫자 박스는 옆으로 나란히 (노트북 한 화면에 4명) */
   .right .grid{ grid-template-columns: 1fr; gap:10px; }
-  .right .card{ min-height: max(150px, calc((100vh - 232px) / 4)); border-radius:16px; }
-  .right .side{ width:24%; min-width:0; padding:8px 8px; gap:1px; }
-  .right .avatar{ width:104px; height:104px; padding:5px; }
-  .right .who{ font-size:18px; margin-top:3px; }
-  .right .beltname{ font-size:12.5px; }
-  .right .main{ padding:8px 16px 7px; gap:4px; justify-content:space-between; }
-  .right .head2{ align-items:center; }
-  .right .time{ font-size:22px; line-height:1; }
-  .right .regbox{ flex-direction:column; align-items:flex-end; gap:3px; margin-left:auto; }   /* 신호등은 오른쪽 끝 고정, 'N번째 재등록'은 그 아래 */
-  .right .reg{ text-align:right; white-space:nowrap; }
-  .right .main{ position:relative; }
-  .right .regbox{ position:absolute; top:10px; right:14px; }   /* 카드 오른쪽 위 모서리에 고정 → 카드 높이에 영향 없음 */
-  .right .msgs{ padding-right:130px; }
-  .right .lights{ gap:5px; padding:4px 7px; } .right .lights i{ width:15px; height:15px; } .right .lights i.on{ box-shadow:0 0 0 2px #fff; }
-  .right .reg{ font-size:13px; }
-  .right .msgs{ gap:0; } .right .msgs p{ font-size:13.5px; line-height:1.3; }
-  .right .boxes{ display:grid; grid-template-columns: 1fr; gap:5px; }   /* 누적·잔여 아래에 N일 만에 출석 */
-  .right .box{ font-size:19px; padding:5px 14px; gap:10px; border-radius:9px; line-height:1.2; }
-  .right .box .sep{ height:20px; }
-  .right .foot{ font-size:12.5px; }
+  :is(.right,.exppop) .card{ min-height: max(150px, calc((100vh - 232px) / 4)); border-radius:16px; }
+  :is(.right,.exppop) .side{ width:24%; min-width:0; padding:8px 8px; gap:1px; }
+  :is(.right,.exppop) .avatar{ width:104px; height:104px; padding:5px; }
+  :is(.right,.exppop) .who{ font-size:18px; margin-top:3px; }
+  :is(.right,.exppop) .beltname{ font-size:12.5px; }
+  :is(.right,.exppop) .main{ padding:8px 16px 7px; gap:4px; justify-content:space-between; }
+  :is(.right,.exppop) .head2{ align-items:center; }
+  :is(.right,.exppop) .time{ font-size:22px; line-height:1; }
+  :is(.right,.exppop) .regbox{ flex-direction:column; align-items:flex-end; gap:3px; margin-left:auto; }   /* 신호등은 오른쪽 끝 고정, 'N번째 재등록'은 그 아래 */
+  :is(.right,.exppop) .reg{ text-align:right; white-space:nowrap; }
+  :is(.right,.exppop) .main{ position:relative; }
+  :is(.right,.exppop) .regbox{ position:absolute; top:10px; right:14px; }   /* 카드 오른쪽 위 모서리에 고정 → 카드 높이에 영향 없음 */
+  :is(.right,.exppop) .msgs{ padding-right:130px; }
+  :is(.right,.exppop) .lights{ gap:5px; padding:4px 7px; } :is(.right,.exppop) .lights i{ width:15px; height:15px; } :is(.right,.exppop) .lights i.on{ box-shadow:0 0 0 2px #fff; }
+  :is(.right,.exppop) .reg{ font-size:13px; }
+  :is(.right,.exppop) .msgs{ gap:0; } :is(.right,.exppop) .msgs p{ font-size:13.5px; line-height:1.3; }
+  :is(.right,.exppop) .boxes{ display:grid; grid-template-columns: 1fr; gap:5px; }   /* 누적·잔여 아래에 N일 만에 출석 */
+  :is(.right,.exppop) .box{ font-size:19px; padding:5px 14px; gap:10px; border-radius:9px; line-height:1.2; }
+  :is(.right,.exppop) .box .sep{ height:20px; }
+  :is(.right,.exppop) .foot{ font-size:12.5px; }
   .right .notice{ padding:32px 16px; font-size:16px; }
   @media (max-width: 1100px){
     body{ overflow:auto; display:block; } .layout{ display:block; } .left,.right{ overflow:visible; }
@@ -194,11 +194,11 @@
   .side .beltname{ position:absolute; top:8px; right:8px; font-size:12px; font-weight:800; opacity:1;
     padding:2px 9px; border-radius:999px; background:rgba(255,255,255,.18); border:1px solid rgba(255,255,255,.35); }
   .side.light .beltname{ background:rgba(11,31,77,.07); border-color:rgba(11,31,77,.18); }
-  .right .who{ margin-top:10px; }
+  :is(.right,.exppop) .who{ margin-top:10px; }
   /* 안내 문구가 없어도 숫자 박스는 아래(운동복·사물함·만료 바로 위)에 붙어 있게 */
-  .right .main{ justify-content:flex-start; }
-  .right .boxes{ margin-top:auto; }
-  .right .foot{ margin-top:0; padding-top:2px; }   /* 박스와 운동복·사물함 줄 간격을 모든 카드에서 같게 */
+  :is(.right,.exppop) .main{ justify-content:flex-start; }
+  :is(.right,.exppop) .boxes{ margin-top:auto; }
+  :is(.right,.exppop) .foot{ margin-top:0; padding-top:2px; }   /* 박스와 운동복·사물함 줄 간격을 모든 카드에서 같게 */
 
 
   /* 집중관리(흰 띠·노란 띠) 파란 별 */
@@ -215,16 +215,16 @@
 
 
   /* 글자 시작점 맞추기: 시간·안내 문구·운동복/사물함 줄을 박스 안 '누적' 글자 시작점(14px)에 맞춤 */
-  .right .head2, .right .msgs, .right .foot{ padding-left:2px; }   /* 박스 왼쪽 끝선에 맞춤 */
-  .right .foot{ padding-right:2px; }
+  :is(.right,.exppop) .head2, :is(.right,.exppop) .msgs, :is(.right,.exppop) .foot{ padding-left:2px; }   /* 박스 왼쪽 끝선에 맞춤 */
+  :is(.right,.exppop) .foot{ padding-right:2px; }
   /* 위아래 여백: 시간 위 = 운동복·사물함 아래, 시간↔안내 문구 간격 일정 */
-  .right .main{ padding:12px 16px 12px; gap:0; }
-  .right .time{ line-height:1; margin:0; }
-  .right .head2{ min-height:24px; align-items:center; }
-  .right .msgs{ margin-top:6px; }
-  .right .msgs p{ line-height:1.35; }
-  .right .boxes{ margin-top:auto; padding-top:8px; }
-  .right .foot{ margin-top:6px; line-height:1; }
+  :is(.right,.exppop) .main{ padding:12px 16px 12px; gap:0; }
+  :is(.right,.exppop) .time{ line-height:1; margin:0; }
+  :is(.right,.exppop) .head2{ min-height:24px; align-items:center; }
+  :is(.right,.exppop) .msgs{ margin-top:6px; }
+  :is(.right,.exppop) .msgs p{ line-height:1.35; }
+  :is(.right,.exppop) .boxes{ margin-top:auto; padding-top:8px; }
+  :is(.right,.exppop) .foot{ margin-top:6px; line-height:1; }
 
 
   /* 숫자칸: 위 3칸 한 줄 + 아래 '미출석 | 주 1회 이상 출석' 반반 칸 */
