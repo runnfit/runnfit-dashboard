@@ -348,7 +348,12 @@
   .left .chartslot .nblist{ min-height:0; }
   .nbhead{ position:relative; outline:none; } .nbhead h2, .nbinfo{ cursor:help; }
   .left .nbcard h2{ font-size:16px; }
-  .nbinfo{ font-size:12px; color:#9aa1b2; font-weight:700; }
+  .nbinfo{ font-size:12px; color:#9aa1b2; font-weight:700; margin-left:auto; }
+  .nbseg{ flex:1 1 100%; display:grid; grid-template-columns:1fr 1fr; gap:5px; background:#eef1f7; border-radius:13px; padding:4px; }
+  .nbseg button{ border:0; background:transparent; border-radius:10px; padding:9px 6px; font:inherit; font-size:16px; font-weight:900; color:#7a8295; cursor:pointer; line-height:1.2; }
+  .nbseg button small{ display:block; font-size:11.5px; font-weight:700; margin-top:2px; }
+  .nbseg button.on{ background:#18338c; color:#fff; box-shadow:0 2px 8px rgba(24,51,140,.25); }
+  .nbseg button:not(.on):hover{ background:#fff; color:#16213d; }
   .nbhead:hover .nbinfo, .nbhead:focus .nbinfo{ color:#1f2f8a; }
   .nbtip{ display:none; position:fixed; left:0; top:70px; z-index:60; width:340px; max-height:calc(100vh - 90px); overflow:auto; background:#fff; border:1px solid var(--line); border-radius:16px; box-shadow:0 12px 32px rgba(15,23,60,.18); padding:16px 16px 12px; color:var(--ink); }
   .nbhead h2:hover ~ .nbtip, .nbinfo:hover ~ .nbtip, .nbhead:focus .nbtip, .nbtip:hover{ display:block; }
@@ -502,7 +507,7 @@
         <div id="beltTiles" class="belttiles" role="group" aria-label="띠별 회원 수"><div class="mempty">불러오는 중…</div></div>
       </div>
       <div class="chartcard chartslot nbcard" id="chartSlot">
-        <div class="ch nbhead" tabindex="0"><h2>🌱 신규회원 첫 30일</h2><span class="nbinfo">ⓘ 기준 보기</span>
+        <div class="ch nbhead" tabindex="0"><div class="nbseg" role="tablist"><button type="button" role="tab" data-v="new" class="on" aria-selected="true">신규회원<small>등록 후 첫 30일</small></button><button type="button" role="tab" data-v="valid" aria-selected="false">유효회원<small>최근 30일 출석</small></button></div><span class="nbinfo">ⓘ 기준 보기</span>
           <div class="nbtip" role="tooltip">
             <p class="t1">첫 30일에 <b>6번</b> 넘게 오면<br>재등록이 <b>2배</b> 늘어요!</p>
             <div class="nbt-bars">
@@ -517,6 +522,7 @@
               <span>🟡 <b>주의</b> 6~11회</span>
               <span>🔴 <b>위험</b> 5회 이하 → 집중관리 필요해요!</span>
             </div>
+            <p class="note">👥 <b>유효회원 화면</b>은 최근 30일 출석으로 봐요 · 🟢 <b>12회 이상</b> · 🟡 <b>8~11회</b> · 🔴 <b>0~7회</b></p>
             <p class="note">💡 <b>30일 지난 흰·노란 띠</b>도 같은 기준이에요. 등록 후 <b>한 달 평균 출석</b>으로 출석 카드에 🔴🟡🟢 불이 떠요.</p>
             <p class="sec">🔮 ‘예상’은 뭐예요?</p>
             <div class="nbt-q">지금 오는 속도 그대로 <b>30일을 다니면 몇 번 오게 될지</b>예요.</div>
@@ -1043,6 +1049,7 @@
       $('kMonth').textContent = monthKnown ? fmt(monthSum) + '명' : NA;
       drawChart(days, today);
       loadNewbies(today);   // 신규회원 첫 30일 (뒤에서)
+      if(nbMode === 'valid') loadValid30(today);
       loadBeltCounts();     // 띠별 회원 수 (뒤에서)
     }catch(e){
       if(e instanceof AuthError) lockScreen();
@@ -1720,7 +1727,7 @@
     finally{ nbBusy = false; }
   }
   function drawNewbies(list){
-    const box = $('newbies'); if(!box) return;
+    const box = $('newbies'); if(!box || nbMode !== 'new') return;
     const n = (s)=> list.filter((c)=> c.st === s).length;
     const LBL = { ok: '정착', warn: '주의', risk: '위험', na: '확인 불가' };
     let s = '<div class="nbsum">' +
@@ -1740,13 +1747,72 @@
     }).join('') + '</div>';
     box.innerHTML = s;
   }
+  // ================= 유효회원 최근 30일 (신규회원과 버튼으로 전환) =================
+  const VR_WARN = 8, VR_OK = 12;   // 0~7 위험 · 8~11 주의 · 12회 이상 정착
+  let nbMode = 'new'; try{ if(localStorage.getItem('rf_nbmode') === 'valid') nbMode = 'valid'; }catch(e){}
+  let vrAt = 0, vrBusy = false, vrList = [];
+  async function loadValid30(today, force){
+    const box = $('newbies'); if(!box || vrBusy || (!force && Date.now() - vrAt < 10 * 60e3)) return;
+    vrBusy = true;
+    if(!vrAt) box.innerHTML = '<div class="mempty">불러오는 중…</div>';
+    try{
+      const all = (await loadValidMembers()).map((m)=> toMember(m, today));
+      const gte = new Date(dayStart(addDays(today, -29))).toISOString(), lte = new Date(Date.now() + 36e5).toISOString();
+      for(let i = 0; i < all.length; i += 80){
+        const part = all.slice(i, i + 80);
+        const q = 'query RunFitStaffValid30 { ' + part.map((m, x)=> 'a' + x + ': managerMembers { attendances(memberId: "' + String(m.id).replace(/[^\w-]/g, '') + '", date: {gte: "' + gte + '", lte: "' + lte + '"}, paging: {limit: 100, offset: 0}) { status attendAt } }').join(' ') + ' }';
+        const r = await gql(q, {});
+        part.forEach((m, x)=>{ const a = (r && r['a' + x] && r['a' + x].attendances) || [];
+          m.n30 = new Set(a.filter((z)=> z.status === 'ATTEND' && z.attendAt).map((z)=> kstDate(Date.parse(z.attendAt)))).size; });
+      }
+      all.forEach((m)=>{ m.st = m.n30 >= VR_OK ? 'ok' : m.n30 >= VR_WARN ? 'warn' : 'risk'; });
+      const ord = { risk: 0, warn: 1, ok: 2 };
+      all.sort((a, b)=> ord[a.st] - ord[b.st] || a.n30 - b.n30 || (b.days == null ? 1e9 : b.days) - (a.days == null ? 1e9 : a.days));
+      vrList = all; vrAt = Date.now();
+      drawValid30();
+    }catch(e){ if(e instanceof AuthError) lockScreen(); else if(!vrAt) box.innerHTML = '<div class="mempty">' + NA + '</div>'; }
+    finally{ vrBusy = false; }
+  }
+  function drawValid30(){
+    const box = $('newbies'); if(!box || nbMode !== 'valid' || !vrAt) return;
+    const list = vrList, n = (s)=> list.filter((c)=> c.st === s).length;
+    const bm = new Map((beltAll || []).map((m)=> [m.id, m])); list.forEach((m)=>{ const b = bm.get(m.id); if(b){ m.total = b.total; m.belt = b.belt; } });
+    const LBL = { ok: '정착', warn: '주의', risk: '위험' };
+    let s = '<div class="nbsum">' +
+      '<div class="nbs risk"><b>' + n('risk') + '</b><span>위험 0~7회</span></div>' +
+      '<div class="nbs warn"><b>' + n('warn') + '</b><span>주의 8~11회</span></div>' +
+      '<div class="nbs ok"><b>' + n('ok') + '</b><span>정착 12회↑</span></div></div>';
+    s += '<div class="nblist" role="list">' + list.map((c, i)=>{
+      const w = Math.min(100, c.n30 / 16 * 100);
+      const last = c.days == null ? '기록 없음' : c.days === 0 ? '오늘' : c.days === 1 ? '어제' : c.days + '일 전';
+      return '<div class="nbr ' + c.st + '" role="listitem">' +
+        '<span class="nbn" data-i="' + i + '">' + '<i class="bd" style="background:' + esc(c.belt ? c.belt.bg : '#d3d7e0') + '"></i>' + esc(c.name) + '</span>' +
+        '<span class="nbd">' + last + '</span>' +
+        '<span class="nbb"><i style="width:' + w.toFixed(0) + '%"></i><em style="left:' + (VR_WARN / 16 * 100) + '%"></em><em style="left:' + (VR_OK / 16 * 100) + '%"></em></span>' +
+        '<span class="nbv">' + c.n30 + '회</span>' +
+        '<span class="nbt">' + LBL[c.st] + '</span></div>';
+    }).join('') + '</div>';
+    box.innerHTML = s;
+  }
+  function setNbMode(v){
+    nbMode = v; try{ localStorage.setItem('rf_nbmode', v); }catch(e){}
+    document.querySelectorAll('.nbseg button').forEach((b)=>{ const on = b.getAttribute('data-v') === v; b.classList.toggle('on', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+    if(v === 'valid'){ if(vrAt) drawValid30(); loadValid30(todayKst()); }
+    else { if(nbAt) drawNewbies(nbList); else $('newbies').innerHTML = '<div class="mempty">불러오는 중…</div>'; }
+  }
+  (function(){ const seg = document.querySelector('.nbseg'); if(!seg) return;
+    seg.addEventListener('click', (e)=>{ const b = e.target.closest('button[data-v]'); if(b) setNbMode(b.getAttribute('data-v')); });
+    if(nbMode === 'valid') setNbMode('valid');
+  })();
   // 기준 설명은 다른 카드 창처럼 왼쪽 판 바로 오른쪽에 띄운다 (왼쪽 판 안에 두면 잘림)
   (function(){ const hd = document.querySelector('.nbhead'), tip = document.querySelector('.nbtip'); if(!hd || !tip) return;
     const place = ()=>{ const L = $('summary').getBoundingClientRect(); tip.style.left = Math.round(L.right + 14) + 'px'; tip.style.top = '70px'; };
     hd.addEventListener('mouseover', place); hd.addEventListener('focus', place);
   })();
   (function(){ const box = $('newbies'); if(!box) return;
-    box.addEventListener('mouseover', (e)=>{ const n = e.target.closest('.nbn'); if(!n) return; const c = nbList[+n.getAttribute('data-i')]; if(c) showHoverCard(n, c, '🌱 ' + c.day + '일째 · 첫 30일 ' + (c.visits == null ? '-' : c.visits) + '회 출석'); });
+    box.addEventListener('mouseover', (e)=>{ const n = e.target.closest('.nbn'); if(!n) return; const i = +n.getAttribute('data-i');
+      if(nbMode === 'valid'){ const c = vrList[i]; if(c) showHoverCard(n, c, '최근 30일 ' + c.n30 + '회 출석 · ' + lastText(c)); return; }
+      const c = nbList[i]; if(c) showHoverCard(n, c, '🌱 ' + c.day + '일째 · 첫 30일 ' + (c.visits == null ? '-' : c.visits) + '회 출석'); });
     box.addEventListener('mouseout', (e)=>{ if(e.target.closest('.nbn')) hcHide(); });
   })();
 
@@ -1813,6 +1879,7 @@
       });
       render();
       drawBeltTiles();
+      if(nbMode === 'valid') drawValid30();
     }catch(e){ if(e instanceof AuthError) lockScreen(); else if(!beltAll) box.innerHTML = '<div class="mempty">' + NA + '</div>'; }
     finally{ beltBusy = false; }
   }
