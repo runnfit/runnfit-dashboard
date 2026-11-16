@@ -745,7 +745,7 @@
         T = [
           { l: '매출', v: man(sv), a: accent(sv, aS), c: dl(sv, aS, man, lab), s: spark(win.map((x)=> sale(x.d)), wl, on) },
           { l: '출석', v: fmt(o.visit || 0) + '<small>명</small>', a: accent(o.visit || 0, av((x)=> x.visit)), c: dl(o.visit || 0, av((x)=> x.visit), (x)=> fmt(Math.round(x)), lab), s: spark(win.map((x)=> x.visit), wl, on) },
-          { l: '주 1회 이상 출석', v: (w1 == null ? '-' : fmt(w1) + '<small>명 · ' + Math.round(wr * 100) + '%</small>'), a: light(wr), c: '<span class="c ' + lightTxt(wr) + '">' + (wr == null ? '' : wr >= 0.8 ? '● 좋음 (80% 이상)' : wr >= 0.7 ? '● 주의 (70~79%)' : '● 위험 (70% 미만)') + '</span>', s: spark(win.map((x)=> wk1(x) && x.valid ? wk1(x) / x.valid * 100 : 0), wl, on) },
+          { l: '주 1회 이상 출석', v: (w1 == null ? '<span class="miss" style="font-size:15px">미입력</span>' : fmt(w1) + '<small>명 · ' + Math.round(wr * 100) + '%</small>'), a: light(wr), c: '<span class="c ' + lightTxt(wr) + '">' + (wr == null ? '시트 7일 미출석 칸이 비어 있어요' : wr >= 0.8 ? '● 좋음 (80% 이상)' : wr >= 0.7 ? '● 주의 (70~79%)' : '● 위험 (70% 미만)') + '</span>', s: spark(win.map((x)=> wk1(x) && x.valid ? wk1(x) / x.valid * 100 : 0), wl, on) },
           { l: '신규 문의 → 방문 → 등록', v: fmt(o.inq || 0) + ' → ' + fmt(o.tour || 0) + ' → ' + fmt(o.join || 0), a: accent(o.join || 0, av((x)=> x.join)), c: dl(o.join || 0, av((x)=> x.join), r1, lab + ' 등록'), s: spark(win.map((x)=> x.join), wl, on) },
           { l: '재등록', v: fmt(o.rereg || 0) + '<small>명</small>', a: accent(o.rereg || 0, av((x)=> x.rereg)), c: dl(o.rereg || 0, av((x)=> x.rereg), r1, lab), s: spark(win.map((x)=> x.rereg), wl, on) },
           { l: '영업 활동량', v: fmt(act(o)) + '<small>건</small>', a: accent(act(o), av(act)), c: dl(act(o), av(act), (x)=> fmt(Math.round(x)), lab), s: spark(win.map(act), wl, on) } ];
@@ -754,8 +754,11 @@
           '<span></span>'.repeat(mondayOff) + Array.from({ length: DAYS }, (_, i)=> i + 1).map((x)=> x <= last && byD[x] ? '<button type="button" data-bd="' + x + '" class="' + (x === d ? 'on' : 'has') + '">' + x + '</button>' : '<span class="f">' + x + '</span>').join('') + '</div><div class="cgn">점 = 데이터 있는 날</div></div></span>' +
           '<span class="mkb-note">같은 요일(' + wdOf(d) + ') 평균과 비교 · 막대 = 최근 7일</span>';
         const lines = [];
-        if(aS != null) lines.push('매출 ' + man(sv) + (sv >= aS ? '으로 ' + lab + '(' + man(aS) + ')보다 높아요' : '으로 ' + lab + '(' + man(aS) + ')보다 낮아요'));
+        if(aS != null && (sale(d) || o.inq || o.join || o.rereg || act(o))) lines.push('매출 ' + man(sv) + (sv >= aS ? '으로 ' + lab + '(' + man(aS) + ')보다 높아요' : '으로 ' + lab + '(' + man(aS) + ')보다 낮아요'));
         if(wr != null) lines.push('주 1회 이상 출석 ' + Math.round(wr * 100) + '%' + (wr >= 0.8 ? ' — 좋아요' : wr >= 0.7 ? ' — 80%까지 ' + Math.ceil(o.valid * 0.8 - w1) + '명 더' : ' — 7일 미출석 ' + fmt(o.absent) + '명 연락이 급해요'));
+        const isWe = /[토일]/.test(wdOf(d)), noAct = !sale(d) && !(o.inq || 0) && !(o.join || 0) && !(o.rereg || 0) && !act(o);
+        if(noAct) lines.unshift(isWe ? '주말이라 매출·문의·등록 기록이 없어요' : '매출·문의·등록이 모두 0이에요 — 시트 입력이 됐는지 확인해 주세요');
+        if(o.valid > 0 && o.absent == null) lines.push('시트 7일 미출석 칸이 비어 있어 주 1회 이상 출석을 계산하지 못했어요');
         if((o.tour || 0) > (o.join || 0)) lines.push('상담 ' + fmt(o.tour) + '명 중 ' + fmt(o.join || 0) + '명 등록 — 미등록 ' + fmt(o.tour - (o.join || 0)) + '명 다시 연락');
         if(!(o.called || 0) && o.absent) lines.push('미출석 연락 기록 0건');
         brief = lines.join(' · ');
