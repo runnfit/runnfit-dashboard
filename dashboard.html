@@ -285,6 +285,10 @@
   .msgs p{ display:inline-block; align-self:flex-start; padding:3px 9px; border-radius:4px; }
   .msgs p.cele{ background:rgba(29,78,216,.12); color:#1e3a8a; }
   .msgs p.care{ background:#eceef2; color:#4a5164; }
+  .msgs p.hold{ background:#eef0f3; color:#4b5563; font-weight:800; }
+  .side .hband{ align-self:stretch; margin:4px -8px -8px; background:#6b7280; color:#fff; text-align:center; font-weight:800; font-size:12px; padding:3px 4px; }
+  .nbsum:has(.nbs.hold){ grid-template-columns:repeat(4, 1fr) !important; } .nbs.hold{ background:#eef0f3; } .nbs.hold b, .nbs.hold span strong{ color:#4b5563; }
+  .nbr.hold .nbb i{ background:#b6bcc6 !important; } .nbr.hold .nbt{ background:#eef0f3; color:#4b5563; }
   .right .msgs{ gap:4px; }
   /* 유효 회원 목표 진행 줄 (칸 맨 아래) */
   .left .kpis > .kpi{ position:relative; overflow:hidden; }
@@ -791,6 +795,38 @@
   const $ = (id)=> document.getElementById(id);
   // 신규회원(등록 30일 안) 상태: 카드 왼쪽 위 별 자리에 🔴🟡🟢 불로 표시
   // 30일 지난 흰·노란 띠도 같은 기준(한 달 평균 출석: 5회 이하 위험 · 6~11회 주의 · 12회 이상 습관)
+  // ---------- 홀딩 중인 회원 (다짐 이용권 holdingHistories) ----------
+  const holdMap = new Map();   // memberId → 홀딩 끝나는 날 'YYYY-MM-DD'
+  let holdAt = 0;
+  async function loadHolds(ids){
+    if(Date.now() - holdAt < 10 * 60e3 && holdAt) return;
+    const now = Date.now(), today = todayKst(), next = new Map();
+    for(let i = 0; i < ids.length; i += 50){
+      const part = ids.slice(i, i + 50);
+      const q = 'query RunFitStaffHolds { ' + part.map((id, x)=> 'a' + x + ': managerMembers { purchasedProducts(memberId: "' + String(id).replace(/[^\w-]/g, '') + '") { ... on Membership { category sale { hasRefund } holdingHistories { startDate endDate } } } }').join(' ') + ' }';
+      const r = await gql(q, {});
+      part.forEach((id, x)=>{
+        const pp = (r && r['a' + x] && r['a' + x].purchasedProducts) || [];
+        pp.forEach((pr)=>{ if(!pr || (pr.sale && pr.sale.hasRefund)) return;
+          (pr.holdingHistories || []).forEach((h)=>{
+            if(!h || !h.startDate || Date.parse(h.startDate) > now) return;
+            const end = h.endDate ? kstDate(Date.parse(h.endDate)) : null;
+            if(end && end < today) return;
+            const cur = next.get(id); if(!cur || (end && end > cur)) next.set(id, end || '9999-12-31');
+          }); });
+      });
+    }
+    holdMap.clear(); next.forEach((v, k)=> holdMap.set(k, v)); holdAt = Date.now();
+  }
+  function holdInfo(id){
+    const end = id && holdMap.get(id); if(!end) return null;
+    const known = end !== '9999-12-31';
+    return { end, short: known ? '~' + Number(end.slice(5, 7)) + '.' + end.slice(8) : '', left: known ? daysBetween(end, todayKst()) : null,
+      label: known ? Number(end.slice(5, 7)) + '.' + end.slice(8) + '까지' : '' };
+  }
+  const holdBand = (id)=>{ const h = holdInfo(id); return h ? '<div class="hband">⏸ 홀딩 중' + (h.short ? ' · ' + h.short : '') + '</div>' : ''; };
+  const holdLine = (id)=>{ const h = holdInfo(id); return h ? '<p class="hold">⏸ ' + (h.label ? h.label + ' 홀딩 · ' + h.left + '일 남음' : '홀딩 중') + '</p>' : ''; };
+
   const nbStatus = new Map(), oldStatus = new Map();
   const v30Status = new Map();   // 유효회원 최근 30일 출석 횟수 (memberId → n30)
   function nbBadge(id, n30){
@@ -864,11 +900,11 @@
         '</div>' +
         (nbBadge(c.id, d && d.n30 != null ? d.n30 : null) || (focus ? '<span class="focus" title="집중관리 회원 (흰 띠·노란 띠)" aria-label="집중관리 회원">★</span>' : '')) +
         '<div class="beltname">' + (!d ? '확인 중…' : belt ? esc(belt.name) : NA) + '</div>' +
-        '<div class="who">' + (milestone ? '🎉' : '') + esc(c.name || '이름 확인 불가') + '</div>' +
+        '<div class="who">' + (milestone ? '🎉' : '') + esc(c.name || '이름 확인 불가') + '</div>' + holdBand(c.id) +
       '</div>' +
       '<div class="main">' +
         '<div class="head2"><div class="time">' + hhmm(c.t) + '</div><div class="regbox">' + lights + '<span class="reg">' + regText + '</span></div></div>' +
-        (msgs.length ? '<div class="msgs">' + msgs.map((m)=> '<p class="' + m.k + '">' + esc(m.t) + '</p>').join('') + '</div>' : '') +
+        (msgs.length || holdInfo(c.id) ? '<div class="msgs">' + holdLine(c.id) + msgs.map((m)=> '<p class="' + m.k + '">' + esc(m.t) + '</p>').join('') + '</div>' : '') +
         '<div class="boxes"><div class="box"><span>' + count + '</span><span class="sep"></span><span>' + (!d ? wait : '30일 <b>' + (d.n30 != null ? d.n30 : '-') + '</b>회') + '</span><span class="sep"></span><span>' + (!d ? wait : '주 평균 <b>' + (d.n30 != null ? Math.round(d.n30 / 30 * 7 * 10) / 10 : '-') + '</b>회') + '</span></div>' +
         '<div class="box"><span>' + gap + '</span><span class="sep"></span><span>' + remain + '</span></div></div>' +
         '<div class="foot"><span class="wl"><span>운동복 ' + (c.wear ? 'O' : 'X') + '</span><span>사물함 ' + (c.locker ? 'O' : 'X') + '</span></span>' +
@@ -1226,7 +1262,7 @@
         (nbBadge(m.id, m.n30) || (focus ? '<span class="focus" title="집중관리 회원 (흰 띠·노란 띠)" aria-label="집중관리 회원">★</span>' : '')) +
         '<div class="beltname">' + (belt ? esc(belt.name) : NA) + '</div>' +
         '<div class="avatar">' + photo + '</div>' +
-        '<div class="who">' + esc(m.name || '이름 확인 불가') + '</div>' +
+        '<div class="who">' + esc(m.name || '이름 확인 불가') + '</div>' + holdBand(m.id) +
       '</div>' +
       '<div class="main">' +
         '<div class="head2"><div class="time rank">' + medal + m.rank + '위</div><div class="regbox">' + lights + '<span class="reg">' + regText + '</span></div></div>' +
@@ -1346,7 +1382,7 @@
       '</div>' +
       '<div class="main">' +
         '<div class="head2"><div class="time absent">' + (opt.head != null ? opt.head : (i + 1) + '. ' + daysText) + '</div><div class="regbox">' + lights + '<span class="reg">' + regText + '</span></div></div>' +
-        '<div class="msgs">' + (tel ? '<p class="care phone"><button class="tel" data-tel="' + esc(tel) + '" title="누르면 번호가 복사돼요">📞 ' + esc(tel) + '</button><span class="copied"></span></p>' : '<p class="care">' + esc(msg) + '</p>') + '</div>' +
+        '<div class="msgs">' + holdLine(m.id) + (tel ? '<p class="care phone"><button class="tel" data-tel="' + esc(tel) + '" title="누르면 번호가 복사돼요">📞 ' + esc(tel) + '</button><span class="copied"></span></p>' : '<p class="care">' + esc(msg) + '</p>') + '</div>' +
         '<div class="boxes"><div class="box"><span>누적 ' + (m.total != null ? '<b>' + m.total + '</b>회' : na) + '</span><span class="sep"></span><span>30일 <b>' + (n30 != null ? n30 : '-') + '</b>회</span><span class="sep"></span><span>주 평균 <b>' + (n30 != null ? Math.round(n30 / 30 * 7 * 10) / 10 : '-') + '</b>회</span></div>' +
           '<div class="box"><span>' + (m.recent == null ? '출석 기록 <b>없음</b>' : m.days === 0 ? '<b>오늘</b> 출석' : '<b>' + m.days + '</b>일 전 출석') + '</span><span class="sep"></span><span' + (remainD != null && remainD <= 7 ? ' class="warn"' : '') + '>' + (remainD == null ? '잔여 ' + na : remainD >= 0 ? '잔여 <b>' + remainD + '</b>일' : '<b>만료</b>') + '</span></div></div>' +
         '<div class="foot"><span class="wl"><span>운동복 ' + (m.wear ? 'O' : 'X') + '</span><span>사물함 ' + (m.locker ? 'O' : 'X') + '</span></span>' +
@@ -1383,8 +1419,9 @@
     const my = ++absReq;
     absPop.innerHTML = '<div class="pophead">' + ABSENT_DAYS + '일 이상 미출석 회원 <small>불러오는 중… (인원이 많아 몇 초 걸려요)</small><button class="popx" aria-label="닫기">✕</button></div>';
     try{
-      const list = await loadAbsentList();
-      await waitBeltStatus();   // 흰·노란 띠 신호등 계산이 끝난 뒤에 그리기
+      const list = (await loadAbsentList()).slice();
+      await waitBeltStatus();
+      list.sort((a, b)=> (holdMap.has(a.id) ? 1 : 0) - (holdMap.has(b.id) ? 1 : 0));   // 홀딩 회원은 맨 아래   // 흰·노란 띠 신호등 계산이 끝난 뒤에 그리기
       if(my !== absReq) return;
       absPop.innerHTML = '<div class="pophead">📞 ' + ABSENT_DAYS + '일 이상 미출석 회원 <b>' + list.length + '명</b><small>오래 안 나온 순서 · 연락해서 안부를 물어주세요</small><button class="popx" aria-label="닫기">✕</button></div>' + regMixHtml(list) +
         (list.length ? beltSplitHtml(list) + '<div class="grid">' + list.map((m, i)=> absentCardHtml(m, i).replace('<article class="card"', '<article class="card" data-b="' + beltIdx(m) + '"')).join('') + '</div>' : '<div class="popempty">' + ABSENT_DAYS + '일 넘게 안 나온 회원이 없어요 🙂</div>');
@@ -1788,8 +1825,9 @@
         part.forEach((m, x)=>{ const a = (r && r['a' + x] && r['a' + x].attendances) || [];
           m.n30 = new Set(a.filter((z)=> z.status === 'ATTEND' && z.attendAt).map((z)=> kstDate(Date.parse(z.attendAt)))).size; });
       }
-      all.forEach((m)=>{ m.st = m.n30 >= VR_OK ? 'ok' : m.n30 >= VR_WARN ? 'warn' : 'risk'; });
-      const ord = { risk: 0, warn: 1, ok: 2 };
+      try{ await loadHolds(all.map((m)=> m.id)); }catch(e){ if(e instanceof AuthError) throw e; }
+      all.forEach((m)=>{ m.st = holdMap.has(m.id) ? 'hold' : m.n30 >= VR_OK ? 'ok' : m.n30 >= VR_WARN ? 'warn' : 'risk'; });
+      const ord = { risk: 0, warn: 1, ok: 2, hold: 3 };
       all.sort((a, b)=> ord[a.st] - ord[b.st] || a.n30 - b.n30 || (b.days == null ? 1e9 : b.days) - (a.days == null ? 1e9 : a.days));
       vrList = all; vrAt = Date.now();
       v30Status.clear(); all.forEach((m)=> v30Status.set(m.id, m.n30));
@@ -1802,11 +1840,12 @@
     const box = $('newbies'); if(!box || nbMode !== 'valid' || !vrAt) return;
     const list = vrList, n = (s)=> list.filter((c)=> c.st === s).length;
     const bm = new Map((beltAll || []).map((m)=> [m.id, m])); list.forEach((m)=>{ const b = bm.get(m.id); if(b){ m.total = b.total; m.belt = b.belt; } });
-    const LBL = { ok: '습관', warn: '주의', risk: '위험' };
+    const LBL = { ok: '습관', warn: '주의', risk: '위험', hold: '홀딩' };
     let s = '<div class="nbsum">' +
       '<button type="button" class="nbs risk" data-st="risk"><b>' + n('risk') + '<small>명</small></b><span>위험 0~7회<i>|</i><strong>' + (list.length ? Math.round(n('risk') * 100 / list.length) : 0) + '%</strong></span></button>' +
       '<button type="button" class="nbs warn" data-st="warn"><b>' + n('warn') + '<small>명</small></b><span>주의 8~11회<i>|</i><strong>' + (list.length ? Math.round(n('warn') * 100 / list.length) : 0) + '%</strong></span></button>' +
-      '<button type="button" class="nbs ok" data-st="ok"><b>' + n('ok') + '<small>명</small></b><span>습관 12회 이상<i>|</i><strong>' + (list.length ? Math.round(n('ok') * 100 / list.length) : 0) + '%</strong></span></button></div>';
+      '<button type="button" class="nbs ok" data-st="ok"><b>' + n('ok') + '<small>명</small></b><span>습관 12회 이상<i>|</i><strong>' + (list.length ? Math.round(n('ok') * 100 / list.length) : 0) + '%</strong></span></button>' +
+      '<button type="button" class="nbs hold" data-st="hold"><b>' + n('hold') + '<small>명</small></b><span>⏸ 홀딩<i>|</i><strong>' + (list.length ? Math.round(n('hold') * 100 / list.length) : 0) + '%</strong></span></button></div>';
     s += '<div class="nblist" role="list">' + list.map((c, i)=>{
       const w = Math.min(100, c.n30 / 16 * 100);
       const last = c.days == null ? '-' : c.days === 0 ? '오늘' : c.days === 1 ? '어제' : c.days + '일 전';
@@ -1956,8 +1995,8 @@
     beltPop.style.left = Math.round(L.right + 14) + 'px'; beltPop.style.top = '70px';
     beltPop.setAttribute('data-b', key); beltPop.classList.remove('hidden');
     const my = ++beltReq, valid = nbMode === 'valid';
-    const NAME = { risk: '위험', warn: '주의', ok: '습관' }, RANGE = { risk: '0~7회', warn: '8~11회', ok: '12회 이상' };
-    const COL = { risk: '#e5484d', warn: '#f5b82e', ok: '#2fb36b' };
+    const NAME = { risk: '위험', warn: '주의', ok: '습관', hold: '홀딩' }, RANGE = { risk: '0~7회', warn: '8~11회', ok: '12회 이상', hold: '중' };
+    const COL = { risk: '#e5484d', warn: '#f5b82e', ok: '#2fb36b', hold: '#9ca3af' };
     const head = (extra)=> '<div class="pophead"><span class="pdot" style="background:' + COL[st] + '"></span>' + (valid ? '유효회원' : '신규회원') + ' · ' + NAME[st] + ' ' + extra + '<button class="popx" aria-label="닫기">✕</button></div>';
     beltPop.innerHTML = head('<small>불러오는 중…</small>');
     try{
