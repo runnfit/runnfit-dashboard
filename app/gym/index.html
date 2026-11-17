@@ -91,7 +91,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 <div class="ok" id="fOk"></div></div></div></div>
 <div id="start">
   <div class="lg">RUN N FIT</div>
-  <p><b style="color:#0B1B4D;font-size:18px">런앤핏 픽셀 헬스장</b><br>실제 정릉 런앤핏 배치 그대로<br>엘리베이터에서 내려 얼굴인식하고 들어가요</p>
+  <p><b style="color:#0B1B4D;font-size:18px">런앤핏 픽셀 헬스장</b><br>실제 정릉 런앤핏 배치 그대로<br>턴게이트에서 얼굴인식하고 들어가요</p>
   <input id="nick" maxlength="8" placeholder="닉네임">
   <button class="btn p" id="enter">입장하기</button>
   <small>체험판 · 다른 회원은 예시 캐릭터예요</small>
@@ -221,8 +221,8 @@ box(scene, -.1, 0, -TD - .1, WW + RW + .2, 1.0, .1, 0xCBD5E1, { op: .55 }); box(
 box(scene, -.12, 0, -TD, .1, 1.0, TD, 0xCBD5E1, { op: .55 }); box(scene, WW + RW + .02, 0, -TD, .1, 1.0, TD, 0xCBD5E1, { op: .55 });
 solid(-5, -TD - 3, WW + RW + 10, 3); solid(-3, -TD, 3, TD); solid(WW + RW, -TD, 3, TD);
 // 옥상 아래 건물 (밝은 톤) + 구름
-box(scene, -1, -6, -TD - .3, WW + RW + 2.2, 5.9, DG + 10 + TD + 1.5, 0xE2E8F0);
-for (let k = 0; k < 7; k++) box(scene, -1.02, -5.4 + k * .8, -TD, .02, .35, DG + 10 + TD, 0xBFDBFE);
+box(scene, -1, -6, -TD - .3, WW + RW + 2.2, 5.9, DG + TD + 1.0, 0xE2E8F0);
+for (let k = 0; k < 7; k++) box(scene, -1.02, -5.4 + k * .8, -TD, .02, .35, DG + TD, 0xBFDBFE);
 var cloudMat = new THREE.MeshLambertMaterial({ color: 0xffffff, emissive: 0xffffff, emissiveIntensity: .35, transparent: true, opacity: .96 });
 const clouds = [], SPH = new THREE.SphereGeometry(1, 14, 10);
 function cloud(x, y, z, sc) { const g = new THREE.Group(); const n = 5 + Math.floor(Math.random() * 4);
@@ -463,22 +463,12 @@ const armPivot = new THREE.Group(); armPivot.position.set(.45, .85, .5); gate.ad
 solid(GX, GZ, .45, 1.0);
 label(scene, '얼굴인식 턴게이트', GX + .2, 2.3, GZ + .5, { bg: 'rgba(245,158,11,.95)', fg: '#111827', size: 28, scale: .011 });
 
-// ── 밖: 엘리베이터 · 복도 (자격증 벽 · 개인 사물함)
-const CX0 = EN.x0 - .6, CX1 = WW + .6, CZ1 = DG + 10;
-floor(CX0, DG, CX1 - CX0, CZ1 - DG, 0xC9CED6);
-for (let z = DG; z < CZ1; z += 1) for (let x = CX0; x < CX1; x += 1) if ((Math.floor(x) + Math.floor(z)) % 2) floor(x, z, Math.min(1, CX1 - x), Math.min(1, CZ1 - z), 0xBEC4CE, .001);
-box(scene, CX0 - .25, 0, DG, .25, 3.0, CZ1 - DG, 0x1F2328); solid(CX0 - 3, DG, 3, CZ1 - DG);
-for (let r = 0; r < 4; r++) for (let c = 0; c < 9; c++) box(scene, CX0 + .01, .9 + r * .5, DG + 1.2 + c * .75, .02, .38, .55, 0xF9FAFB);
-label(scene, '코치 자격증 · 수상 기록', CX0 + .2, 3.2, DG + 4.5, DARK);
-box(scene, CX1, 0, DG, .25, 3.0, CZ1 - DG, 0xE5E7EB); solid(CX1, DG, 3, CZ1 - DG);
-for (let k = 0; k < 7; k++) { box(scene, CX1 - .55, 0, DG + 1.5 + k * .8, .55, 1.9, .75, 0x9CA3AF); box(scene, CX1 - .57, 1.0, DG + 1.85 + k * .8, .02, .1, .12, 0x374151); }
-solid(CX1 - .55, DG + 1.5, .55, 5.6); label(scene, '개인 사물함', CX1 - .3, 2.4, DG + 4.3, DARK);
-box(scene, CX0, 0, CZ1, CX1 - CX0, 3.0, .2, 0xE5E7EB); solid(CX0 - 2, CZ1, CX1 - CX0 + 4, 2);
-const elevL = box(scene, (CX0 + CX1) / 2 - .9, 0, CZ1 - .06, .9, 2.4, .05, 0xC0C4CC);
-const elevR = box(scene, (CX0 + CX1) / 2, 0, CZ1 - .06, .9, 2.4, .05, 0xD1D5DB);
-box(scene, (CX0 + CX1) / 2 - .9, 0, CZ1 - .02, 1.8, 2.4, .01, 0xFEF3C7, { basic: 1 });
-label(scene, '▼ 엘리베이터', (CX0 + CX1) / 2, 2.85, CZ1 - .2, { bg: 'rgba(17,24,39,.9)', fg: '#FCA5A5', size: 28, scale: .011 });
-label(scene, 'RUN N FIT ↑', (CX0 + CX1) / 2, 2.6, DG + .4, { bg: '#093692', size: 28, scale: .009 });
+// ── 입구: 바깥 복도 없이 턴게이트 앞에서 시작 (건물은 깔끔한 사각형)
+const CZ1 = DG + 1;
+box(scene, EN.x0, 0, DG, WW - EN.x0, 1.0, .2, 0x1A1D24); solid(EN.x0, DG, WW - EN.x0, 2);
+box(scene, EN.x0 + .6, 0, DG + .02, WW - EN.x0 - 1.2, 2.3, .06, 0xBFDBFE, { op: .4 });
+box(scene, EN.x0 + .55, 2.3, DG, WW - EN.x0 - 1.1, .12, .2, 0x64748B);
+label(scene, 'RUN N FIT 입구', (EN.x0 + WW) / 2, 2.9, DG, { bg: '#093692', size: 28, scale: .01 });
 
 // ── 테라스 쉼터 (넓게: 파라솔 · 벤치 · 선베드 · 화분 · 포토존 · 방명록 · 야외 매트)
 function plant(x, z, big) { cyl(scene, x, 0, z, big ? .35 : .25, big ? .55 : .4, 0x6B4423); const l = new THREE.Mesh(new THREE.SphereGeometry(big ? .7 : .45, 10, 8), M(0x16A34A)); l.position.set(x, big ? 1.2 : .8, z); scene.add(l); solid(x - .35, z - .35, .7, .7); }
@@ -617,8 +607,8 @@ npc('하체러버', 0xDB2777, 0x3B2A1A, [[s(3.0), s(2.6)], [s(3.0), s(14.5)], [s
 const me = avatar('나', 0x2563EB, 0x3B2A1A, true);
 me.traverse(o => { if (o.isMesh) { o.material = o.material.clone(); o.material.depthTest = false; o.renderOrder = 10; } });
 let entered = false, cutscene = null;
-me.position.set((CX0 + CX1) / 2, 0, CZ1 - 2.4); me.rotation.y = Math.PI;
-camera.position.set(me.position.x, 10.5, me.position.z + 7);
+me.position.set(GX + 1.2, 0, GZ + 1.9); me.rotation.y = Math.PI;
+camera.position.set(me.position.x + 1.5, 7.5, me.position.z + 6.5);
 controls.target.set(me.position.x, 1, me.position.z);
 function follow(k = 1) { const dx = (me.position.x - controls.target.x) * k, dz = (me.position.z - controls.target.z) * k; camera.position.x += dx; camera.position.z += dz; controls.target.x += dx; controls.target.z += dz; }
 
@@ -851,7 +841,7 @@ $('enter').onclick = () => { setName($('nick').value.trim() || '나'); $('start'
 $('skip').onclick = () => finishEntry(true);
 function finishEntry(skip) {
   cutscene = null; entered = true; $('skip').style.display = 'none'; $('face').style.display = 'none'; armPivot.rotation.y = 0;
-  if (skip) { me.position.set(GX + 1.2, 0, GZ - 1.5); elevL.position.x = (CX0 + CX1) / 2 - 1.3; elevR.position.x = (CX0 + CX1) / 2 + 1.3; }
+  if (skip) me.position.set(GX + 1.2, 0, GZ - 1.5);
   follow(1); me.rotation.y = Math.PI;
   $('hint').style.opacity = 1; setTimeout(() => $('hint').style.opacity = 0, 6000);
   toast('런앤핏이 기다렸어요! 오늘도 출석 완료 ✓', 3000); feed('', `${myName}님이 입장했어요 👋`, 'sys'); say(me, '출석 완료!', 3);
@@ -859,9 +849,9 @@ function finishEntry(skip) {
 function walkTo(tx, tz, sp, dt) { const dx = tx - me.position.x, dz = tz - me.position.z, d = Math.hypot(dx, dz); if (d < .05) return true; const st = Math.min(d, sp * dt); me.position.x += dx / d * st; me.position.z += dz / d * st; me.rotation.y = Math.atan2(dx, dz); pose(me, 'walk', dt); return false; }
 function runCutscene(dt) {
   const c = cutscene; c.t += dt;
-  if (c.step === 0) { const k = Math.min(1, c.t / 1.2); elevL.position.x = (CX0 + CX1) / 2 - .45 - k * .85; elevR.position.x = (CX0 + CX1) / 2 + .45 + k * .85; pose(me, null, dt); if (k >= 1) { c.step = 1; say(me, '도착!', 1.5); } }
-  else if (c.step === 1) { if (walkTo(GX + 1.2, GZ + 2.2, 2.4, dt)) { c.step = 2; c.t = 0; me.rotation.y = Math.PI; openFace(); } }
-  else if (c.step === 2) { pose(me, null, dt); if (c.t > 1.6 && !c.ok) { c.ok = 1; faceOk(); } if (c.t > 2.8) { $('face').style.display = 'none'; c.step = 3; c.t = 0; } }
+  if (c.step === 0) { pose(me, null, dt); if (c.t > .3) { c.step = 1; } }
+  else if (c.step === 1) { if (walkTo(GX + 1.2, GZ + 1.5, 2.0, dt)) { c.step = 2; c.t = 0; me.rotation.y = Math.PI; openFace(); } }
+  else if (c.step === 2) { pose(me, null, dt); if (c.t > 1.0 && !c.ok) { c.ok = 1; faceOk(); } if (c.t > 1.9) { $('face').style.display = 'none'; c.step = 3; c.t = 0; } }
   else if (c.step === 3) { armPivot.rotation.y = Math.min(1.5, c.t * 3); if (c.t > .4 && walkTo(GX + 1.2, GZ - 1.5, 2.2, dt)) finishEntry(false); else pose(me, 'walk', 0); }
   follow(.15);
 }
