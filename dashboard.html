@@ -596,7 +596,7 @@
         <input type="search" id="search" placeholder="이름 검색" autocomplete="off" />
         <div class="count">출석한 회원<b id="countNum">-</b></div>
       </div>
-      <div class="cfilter" role="group" aria-label="출석 회원 필터"><span id="cfilter" class="cfchips"></span><i class="fsep"></i><label class="fgap"><input type="number" id="cfGap" min="1" max="999" inputmode="numeric" placeholder="-" aria-label="며칠 만에 나왔는지">일 만 이상</label><span id="cfSum" class="fsum"></span><button type="button" class="freset" id="cfReset" disabled>↺ 전체</button></div>
+      <div class="cfilter" role="group" aria-label="출석 회원 필터"><span id="cfilter" class="cfchips"></span><i class="fsep"></i><label class="fgap"><input type="number" id="cfGap" min="1" max="999" inputmode="numeric" placeholder="-" aria-label="며칠 이상 만에 출석">일 이상 만에 출석</label><span id="cfSum" class="fsum"></span><button type="button" class="freset" id="cfReset" disabled>↺ 전체</button></div>
     </div>
 
     <div id="notice" class="notice hidden"></div>
@@ -971,7 +971,7 @@
       if(FSEL.b.size) parts.push([...FSEL.b].sort().map((i)=> LB[+i]).join('·'));
       if(FSEL.s.size) parts.push([...FSEL.s].map((v)=> names.s[v]).join('·'));
       if(FSEL.r.size) parts.push([...FSEL.r].map((v)=> names.r[v]).join('·'));
-      if(FGAP > 0) parts.push(FGAP + '일 만↑');
+      if(FGAP > 0) parts.push(FGAP + '일 이상 만에 출석');
       sum.innerHTML = esc(parts.join(' · ')) + ' → <b>' + cards.filter(passFilter).length + '명</b>';
     } else sum.innerHTML = ''; }
   }
