@@ -93,7 +93,8 @@ function renderLogin(err){
       '<div class="msg ' + (err ? 'err' : '') + '" id="lMsg">' + esc(err || '') + '</div>' +
     '</form>' +
     '<div style="padding:16px 26px 0"><button class="btn pxbtn" type="button" id="enterBtn" style="width:100%;height:54px;font-size:17px">런앤핏 입장하기</button>' +
-      '<div style="font-size:12px;color:var(--muted);text-align:center;margin-top:12px;line-height:1.6">이용 중인 회원권이 있는 회원님을 위한 공간이에요.<br>정보가 맞지 않으면 프론트에 말씀해 주세요.</div></div>';
+      '<div style="font-size:12px;color:var(--muted);text-align:center;margin-top:12px;line-height:1.6">이용 중인 회원권이 있는 회원님을 위한 공간이에요.<br>정보가 맞지 않으면 프론트에 말씀해 주세요.</div>' +
+      '<div style="font-size:11px;color:#6B7280;text-align:center;margin-top:10px">이 화면은 reCAPTCHA로 보호되며 Google <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">개인정보처리방침</a>과 <a href="https://policies.google.com/terms" target="_blank" rel="noopener">서비스 약관</a>이 적용돼요.</div></div>';
   const msg = (t, ok)=>{ const m = document.getElementById('lMsg'); m.className = 'msg ' + (ok ? 'ok' : 'err'); m.textContent = t; };
   const sendBtn = document.getElementById('sendBtn');
   sendBtn.onclick = async ()=>{
@@ -150,6 +151,7 @@ async function loadMe(user){
   if(nick && !me.nickname){ patch.nickname = nick; }
   if(Object.keys(patch).length){ try{ await updateDoc(doc(db, 'members', me.id), patch); Object.assign(me, patch); }catch(e){ console.warn(e); } }
   sessionStorage.removeItem('rfNick'); sessionStorage.removeItem('rfName');
+  try{ if(verifier){ verifier.clear(); verifier = null; } }catch(e){}
   try{
     const ns = await getDocs(query(collection(db, 'notices'), orderBy('createdAt', 'desc'), limit(5)));
     notices = ns.docs.map((x)=> Object.assign({ id: x.id }, x.data()));
@@ -192,7 +194,8 @@ function first30Info(){
 function workoutDoneKey(){ return 'rfWorkout.' + me.id + '.' + today(); }
 function renderHome(){
   const total = Number(me.total) || 0;
-  const cur = beltOf(total), nxt = nextBelt(total);
+  const none = total < 1;
+  const cur = none ? { name: '띠 없음', bg: '#FFFFFF', from: 0 } : beltOf(total), nxt = nextBelt(total);
   const prevFrom = cur.from === 1 ? 0 : cur.from;
   const span = nxt ? nxt.from - prevFrom : 1, got = nxt ? total - prevFrom : 1;
   const segN = 10, on = Math.max(0, Math.min(segN, Math.floor(got / span * segN)));
@@ -202,7 +205,7 @@ function renderHome(){
   const holding = me.holdEnd && me.holdEnd >= today();
   const done = localStorage.getItem(workoutDoneKey()) === '1';
   const journey = BELTS.map((b)=>{
-    const isCur = b.name === cur.name;
+    const isCur = !none && b.name === cur.name;
     return '<div style="display:flex;flex-direction:column;align-items:center;gap:4px"><div style="opacity:' + (isCur ? 1 : .45) + ';' + (isCur ? 'outline:3px solid ' + B + ';outline-offset:3px;' : '') + 'line-height:0">' + beltSvg(b.bg, 38, b.name) + '</div><div style="font-size:12px;font-weight:' + (isCur ? 900 : 500) + '">' + b.name + '</div>' +
       (isCur ? '<div style="font-size:11px;font-weight:900;color:#fff;background:' + B + ';padding:1px 5px">지금</div>' : '<div style="font-size:11px;color:var(--muted)">' + b.from + '회' + (b.from === 1 ? '~' : '') + '</div>') + '</div>';
   }).join('');
@@ -227,14 +230,14 @@ function renderHome(){
   $app.innerHTML =
     '<div class="top"><img class="logo" src="./logo.png" alt="RUN N FIT"><button class="iconbtn" type="button" id="bellBtn" aria-label="공지">' + BELL + (notices.length ? '<span class="dot"></span>' : '') + '</button></div>' +
     '<div style="padding:12px 24px 0;display:flex;gap:12px;align-items:center">' + AVATAR(44) +
-      '<div><div style="font-size:13px;color:var(--muted);font-weight:500">' + (f30 ? '등록 ' + f30.day + '일째 · ' : '') + cur.name + '</div><div style="font-size:20px;font-weight:900;margin-top:1px">' + esc(me.nickname || me.name) + '님, 반가워요!</div></div></div>' +
+      '<div><div style="font-size:13px;color:var(--muted);font-weight:500">' + (f30 ? '등록 ' + f30.day + '일째 · ' : '') + (none ? '첫 출석을 기다려요' : cur.name) + '</div><div style="font-size:20px;font-weight:900;margin-top:1px">' + esc(me.nickname || me.name) + '님, 반가워요!</div></div></div>' +
     (attendedToday
       ? '<div class="m" style="background:#E3E9FF;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px"><div style="width:26px;height:26px;background:' + B + ';display:flex;align-items:center;justify-content:center;flex-shrink:0">' + CHECK('#fff') + '</div><div style="font-size:14px"><b style="color:' + B + '">오늘 출석 완료</b> · 오늘도 와주셨네요!</div></div>'
       : '<div class="m" style="background:#fff;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:inset 0 0 0 2px var(--line)"><div style="width:26px;height:26px;box-shadow:inset 0 0 0 2px #9CA3AF;flex-shrink:0"></div><div style="font-size:14px;color:#374151"><b>오늘은 아직 출석 전</b> · 센터에서 출석하면 바로 표시돼요</div></div>') +
     '<div class="hero m" style="padding:14px 16px">' +
       '<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:700;color:var(--muted)">출석 띠</div><div style="font-size:13px;color:var(--muted)">총 <b style="color:var(--ink)">' + total + '회</b> 출석</div></div>' +
       '<div style="display:flex;align-items:center;gap:12px;margin-top:8px">' + beltSvg(cur.bg, 56, cur.name) +
-        '<div style="font-size:19px;font-weight:900;line-height:1.35">' + (nxt ? '<span style="color:' + B + '">' + (nxt.from - total) + '번 더</span> 출석하면<br>' + nxt.name + '예요!' : '최고 단계<br>검은 띠예요! 🎉') + '</div></div>' +
+        '<div style="font-size:19px;font-weight:900;line-height:1.35">' + (none ? '<span style="color:' + B + '">첫 출석</span>하면<br>흰 띠를 받아요!' : nxt ? '<span style="color:' + B + '">' + (nxt.from - total) + '번 더</span> 출석하면<br>' + nxt.name + '예요!' : '최고 단계<br>검은 띠예요! 🎉') + '</div></div>' +
       '<div style="display:flex;align-items:center;gap:8px;margin-top:10px"><div class="grid10" style="flex:1" role="img" aria-label="다음 띠까지 진행">' + Array.from({ length: segN }, (_, i)=> '<div class="seg ' + (i < on ? 'on' : '') + '" style="height:6px"></div>').join('') + '</div><div class="pxf" style="font-size:7px;color:#6B7280">EXP ' + (nxt ? got + '/' + span : 'MAX') + '</div></div>' +
       '<div style="height:1px;background:#E5E7EB;margin:12px -16px 10px"></div>' +
       '<div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px">' + journey + '</div>' +
@@ -395,7 +398,7 @@ async function loadMyVoices(){
 // ---------- 내 정보 ----------
 function renderMe(){
   $app.innerHTML = topbar('내 정보') +
-    '<div class="card m" style="padding:16px;display:flex;gap:14px;align-items:center">' + AVATAR(52) + '<div><div style="font-size:18px;font-weight:900">' + esc(me.nickname || '-') + '</div><div class="muted" style="font-size:13px">' + esc(me.name) + ' · ' + beltOf(me.total).name + ' · 총 ' + (Number(me.total) || 0) + '회 출석</div></div></div>' +
+    '<div class="card m" style="padding:16px;display:flex;gap:14px;align-items:center">' + AVATAR(52) + '<div><div style="font-size:18px;font-weight:900">' + esc(me.nickname || '-') + '</div><div class="muted" style="font-size:13px">' + esc(me.name) + ' · ' + ((Number(me.total) || 0) < 1 ? '띠 없음' : beltOf(me.total).name) + ' · 총 ' + (Number(me.total) || 0) + '회 출석</div></div></div>' +
     '<div class="card m" style="padding:6px 16px">' +
       '<div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #E5E7EB"><span class="muted">회원권</span><b>' + dotDate(me.gymExp) + '까지</b></div>' +
       (me.holdEnd && me.holdEnd >= today() ? '<div style="display:flex;justify-content:space-between;padding:12px 0;border-bottom:1px solid #E5E7EB"><span class="muted">홀딩</span><b>' + dotDate(me.holdEnd) + '까지</b></div>' : '') +
