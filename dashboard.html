@@ -115,7 +115,7 @@
   .lrail button{ font:inherit; cursor:pointer; border:0; }
   .lrail .ltg{ background:#18338c; color:#fff; border-radius:10px; font-weight:900; font-size:12.5px; padding:7px 0; }
   .lrail .lit{ background:#fff; border:1px solid var(--line); border-radius:11px; padding:7px 4px; font-size:11.5px; font-weight:800; color:#5d6782; line-height:1.25; }
-  .lrail .lit b{ display:block; font-size:19px; color:#16213d; font-weight:900; }
+  .lrail .lit b{ display:block; font-size:19px; color:#16213d; font-weight:900; } .lrail .lit em{ display:block; font-style:normal; font-size:11.5px; font-weight:900; color:#7a8295; } .lrail .lb small{ font-size:10px; opacity:.85; }
   .lrail .lit.r b{ color:#c2410c; } .lrail .lit.g b{ color:#1d7a45; } .lrail .lit.risk b{ color:#b4232f; }
   .lrail .lit:hover, .lrail .lb:hover{ box-shadow:0 0 0 2px #18338c; }
   .lrail .lbl5{ display:flex; flex-direction:column; gap:3px; }
@@ -1830,14 +1830,21 @@
     const rail = $('lrail'), btn = $('lcolBtn'); if(!rail || !btn) return;
     const num = (id)=>{ const el = $(id); const m = el && (el.textContent || '').replace(/,/g, '').match(/\d+/); return m ? m[0] : '-'; };
     function fill(){
-      const items = [['kTodayTile', '오늘 출석', num('kToday'), ''], ['kValidTile', '유효 회원', num('kValid'), ''], ['kExpireTile', '오늘 만료', num('kExpire'), ''],
-        ['kAbsentHalf', '7일 미출석', num('kAbsent'), 'r'], ['kActiveHalf', '주 1회 이상', num('kActive'), 'g']];
-      let h = '<button type="button" class="ltg" data-open="1">펼치기 ▶</button>' + items.map((x)=> '<button type="button" class="lit ' + x[3] + '" data-t="' + x[0] + '">' + x[1] + '<b>' + x[2] + '</b></button>').join('');
+      const pct = (id)=>{ const el = $(id); const m = el && (el.textContent || '').match(/(\d+)\s*%/); return m ? m[1] + '%' : ''; };
+      const of = (n, t)=> t ? Math.round(n * 100 / t) + '%' : '';
+      const validN = +num('kValid') || 0;
+      const items = [['kTodayTile', '오늘 출석', num('kToday'), '', pct('kToday')], ['kValidTile', '유효 회원', num('kValid'), '', pct('kValidSub')],
+        ['kExpireTile', '오늘 만료', num('kExpire'), '', of(+num('kExpire') || 0, validN)],
+        ['kAbsentHalf', '7일 미출석', num('kAbsent'), 'r', pct('kAbsentPct')], ['kActiveHalf', '주 1회 이상', num('kActive'), 'g', pct('kActivePct')]];
+      const item = (x, attr)=> '<button type="button" class="lit ' + x[3] + '" ' + attr + '>' + x[1] + '<b>' + x[2] + '</b>' + (x[4] ? '<em>' + x[4] + '</em>' : '') + '</button>';
+      let h = '<button type="button" class="ltg" data-open="1">펼치기 ▶</button>' + items.map((x)=> item(x, 'data-t="' + x[0] + '"')).join('');
       const bts = document.querySelectorAll('#beltTiles .bt');
-      if(bts.length) h += '<div class="lbl5">' + [...bts].map((b, i)=>{ const v = (b.querySelector('b') || {}).textContent || ''; const bb = BELTS[i] || {};
-        return '<button type="button" class="lb" data-b="' + i + '" style="background:' + esc(bb.bg || '#eee') + ';color:' + (bb.text === 'dark' ? '#16213d' : '#fff') + '">' + esc(String(bb.name || '').charAt(0)) + ' ' + esc(v.replace(/[^\d,]/g, '')) + '</button>'; }).join('') + '</div>';
-      const rk = document.querySelector('.nbs[data-st="risk"] b');
-      if(rk) h += '<button type="button" class="lit risk" data-st="risk">위험<b>' + rk.textContent.replace(/[^\d]/g, '') + '</b></button>';
+      if(bts.length) h += '<div class="lbl5">' + [...bts].map((b, i)=>{ const v = (b.querySelector('b') || {}).textContent || ''; const pc = (b.querySelector('strong') || {}).textContent || ''; const bb = BELTS[i] || {};
+        return '<button type="button" class="lb" data-b="' + i + '" style="background:' + esc(bb.bg || '#eee') + ';color:' + (bb.text === 'dark' ? '#16213d' : '#fff') + '">' + esc(String(bb.name || '').charAt(0)) + ' ' + esc(v.replace(/[^\d,]/g, '')) + (pc ? ' <small>' + esc(pc) + '</small>' : '') + '</button>'; }).join('') + '</div>';
+      const nbOk = (nbList || []).filter((c)=> c.st !== 'na'), nbR = nbOk.filter((c)=> c.st === 'risk').length;
+      const vr = vrList || [], vrR = vr.filter((c)=> c.st === 'risk').length;
+      if(nbOk.length) h += item(['', '신규 30일 위험', nbR, 'risk', of(nbR, nbOk.length)], 'data-st="risk" data-m="new"');
+      if(vr.length) h += item(['', '유효 위험', vrR, 'risk', of(vrR, vr.length)], 'data-st="risk" data-m="valid"');
       rail.innerHTML = h;
     }
     function set(c){
@@ -1851,11 +1858,12 @@
       if(b.dataset.open){ set(false); return; }
       if(b.dataset.t){ const t = $(b.dataset.t); if(t) t.click(); return; }
       if(b.dataset.b != null){ const t = document.querySelector('#beltTiles .bt[data-b="' + b.dataset.b + '"]'); if(t) t.click(); return; }
-      if(b.dataset.st){ const t = document.querySelector('.nbs[data-st="' + b.dataset.st + '"]'); if(t) t.click(); }
+      if(b.dataset.st){ if(b.dataset.m && b.dataset.m !== nbMode) setNbMode(b.dataset.m); openStatusPop(b.dataset.st); }
     });
     setInterval(()=>{ if(document.body.classList.contains('lcol')) fill(); }, 3000);
     let c0 = false; try{ c0 = localStorage.getItem('rf_lcol') === '1'; }catch(e){}
-    set(c0);
+    if(c0) document.body.classList.add('lcol');
+    setTimeout(()=> set(c0), 0);   // 아래쪽 목록 변수가 준비된 뒤에 채우기
   })();
   // ---------- 이름에 마우스를 올리면 회원 카드 ----------
   const hoverCard = document.createElement('div');
