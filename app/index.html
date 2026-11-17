@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#093692">
+<title>런앤핏 회원앱</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+  :root{ --b:#093692; --ink:#111827; --muted:#4B5563; --line:#D5DCE8; --bg:#F4F7FB; --y:#FFD54A; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; min-height:100%; }
+  body{ font-family:'Noto Sans KR',sans-serif; color:var(--ink); word-break:keep-all; overflow-wrap:break-word;
+    background-color:var(--bg); background-image:linear-gradient(rgba(9,54,146,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(9,54,146,.07) 1px,transparent 1px); background-size:20px 20px; }
+  button,input,textarea{ font-family:inherit; }
+  a{ color:var(--b); }
+  .app{ max-width:480px; margin:0 auto; min-height:100vh; display:flex; flex-direction:column; padding-bottom:calc(84px + env(safe-area-inset-bottom)); }
+  .app.nonav{ padding-bottom:24px; }
+  .pxf{ font-family:'Press Start 2P',monospace; }
+  .card{ background:#fff; border-radius:14px; box-shadow:0 1px 2px rgba(17,24,39,.06),0 4px 14px rgba(9,54,146,.08); }
+  .hero{ background:#fff; box-shadow:0 -3px 0 0 var(--b),0 3px 0 0 var(--b),-3px 0 0 0 var(--b),3px 0 0 0 var(--b); }
+  .m{ margin:14px 22px 0; }
+  .muted{ color:var(--muted); }
+  .hidden{ display:none !important; }
+  .btn{ height:48px; border:0; border-radius:12px; background:var(--b); color:#fff; font-size:15px; font-weight:900; cursor:pointer; padding:0 16px; }
+  .btn:disabled{ opacity:.5; cursor:default; }
+  .btn.ghost{ background:#fff; color:var(--b); box-shadow:inset 0 0 0 2px var(--b); }
+  .btn.pxbtn{ border-radius:0; box-shadow:0 -3px 0 0 #06246a,0 3px 0 0 #06246a,-3px 0 0 0 #06246a,3px 0 0 0 #06246a; }
+  .field label{ display:block; font-size:13px; font-weight:700; margin-bottom:6px; }
+  .field input,.field textarea{ width:100%; height:48px; border:2px solid var(--line); border-radius:10px; padding:0 14px; font-size:16px; background:#fff; color:var(--ink); }
+  .field textarea{ height:120px; padding:12px; resize:none; }
+  .field .help{ font-size:12px; color:var(--muted); margin-top:6px; }
+  .msg{ font-size:13px; font-weight:700; margin-top:10px; min-height:18px; }
+  .msg.err{ color:#B91C32; } .msg.ok{ color:#15803D; }
+  .top{ padding:16px 22px 0; display:flex; align-items:center; justify-content:space-between; }
+  .logo{ height:22px; width:auto; display:block; }
+  .iconbtn{ width:44px; height:44px; border:0; border-radius:12px; background:var(--b); display:flex; align-items:center; justify-content:center; position:relative; cursor:pointer; }
+  .iconbtn .dot{ position:absolute; top:9px; right:10px; width:8px; height:8px; background:var(--y); border-radius:4px; }
+  .back{ width:44px; height:44px; display:flex; align-items:center; justify-content:center; color:var(--ink); background:none; border:0; cursor:pointer; }
+  .ttl{ font-size:19px; font-weight:900; }
+  .chip{ display:inline-block; font-size:12px; font-weight:900; background:var(--y); color:var(--ink); padding:2px 8px; }
+  .grid12{ display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:2px; }
+  .grid10{ display:grid; grid-template-columns:repeat(10,minmax(0,1fr)); gap:2px; }
+  .seg{ height:8px; background:#D5DCE8; } .seg.on{ background:var(--b); }
+  nav.tabs{ position:fixed; left:0; right:0; bottom:0; background:var(--b); padding:10px 6px calc(12px + env(safe-area-inset-bottom)); }
+  nav.tabs .in{ max-width:480px; margin:0 auto; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); }
+  nav.tabs button{ background:none; border:0; color:#E3E9FF; display:flex; flex-direction:column; align-items:center; gap:4px; font-size:11px; min-height:44px; cursor:pointer; }
+  nav.tabs button.on{ color:var(--y); font-weight:700; }
+  .sheet-bg{ position:fixed; inset:0; background:rgba(17,24,39,.45); z-index:50; display:flex; align-items:flex-end; justify-content:center; }
+  .sheet{ width:100%; max-width:480px; max-height:80vh; overflow:auto; background:#fff; border-radius:18px 18px 0 0; padding:20px 22px calc(24px + env(safe-area-inset-bottom)); }
+  .toast{ position:fixed; left:50%; bottom:110px; transform:translateX(-50%); background:#111827; color:#fff; padding:10px 16px; border-radius:10px; font-size:14px; z-index:60; max-width:90vw; text-align:center; }
+  .tabseg{ display:flex; gap:4px; padding:4px; }
+  .tabseg button{ flex:1; height:44px; border:0; border-radius:10px; font-size:14px; background:transparent; color:var(--muted); cursor:pointer; }
+  .tabseg button.on{ background:var(--b); color:#fff; font-weight:900; }
+  .chips{ display:flex; flex-wrap:wrap; gap:8px; }
+  .chips button{ height:36px; padding:0 14px; border:0; border-radius:18px; font-size:13px; background:#fff; color:#374151; box-shadow:inset 0 0 0 1px var(--line); cursor:pointer; }
+  .chips button.on{ background:#E3E9FF; color:var(--b); box-shadow:inset 0 0 0 2px var(--b); font-weight:700; }
+  .loading{ flex:1; display:flex; align-items:center; justify-content:center; color:var(--muted); padding:80px 20px; text-align:center; }
+</style>
+</head>
+<body>
+<div class="app nonav" id="app"><div class="loading">불러오는 중…</div></div>
+<nav class="tabs hidden" id="tabs" aria-label="메뉴"><div class="in">
+  <button type="button" data-tab="home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M3 11l9-7 9 7v9H3z"/></svg>홈</button>
+  <button type="button" data-tab="challenge"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="M9 12l2 2 4-4"/></svg>미션</button>
+  <button type="button" data-tab="pixel"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M3 20V9l9-5 9 5v11"/><path d="M9 20v-6h6v6"/></svg>픽셀짐</button>
+  <button type="button" data-tab="voice"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>소통</button>
+  <button type="button" data-tab="me"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 15-5 16 0"/></svg>내 정보</button>
+</div></nav>
+<div id="recaptcha"></div>
+<script type="module" src="./app.js"></script>
+</body>
+</html>
