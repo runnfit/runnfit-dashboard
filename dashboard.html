@@ -120,6 +120,10 @@
   .lrail .lit:hover, .lrail .lb:hover{ box-shadow:0 0 0 2px #18338c; }
   .lrail .lbl5{ display:flex; flex-direction:column; gap:3px; }
   .lrail .lb{ border-radius:6px; font-size:11.5px; font-weight:900; padding:3px 0; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
+  @media (max-width: 1100px){
+    body.lcol .lrail{ flex-direction:row; flex-wrap:wrap; }
+    body.lcol .lrail > *{ flex:1 1 90px; } body.lcol .lrail .lbl5{ flex:2 1 200px; flex-direction:row; } body.lcol .lrail .lb{ flex:1; }
+  }
   .lcolbtn{ align-self:center; flex:none; width:30px; height:30px; border-radius:9px; border:1px solid var(--line); background:#fff; color:#5d6782; font-weight:900; cursor:pointer; }
   .lcolbtn:hover{ color:#18338c; border-color:#18338c; }
   .left .summary{ margin:0; flex:1; display:flex; flex-direction:column; min-height:0; }
