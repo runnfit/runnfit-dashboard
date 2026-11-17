@@ -642,6 +642,8 @@
 // RUN&FIT 정릉점 · 직원용 출석 대시보드
 // - 다짐매니저에 로그인한 이 크롬의 로그인 정보로만 데이터를 읽는다. (읽기 전용, 아무것도 바꾸지 않음)
 // - 회원 사진/정보는 화면에만 띄우고 어디에도 저장하지 않는다. 창을 닫으면 사라진다.
+//   (예외: 이 컴퓨터에서 '회원앱 연결하기'를 한 경우에만, 회원앱에 필요한 정보(이름·전화번호·회원권·출석)를
+//    런앤핏 회원앱 서버(Firebase runnfit-member)로 보낸다. 연결 전에는 아무것도 보내지 않는다.)
 // - 다짐매니저에서 로그아웃되어 있으면 아무 정보도 보여주지 않는다.
 // ============================================================
 (function(){
@@ -1067,7 +1069,7 @@
       loading = false;
       setLive(true, date === todayKst() ? '실시간 · ' + hhmm(Date.now()) + ' 갱신' : '지난 날짜 보기');
       render();
-      loadDetails(date);
+      loadDetails(date).then(()=>{ if(window.__rfApp && date === todayKst()) window.__rfApp.today(cards); }).catch(()=>{});
     }catch(e){
       if(e instanceof AuthError) lockScreen();
       else { setLive(false, '다짐 연결 확인 중… (자동 재시도)'); if(!cards.length) showNotice('다짐매니저 데이터를 불러오지 못했어요. 잠시 후 자동으로 다시 시도해요.'); }
@@ -2272,6 +2274,296 @@
     const img = e.target;
     if(img && img.tagName === 'IMG'){ const s = document.createElement('span'); s.className = 'ph'; s.innerHTML = PERSON; img.replaceWith(s); }
   }, true);
+
+  // ================= 회원앱 서버 연결 (Firebase · runnfit-member) =================
+  // - 이 컴퓨터에서 '회원앱 연결하기'를 한 번 해야 켜진다. 연결 전에는 아무것도 보내지 않는다.
+  // - 대시보드가 다짐에서 읽을 때마다 바뀐 것만 회원앱 서버로 함께 보낸다.
+  //   오늘 출석: 대시보드가 읽는 순간(20초마다 + 출석 신호 즉시) / 회원권·홀딩·전화번호: 10분마다
+  // - 비밀번호는 저장하지 않는다. 로그인 유지용 토큰만 이 크롬에 보관한다.
+  (function(){
+    const FB = { key: 'AIzaSyBbE0ktG6f5t-1xvVEg56f18DE_QdtIrts', project: 'runnfit-member' };
+    const ROOT = 'projects/' + FB.project + '/databases/(default)/documents';
+    const DOCS = 'https://firestore.googleapis.com/v1/' + ROOT;
+    const K_AUTH = 'rfApp.auth.v1', K_SIG = 'rfApp.sig.v1', K_SENT = 'rfApp.sent.v1';
+    const ls = {
+      get(k){ try{ return JSON.parse(localStorage.getItem(k) || 'null'); }catch(e){ return null; } },
+      set(k, v){ try{ v == null ? localStorage.removeItem(k) : localStorage.setItem(k, JSON.stringify(v)); }catch(e){} },
+    };
+    let auth = ls.get(K_AUTH);            // { email, uid, role, refreshToken, at }
+    let idToken = null, idExp = 0;
+    const st = { ok: 0, err: '', sentToday: 0, members: 0, running: false };
+    const esc = (s)=> String(s == null ? '' : s).replace(/[&<>"']/g, (c)=> ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+    // ---------- 로그인 ----------
+    function fbMsg(j){
+      const m = (j && j.error && j.error.message) || '';
+      if(/INVALID_LOGIN_CREDENTIALS|INVALID_PASSWORD|EMAIL_NOT_FOUND|INVALID_EMAIL|MISSING_PASSWORD/.test(m)) return '이메일 또는 비밀번호가 맞지 않아요.';
+      if(/TOO_MANY_ATTEMPTS/.test(m)) return '시도가 너무 많아요. 잠시 후 다시 해주세요.';
+      if(/USER_DISABLED/.test(m)) return '사용이 중지된 계정이에요.';
+      return '연결하지 못했어요. (' + (m || '알 수 없는 오류') + ')';
+    }
+    async function signIn(email, password){
+      const r = await fetch('https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=' + FB.key, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password, returnSecureToken: true }),
+      });
+      const j = await r.json().catch(()=> ({}));
+      if(!r.ok) throw new Error(fbMsg(j));
+      idToken = j.idToken; idExp = Date.now() + (Number(j.expiresIn || 3600) - 120) * 1e3;
+      return { email: j.email, uid: j.localId, refreshToken: j.refreshToken };
+    }
+    async function token(){
+      if(idToken && Date.now() < idExp) return idToken;
+      if(!auth || !auth.refreshToken) throw new Error('회원앱에 연결되어 있지 않아요.');
+      const r = await fetch('https://securetoken.googleapis.com/v1/token?key=' + FB.key, {
+        method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: 'grant_type=refresh_token&refresh_token=' + encodeURIComponent(auth.refreshToken),
+      });
+      const j = await r.json().catch(()=> ({}));
+      if(!r.ok){
+        if(/TOKEN_EXPIRED|INVALID_REFRESH_TOKEN|USER_NOT_FOUND|USER_DISABLED/.test((j.error && j.error.message) || '')){ disconnect(); throw new Error('로그인이 풀렸어요. 회원앱 연결을 다시 해주세요.'); }
+        throw new Error('회원앱 서버에 닿지 않아요. (자동 재시도)');
+      }
+      idToken = j.id_token; idExp = Date.now() + (Number(j.expires_in || 3600) - 120) * 1e3;
+      if(j.refresh_token && j.refresh_token !== auth.refreshToken){ auth.refreshToken = j.refresh_token; ls.set(K_AUTH, auth); }
+      return idToken;
+    }
+    async function readRole(uid){
+      const r = await fetch(DOCS + '/staff/' + encodeURIComponent(uid), { headers: { Authorization: 'Bearer ' + await token() } });
+      if(!r.ok) return null;
+      const j = await r.json().catch(()=> ({}));
+      return (j.fields && j.fields.role && j.fields.role.stringValue) || null;
+    }
+    function disconnect(){
+      auth = null; idToken = null; idExp = 0;
+      ls.set(K_AUTH, null); ls.set(K_SIG, null); ls.set(K_SENT, null);
+      st.ok = 0; st.err = ''; st.sentToday = 0;
+      paint();
+    }
+
+    // ---------- 서버 저장 (Firestore REST) ----------
+    const fv = (v)=> v == null ? { nullValue: null }
+      : typeof v === 'number' ? (Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v })
+      : typeof v === 'boolean' ? { booleanValue: v }
+      : v instanceof Date ? { timestampValue: v.toISOString() }
+      : { stringValue: String(v) };
+    function upsert(path, data){
+      const fields = {}; Object.keys(data).forEach((k)=>{ fields[k] = fv(data[k]); });
+      return { update: { name: ROOT + '/' + path, fields }, updateMask: { fieldPaths: Object.keys(data) } };
+    }
+    async function commit(writes){
+      for(let i = 0; i < writes.length; i += 400){
+        const r = await fetch(DOCS + ':commit', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + await token() },
+          body: JSON.stringify({ writes: writes.slice(i, i + 400) }),
+        });
+        if(!r.ok){
+          const j = await r.json().catch(()=> ({}));
+          const m = String((j.error && (j.error.status || j.error.message)) || r.status);
+          throw new Error(/PERMISSION_DENIED/i.test(m) ? '이 계정은 회원앱 직원으로 등록되어 있지 않아요.' : '회원앱 서버 저장 실패 (' + m + ')');
+        }
+      }
+    }
+
+    // ---------- 다짐 회원 → 회원앱 회원 ----------
+    function e164(p){
+      const d = String(p || '').replace(/\D/g, '');
+      if(/^01\d{8,9}$/.test(d)) return '+82' + d.slice(1);
+      if(/^8201\d{8,9}$/.test(d)) return '+82' + d.slice(3);
+      if(/^821\d{8,9}$/.test(d)) return '+' + d;
+      return null;
+    }
+    function memberData(raw, mem){
+      const starts = (raw.purchasedProducts || []).filter((p)=> p && p.category === 'general' && p.startDate)
+        .map((p)=> Date.parse(p.startDate)).filter((x)=> !isNaN(x));
+      const hold = holdInfo(mem.id);
+      return {
+        dagymId: String(mem.id), name: mem.name, phone: e164(mem.phone),
+        gymExp: mem.gymExp || null, firstStart: starts.length ? kstDate(Math.min.apply(null, starts)) : null,
+        lastAttend: mem.recent ? kstDate(mem.recent) : null,
+        holdEnd: hold ? hold.end : null, status: 'VALID',
+      };
+    }
+    // 전체 회원 맞추기: 바뀐 회원만 보낸다. withTotals면 누적 출석도 다짐에서 다시 읽어 보낸다.
+    async function syncMembers(withTotals, onStep){
+      const raw = await loadValidMembers();
+      const today = todayKst();
+      const list = raw.map((m)=> toMember(m, today));
+      try{ await loadHolds(list.map((m)=> m.id)); }catch(e){}
+      const sig = ls.get(K_SIG) || {};
+      const changed = [];
+      list.forEach((mem, i)=>{
+        const d = memberData(raw[i], mem);
+        const s = JSON.stringify(d);
+        if(withTotals || sig[mem.id] !== s) changed.push({ mem, d, s, isNew: !sig[mem.id] });
+      });
+      const needTotals = changed.filter((x)=> withTotals || x.isNew).map((x)=> x.mem);
+      if(needTotals.length){ if(onStep) onStep('누적 출석 확인 중… (' + needTotals.length + '명)'); await enrichMembers(needTotals, false); }
+      const now = new Date();
+      const writes = changed.map((x)=>{
+        const d = Object.assign({}, x.d, { syncedAt: now });
+        if(x.mem.total != null){ d.total = Number(x.mem.total); d.belt = x.mem.belt ? x.mem.belt.name : null; }
+        return upsert('members/' + encodeURIComponent(String(x.mem.id)), d);
+      });
+      if(writes.length){ if(onStep) onStep('서버에 올리는 중… (' + writes.length + '명)'); await commit(writes); }
+      changed.forEach((x)=>{ sig[x.mem.id] = x.s; });
+      ls.set(K_SIG, sig);
+      st.members = list.length;
+      return { total: list.length, sent: writes.length, noPhone: list.filter((m)=> !e164(m.phone)) };
+    }
+
+    // ---------- 오늘 출석 → 회원앱 (대시보드가 출석을 읽을 때마다) ----------
+    async function today(cards){
+      if(!auth || st.running) return;
+      const date = todayKst();
+      let sent = ls.get(K_SENT);
+      if(!sent || sent.date !== date) sent = { date, m: {} };
+      const writes = [], marks = [];
+      (cards || []).forEach((c)=>{
+        if(!c || c.date !== date || !c.id) return;
+        const cnt = c.detail && c.detail.count != null ? Number(c.detail.count) : null;
+        const mark = cnt == null ? 'a' : 'c' + cnt;
+        if(sent.m[c.id] === mark || (sent.m[c.id] && mark === 'a')) return;
+        const id = encodeURIComponent(String(c.id));
+        const att = { memberId: String(c.id), date, at: new Date(c.t), source: 'dashboard' };
+        if(cnt != null) att.count = cnt;
+        writes.push(upsert('attendance/' + id + '_' + date, att));
+        const mem = { lastAttend: date, todayAttendAt: new Date(c.t) };
+        if(cnt != null){ mem.total = cnt; const b = getBelt(cnt); mem.belt = b ? b.name : null; }
+        writes.push(upsert('members/' + id, mem));
+        marks.push([c.id, mark]);
+      });
+      if(!writes.length) return;
+      try{
+        await commit(writes);
+        marks.forEach(([id, mk])=>{ sent.m[id] = mk; });
+        ls.set(K_SENT, sent);
+        st.sentToday = Object.keys(sent.m).length; st.ok = Date.now(); st.err = '';
+      }catch(e){ st.err = e.message || String(e); }
+      paint();
+    }
+
+    // ---------- 10분마다 회원권·홀딩·전화번호 맞추기 ----------
+    async function periodic(){
+      if(!auth || st.running) return;
+      st.running = true;
+      try{ await syncMembers(false); st.ok = Date.now(); st.err = ''; }
+      catch(e){ if(!(e instanceof AuthError)) st.err = e.message || String(e); }
+      finally{ st.running = false; paint(); }
+    }
+    setInterval(periodic, 10 * 60e3);
+    setTimeout(()=>{ if(auth) periodic(); }, 15e3);
+
+    // ---------- 화면: 상단 버튼 + 연결 창 ----------
+    const css = document.createElement('style');
+    css.textContent = [
+      '#rfAppBtn{order:8;margin-left:12px;font:inherit;font-size:13px;font-weight:700;display:flex;align-items:center;gap:7px;height:34px;padding:0 12px;border-radius:17px;cursor:pointer;white-space:nowrap;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.12);color:#fff}',
+      '#rfAppBtn .d{width:9px;height:9px;border-radius:5px;background:#9CA3AF;flex:none}',
+      '#rfAppBtn.on .d{background:#4ADE80} #rfAppBtn.bad .d{background:#F87171} #rfAppBtn.bad{border-color:#F87171}',
+      '.rfa-bg{position:fixed;inset:0;background:rgba(17,24,39,.5);z-index:99999;display:flex;align-items:flex-start;justify-content:center;padding-top:8vh}',
+      '.rfa{width:min(560px,92vw);max-height:84vh;overflow:auto;background:#fff;color:#111827;border-radius:16px;padding:24px;box-shadow:0 20px 50px rgba(17,24,39,.35);font-size:14px;line-height:1.55}',
+      '.rfa h3{margin:0;font-size:20px;font-weight:900} .rfa .sub{color:#4B5563;margin-top:4px}',
+      '.rfa label{display:block;font-weight:700;font-size:13px;margin:14px 0 6px} .rfa input{width:100%;box-sizing:border-box;height:46px;border:2px solid #D5DCE8;border-radius:10px;padding:0 12px;font:inherit;font-size:15px}',
+      '.rfa .row{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}',
+      '.rfa button{font:inherit;font-weight:800;font-size:14px;height:44px;padding:0 18px;border-radius:10px;cursor:pointer;border:0}',
+      '.rfa .pri{background:#093692;color:#fff} .rfa .pri:disabled{opacity:.5;cursor:default} .rfa .sec{background:#fff;color:#374151;box-shadow:inset 0 0 0 1px #D5DCE8} .rfa .dan{background:#fff;color:#B91C32;box-shadow:inset 0 0 0 1px #F3C2CA}',
+      '.rfa .msg{margin-top:12px;font-weight:700} .rfa .msg.err{color:#B91C32} .rfa .msg.ok{color:#15803D}',
+      '.rfa .stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px} .rfa .stats div{background:#F4F7FB;border-radius:10px;padding:10px 12px} .rfa .stats b{display:block;font-size:22px;font-weight:900}',
+      '.rfa .warn{background:#FFF8E1;color:#92400E;border-radius:10px;padding:10px 12px;margin-top:12px;font-size:13px}',
+    ].join('\n');
+    document.head.appendChild(css);
+    const btn = document.createElement('button');
+    btn.id = 'rfAppBtn'; btn.type = 'button';
+    const live = document.querySelector('.topbar .live');
+    if(live && live.parentNode) live.parentNode.insertBefore(btn, live.nextSibling);
+    function paint(){
+      btn.classList.toggle('on', !!auth && !st.err);
+      btn.classList.toggle('bad', !!auth && !!st.err);
+      btn.innerHTML = '<span class="d"></span>' + (!auth ? '회원앱 연결하기' : st.err ? '회원앱 전송 확인 필요' : '회원앱 실시간 반영 중');
+      btn.title = !auth ? '회원앱 서버와 처음 한 번 연결해요' : st.err ? st.err : ('마지막 반영 ' + (st.ok ? hhmm(st.ok) : '-') + ' · 오늘 출석 ' + st.sentToday + '명');
+    }
+    let box = null;
+    function close(){ if(box){ box.remove(); box = null; } }
+    function open(html){
+      close();
+      box = document.createElement('div'); box.className = 'rfa-bg';
+      box.innerHTML = '<div class="rfa" role="dialog" aria-modal="true">' + html + '</div>';
+      box.addEventListener('click', (e)=>{ if(e.target === box) close(); });
+      document.body.appendChild(box);
+      return box.querySelector('.rfa');
+    }
+    function connectView(){
+      const el = open('<h3>회원앱 처음 연결하기</h3><div class="sub">처음 한 번만 하면, 그다음부터는 대시보드가 다짐을 읽을 때마다 회원앱도 같이 바뀌어요.</div>' +
+        '<label for="rfaEmail">회원앱 직원 계정 이메일</label><input id="rfaEmail" type="email" autocomplete="username" value="' + esc(auth && auth.email || '') + '">' +
+        '<label for="rfaPw">비밀번호</label><input id="rfaPw" type="password" autocomplete="current-password">' +
+        '<div class="sub" style="font-size:12px;margin-top:8px">비밀번호는 저장하지 않아요. 로그인 유지 정보만 이 컴퓨터 크롬에 보관해요.</div>' +
+        '<div class="msg" id="rfaMsg"></div><div class="row"><button class="sec" id="rfaCancel" type="button">나중에</button><button class="pri" id="rfaGo" type="button">로그인</button></div>');
+      const msg = el.querySelector('#rfaMsg'), go = el.querySelector('#rfaGo');
+      el.querySelector('#rfaCancel').onclick = close;
+      const run = async ()=>{
+        const email = el.querySelector('#rfaEmail').value.trim(), pw = el.querySelector('#rfaPw').value;
+        if(!email || !pw){ msg.className = 'msg err'; msg.textContent = '이메일과 비밀번호를 입력해 주세요.'; return; }
+        go.disabled = true; msg.className = 'msg'; msg.textContent = '확인 중…';
+        try{
+          const a = await signIn(email, pw);
+          auth = Object.assign({}, a, { at: Date.now() });
+          const role = await readRole(a.uid);
+          if(!role){ auth = null; idToken = null; msg.className = 'msg err'; msg.textContent = '이 계정은 회원앱 직원(staff)으로 등록되어 있지 않아요.'; go.disabled = false; return; }
+          auth.role = role; ls.set(K_AUTH, auth);
+          previewView();
+        }catch(e){ auth = ls.get(K_AUTH); msg.className = 'msg err'; msg.textContent = e.message || String(e); go.disabled = false; }
+      };
+      go.onclick = run;
+      el.querySelector('#rfaPw').addEventListener('keydown', (e)=>{ if(e.key === 'Enter') run(); });
+      setTimeout(()=> el.querySelector(auth && auth.email ? '#rfaPw' : '#rfaEmail').focus(), 30);
+    }
+    async function previewView(){
+      const el = open('<h3>올릴 회원 확인</h3><div class="sub">다짐 유효 회원을 읽는 중이에요…</div>');
+      try{
+        const raw = await loadValidMembers();
+        const list = raw.map((m)=> toMember(m, todayKst()));
+        const noPhone = list.filter((m)=> !e164(m.phone));
+        el.innerHTML = '<h3>올릴 회원 확인</h3><div class="sub">' + esc(auth.email) + ' (' + (auth.role === 'owner' ? '대표' : '직원') + ' 계정)으로 연결됐어요.</div>' +
+          '<div class="stats"><div>유효 회원<b>' + list.length + '명</b></div><div>앱 입장 가능<b style="color:#093692">' + (list.length - noPhone.length) + '명</b></div><div>전화번호 확인 필요<b style="color:#92400E">' + noPhone.length + '명</b></div></div>' +
+          (noPhone.length ? '<div class="warn">전화번호가 없거나 형식이 달라서 앱에 들어올 수 없는 회원이에요. 다짐에서 전화번호를 채우면 10분 안에 자동 반영돼요.<br>' + noPhone.slice(0, 12).map((m)=> esc(m.name)).join(', ') + (noPhone.length > 12 ? ' 외 ' + (noPhone.length - 12) + '명' : '') + '</div>' : '') +
+          '<div class="msg" id="rfaMsg"></div><div class="row"><button class="sec" id="rfaCancel" type="button">나중에</button><button class="pri" id="rfaUp" type="button">' + list.length + '명 서버에 올리기</button></div>';
+        const msg = el.querySelector('#rfaMsg'), up = el.querySelector('#rfaUp');
+        el.querySelector('#rfaCancel').onclick = close;
+        up.onclick = async ()=>{
+          up.disabled = true; st.running = true;
+          try{
+            const r = await syncMembers(true, (t)=>{ msg.className = 'msg'; msg.textContent = t; });
+            st.running = false; st.ok = Date.now(); st.err = '';
+            msg.className = 'msg ok'; msg.textContent = '완료! ' + r.sent + '명을 올렸어요. 이제 이 컴퓨터에 대시보드가 켜져 있으면 출석은 바로, 회원권·홀딩은 10분 안에 회원앱에 반영돼요.';
+            up.textContent = '닫기'; up.disabled = false; up.onclick = close;
+            if(typeof cards !== 'undefined') today(cards);
+          }catch(e){ st.running = false; st.err = e.message || String(e); msg.className = 'msg err'; msg.textContent = st.err; up.disabled = false; }
+          paint();
+        };
+      }catch(e){
+        el.innerHTML = '<h3>올릴 회원 확인</h3><div class="msg err">' + esc(e instanceof AuthError ? '다짐매니저 로그인이 필요해요. 다짐에 로그인한 뒤 다시 해주세요.' : (e.message || e)) + '</div><div class="row"><button class="sec" type="button" id="rfaCancel">닫기</button></div>';
+        el.querySelector('#rfaCancel').onclick = close;
+      }
+    }
+    function statusView(){
+      const el = open('<h3>회원앱 서버</h3><div class="sub">' + esc(auth.email) + ' (' + (auth.role === 'owner' ? '대표' : '직원') + ' 계정) · 이 컴퓨터에서 반영 중</div>' +
+        '<div class="stats"><div>마지막 반영<b>' + (st.ok ? hhmm(st.ok) : '-') + '</b></div><div>오늘 보낸 출석<b>' + st.sentToday + '명</b></div><div>유효 회원<b>' + (st.members || '-') + '</b></div></div>' +
+        (st.err ? '<div class="msg err">' + esc(st.err) + '</div>' : '<div class="msg ok">정상적으로 반영 중이에요.</div>') +
+        '<div class="msg" id="rfaMsg"></div><div class="row"><button class="dan" id="rfaOff" type="button">연결 끊기</button><button class="sec" id="rfaAll" type="button">지금 전체 다시 맞추기</button><button class="pri" id="rfaCancel" type="button">닫기</button></div>');
+      const msg = el.querySelector('#rfaMsg');
+      el.querySelector('#rfaCancel').onclick = close;
+      el.querySelector('#rfaOff').onclick = ()=>{ if(confirm('이 컴퓨터에서 회원앱 연결을 끊을까요? 서버에 올라간 정보는 그대로 남아요.')){ disconnect(); close(); } };
+      el.querySelector('#rfaAll').onclick = async (e)=>{
+        const b = e.currentTarget; b.disabled = true; st.running = true;
+        try{ const r = await syncMembers(true, (t)=>{ msg.className = 'msg'; msg.textContent = t; }); st.ok = Date.now(); st.err = ''; msg.className = 'msg ok'; msg.textContent = '완료! ' + r.sent + '명을 다시 맞췄어요.'; }
+        catch(err){ st.err = err.message || String(err); msg.className = 'msg err'; msg.textContent = st.err; }
+        finally{ st.running = false; b.disabled = false; paint(); }
+      };
+    }
+    btn.addEventListener('click', ()=>{ if(!auth) connectView(); else statusView(); });
+    paint();
+    window.__rfApp = { today };
+  })();
 
   // 오늘 화면: 출석 감지 신호가 오면 바로, 그 외엔 20초마다 확인. 자정이 지나면 새 날짜로 넘어간다.
   let lastToday = todayKst();
