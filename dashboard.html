@@ -108,6 +108,20 @@
   .layout{ flex:1; min-height:0; display:grid; grid-template-columns: minmax(330px,1fr) minmax(0,2fr); gap:18px; padding:16px 18px 0; }
   .left, .right{ min-height:0; overflow:auto; padding-bottom:18px; }
   .left{ display:flex; flex-direction:column; }
+  .lrail{ display:none; }
+  body.lcol .layout{ grid-template-columns: 96px minmax(0,1fr); }
+  body.lcol .left > :not(.lrail){ display:none !important; }
+  body.lcol .lrail{ display:flex; flex-direction:column; gap:6px; }
+  .lrail button{ font:inherit; cursor:pointer; border:0; }
+  .lrail .ltg{ background:#18338c; color:#fff; border-radius:10px; font-weight:900; font-size:12.5px; padding:7px 0; }
+  .lrail .lit{ background:#fff; border:1px solid var(--line); border-radius:11px; padding:7px 4px; font-size:11.5px; font-weight:800; color:#5d6782; line-height:1.25; }
+  .lrail .lit b{ display:block; font-size:19px; color:#16213d; font-weight:900; }
+  .lrail .lit.r b{ color:#c2410c; } .lrail .lit.g b{ color:#1d7a45; } .lrail .lit.risk b{ color:#b4232f; }
+  .lrail .lit:hover, .lrail .lb:hover{ box-shadow:0 0 0 2px #18338c; }
+  .lrail .lbl5{ display:flex; flex-direction:column; gap:3px; }
+  .lrail .lb{ border-radius:6px; font-size:11.5px; font-weight:900; padding:3px 0; box-shadow:inset 0 0 0 1px rgba(0,0,0,.12); }
+  .lcolbtn{ align-self:center; flex:none; width:30px; height:30px; border-radius:9px; border:1px solid var(--line); background:#fff; color:#5d6782; font-weight:900; cursor:pointer; }
+  .lcolbtn:hover{ color:#18338c; border-color:#18338c; }
   .left .summary{ margin:0; flex:1; display:flex; flex-direction:column; min-height:0; }
   .left .kpis{ grid-template-columns: repeat(2, minmax(0,1fr)); gap:10px; margin-bottom:10px; }
   .left .kpi{ padding:12px 14px; border-radius:14px; }
@@ -513,6 +527,7 @@
 
   <main class="layout">
     <aside class="left">
+    <nav id="lrail" class="lrail" aria-label="핵심 숫자"></nav>
     <section class="summary" id="summary" aria-label="출석 요약">
       <div class="kpis">
         <div class="kpi main hoverable" id="kTodayTile" tabindex="0" role="button" aria-haspopup="dialog"><div class="lbl">오늘 출석</div><div class="val" id="kToday">-</div><div class="sub" id="kTodaySub">어제와 비교 중…</div></div>
@@ -583,6 +598,7 @@
 
 
     <div class="head">
+      <button type="button" id="lcolBtn" class="lcolbtn" title="왼쪽 판 접기">◀</button>
       <div>
         <h1 id="title">오늘 출석</h1>
         <div class="date" id="dateText"></div>
@@ -1249,7 +1265,7 @@
     if($('beltPop')) $('beltPop').classList.add('hidden');
     if($('absentPop')) $('absentPop').classList.add('hidden');
     if(!expPop.classList.contains('hidden')) return;
-    const r = expTile.getBoundingClientRect(), L = $('summary').getBoundingClientRect();
+    const r = expTile.getBoundingClientRect(), L = leftBox();
     expPop.style.left = Math.round(L.right + 14) + 'px';
     expPop.style.top = Math.round(Math.max(70, r.top)) + 'px';
     expPop.classList.remove('hidden');
@@ -1354,7 +1370,7 @@
     if($('validPop')) $('validPop').classList.add('hidden');
     if($('beltPop')) $('beltPop').classList.add('hidden');
     if($('absentPop')) $('absentPop').classList.add('hidden');
-    const r = rankTile.getBoundingClientRect(), L = $('summary').getBoundingClientRect();
+    const r = rankTile.getBoundingClientRect(), L = leftBox();
     rankPop.style.left = Math.round(L.right + 14) + 'px';
     rankPop.style.top = '70px';
     rankPop.classList.remove('hidden');
@@ -1484,7 +1500,7 @@
     if($('todayPop')) $('todayPop').classList.add('hidden');
     if($('validPop')) $('validPop').classList.add('hidden');
     if($('beltPop')) $('beltPop').classList.add('hidden');
-    const L = $('summary').getBoundingClientRect();
+    const L = leftBox();
     absPop.style.left = Math.round(L.right + 14) + 'px';
     absPop.style.top = '70px';
     absPop.classList.remove('hidden');
@@ -1586,7 +1602,7 @@
     if(!validPop.classList.contains('hidden')){ validPop.classList.add('hidden'); return; }
     closeExpPop(true);
     ['rankPop', 'absentPop', 'todayPop', 'beltPop'].forEach((id)=>{ if($(id)) $(id).classList.add('hidden'); });
-    const L = $('summary').getBoundingClientRect();
+    const L = leftBox();
     validPop.style.left = Math.round(L.right + 14) + 'px';
     validPop.style.top = '70px';
     validPop.classList.remove('hidden');
@@ -1609,7 +1625,7 @@
     if($('absentPop')) $('absentPop').classList.add('hidden');
     if($('validPop')) $('validPop').classList.add('hidden');
     if($('beltPop')) $('beltPop').classList.add('hidden');
-    const L = $('summary').getBoundingClientRect();
+    const L = leftBox();
     todayPop.style.left = Math.round(L.right + 14) + 'px';
     todayPop.style.top = '70px';
     todayPop.classList.remove('hidden');
@@ -1742,7 +1758,7 @@
     async function openMember(m){
       list.classList.add('hidden');
       ['rankPop', 'absentPop', 'validPop', 'beltPop', 'todayPop'].forEach((id)=>{ const el = $(id); if(el) el.classList.add('hidden'); });
-      const L = $('summary').getBoundingClientRect();
+      const L = leftBox();
       pop.style.left = Math.round(L.right + 14) + 'px'; pop.style.top = '70px';
       pop.innerHTML = '<div class="pophead"><b>회원 검색</b><button type="button" class="popx" aria-label="닫기">✕</button></div><div class="popempty">불러오는 중…</div>';
       pop.classList.remove('hidden');
@@ -1797,6 +1813,40 @@
     toggleExp(card.getAttribute('data-id'));
   });
 
+
+  // ================= 왼쪽 판 접기 (접으면 핵심 숫자만 세로 한 줄) =================
+  function leftBox(){ const rail = $('lrail'); return document.body.classList.contains('lcol') && rail ? rail.getBoundingClientRect() : $('summary').getBoundingClientRect(); }
+  (function leftCollapse(){
+    const rail = $('lrail'), btn = $('lcolBtn'); if(!rail || !btn) return;
+    const num = (id)=>{ const el = $(id); const m = el && (el.textContent || '').replace(/,/g, '').match(/\d+/); return m ? m[0] : '-'; };
+    function fill(){
+      const items = [['kTodayTile', '오늘 출석', num('kToday'), ''], ['kValidTile', '유효 회원', num('kValid'), ''], ['kExpireTile', '오늘 만료', num('kExpire'), ''],
+        ['kAbsentHalf', '7일 미출석', num('kAbsent'), 'r'], ['kActiveHalf', '주 1회 이상', num('kActive'), 'g']];
+      let h = '<button type="button" class="ltg" data-open="1">펼치기 ▶</button>' + items.map((x)=> '<button type="button" class="lit ' + x[3] + '" data-t="' + x[0] + '">' + x[1] + '<b>' + x[2] + '</b></button>').join('');
+      const bts = document.querySelectorAll('#beltTiles .bt');
+      if(bts.length) h += '<div class="lbl5">' + [...bts].map((b, i)=>{ const v = (b.querySelector('b') || {}).textContent || ''; const bb = BELTS[i] || {};
+        return '<button type="button" class="lb" data-b="' + i + '" style="background:' + esc(bb.bg || '#eee') + ';color:' + (bb.text === 'dark' ? '#16213d' : '#fff') + '">' + esc(String(bb.name || '').charAt(0)) + ' ' + esc(v.replace(/[^\d,]/g, '')) + '</button>'; }).join('') + '</div>';
+      const rk = document.querySelector('.nbs[data-st="risk"] b');
+      if(rk) h += '<button type="button" class="lit risk" data-st="risk">위험<b>' + rk.textContent.replace(/[^\d]/g, '') + '</b></button>';
+      rail.innerHTML = h;
+    }
+    function set(c){
+      document.body.classList.toggle('lcol', c); btn.textContent = c ? '▶' : '◀'; btn.title = c ? '왼쪽 판 펼치기' : '왼쪽 판 접기';
+      try{ localStorage.setItem('rf_lcol', c ? '1' : ''); }catch(e){}
+      if(c) fill();
+    }
+    btn.addEventListener('click', ()=> set(!document.body.classList.contains('lcol')));
+    rail.addEventListener('click', (e)=>{
+      const b = e.target.closest('button'); if(!b) return; e.stopPropagation();
+      if(b.dataset.open){ set(false); return; }
+      if(b.dataset.t){ const t = $(b.dataset.t); if(t) t.click(); return; }
+      if(b.dataset.b != null){ const t = document.querySelector('#beltTiles .bt[data-b="' + b.dataset.b + '"]'); if(t) t.click(); return; }
+      if(b.dataset.st){ const t = document.querySelector('.nbs[data-st="' + b.dataset.st + '"]'); if(t) t.click(); }
+    });
+    setInterval(()=>{ if(document.body.classList.contains('lcol')) fill(); }, 3000);
+    let c0 = false; try{ c0 = localStorage.getItem('rf_lcol') === '1'; }catch(e){}
+    set(c0);
+  })();
   // ---------- 이름에 마우스를 올리면 회원 카드 ----------
   const hoverCard = document.createElement('div');
   hoverCard.className = 'exppop hovercard hidden'; hoverCard.setAttribute('role', 'tooltip');
@@ -1810,7 +1860,7 @@
   async function showHoverCard(el, m, head){
     clearTimeout(hcTimer);
     const r = el.getBoundingClientRect();
-    const L = $('summary').getBoundingClientRect();
+    const L = leftBox();
     hoverCard.style.left = Math.round(L.right + 14) + 'px';   // 다른 카드 창과 같은 자리·같은 크기
     hoverCard.style.top = Math.round(Math.max(70, Math.min(r.top - 80, innerHeight - 320))) + 'px';
     const my = ++hcReq;
@@ -1942,7 +1992,7 @@
   })();
   // 기준 설명은 다른 카드 창처럼 왼쪽 판 바로 오른쪽에 띄운다 (왼쪽 판 안에 두면 잘림)
   (function(){ const hd = document.querySelector('.nbhead'), tip = document.querySelector('.nbtip'); if(!hd || !tip) return;
-    const place = ()=>{ const L = $('summary').getBoundingClientRect(); tip.style.left = Math.round(L.right + 14) + 'px'; tip.style.top = '70px'; };
+    const place = ()=>{ const L = leftBox(); tip.style.left = Math.round(L.right + 14) + 'px'; tip.style.top = '70px'; };
     hd.addEventListener('mouseover', place); hd.addEventListener('focus', place);
   })();
   (function(){ const box = $('newbies'); if(!box) return;
@@ -2034,7 +2084,7 @@
     if(!beltPop.classList.contains('hidden') && beltPop.getAttribute('data-b') === String(i)){ beltPop.classList.add('hidden'); return; }
     closeExpPop(true);
     ['rankPop', 'absentPop', 'todayPop', 'validPop'].forEach((id)=>{ if($(id)) $(id).classList.add('hidden'); });
-    const L = $('summary').getBoundingClientRect();
+    const L = leftBox();
     beltPop.style.left = Math.round(L.right + 14) + 'px';
     beltPop.style.top = '70px';
     beltPop.setAttribute('data-b', String(i));
@@ -2063,7 +2113,7 @@
     if(!beltPop.classList.contains('hidden') && beltPop.getAttribute('data-b') === key){ beltPop.classList.add('hidden'); return; }
     closeExpPop(true);
     ['rankPop', 'absentPop', 'todayPop', 'validPop'].forEach((id)=>{ if($(id)) $(id).classList.add('hidden'); });
-    const L = $('summary').getBoundingClientRect();
+    const L = leftBox();
     beltPop.style.left = Math.round(L.right + 14) + 'px'; beltPop.style.top = '70px';
     beltPop.setAttribute('data-b', key); beltPop.classList.remove('hidden');
     const my = ++beltReq, valid = nbMode === 'valid';
