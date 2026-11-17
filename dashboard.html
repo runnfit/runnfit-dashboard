@@ -124,6 +124,13 @@
     body.lcol .lrail{ flex-direction:row; flex-wrap:wrap; }
     body.lcol .lrail > *{ flex:1 1 90px; } body.lcol .lrail .lbl5{ flex:2 1 200px; flex-direction:row; } body.lcol .lrail .lb{ flex:1; }
   }
+  /* 왼쪽 판 접으면 출석 카드 한 화면 5장 */
+  body.lcol .right .card{ min-height: max(128px, calc((100vh - 290px) / 5)); }
+  body.lcol .right .avatar{ width:86px; height:86px; padding:4px; }
+  body.lcol .right .who{ font-size:17px; margin-top:4px; }
+  body.lcol .right .main{ padding:9px 16px; }
+  body.lcol .right .boxes{ gap:4px; } body.lcol .right .box{ padding:4px 14px; }
+  body.lcol .right .msgs{ margin-top:3px; }
   .lcolbtn{ align-self:center; flex:none; width:30px; height:30px; border-radius:9px; border:1px solid var(--line); background:#fff; color:#5d6782; font-weight:900; cursor:pointer; }
   .lcolbtn:hover{ color:#18338c; border-color:#18338c; }
   .left .summary{ margin:0; flex:1; display:flex; flex-direction:column; min-height:0; }
