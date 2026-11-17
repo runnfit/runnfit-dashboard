@@ -1868,7 +1868,7 @@
       if(b.dataset.st){ if(b.dataset.m && b.dataset.m !== nbMode) setNbMode(b.dataset.m); openStatusPop(b.dataset.st); }
     });
     setInterval(()=>{ if(document.body.classList.contains('lcol')) fill(); }, 3000);
-    let c0 = false; try{ c0 = localStorage.getItem('rf_lcol') === '1'; }catch(e){}
+    const c0 = true;   // 대시보드를 열 때는 항상 접힌 상태로 시작
     if(c0) document.body.classList.add('lcol');
     setTimeout(()=> set(c0), 0);   // 아래쪽 목록 변수가 준비된 뒤에 채우기
   })();
