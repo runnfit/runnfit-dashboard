@@ -811,7 +811,12 @@
     // 최근 30일 출석 횟수 (그날 포함 30일, 출석왕과 같은 기준: 같은 날 재입장도 1회)
     const from30 = dayStart(addDays(card.date, -29));
     const n30 = new Set(attend.filter((x)=> x >= from30 && x <= end).map((x)=> kstDate(x))).size;   // 같은 날 두 번 찍어도 1회
-    return { count, belt: getBelt(count), gap, reg, n30 };
+    // 회원앱용: 이번 달 출석일 수, 최근 35일 출석 날짜
+    const mKey = card.date.slice(0, 7);
+    const daySet = new Set(attend.filter((x)=> x <= end).map((x)=> kstDate(x)));
+    const month = { key: mKey, n: [...daySet].filter((d)=> d.slice(0, 7) === mKey).length };
+    const recentDays = [...daySet].filter((d)=> d > addDays(card.date, -35)).sort();
+    return { count, belt: getBelt(count), gap, reg, n30, month, recentDays };
   }
 
   // ---------- 요약판 데이터 (다짐 대시보드와 같은 숫자) ----------
@@ -1916,7 +1921,9 @@
       await Promise.all(Array.from({ length: 3 }, async ()=>{ while(k < list.length){ const c = list[k++];
         try{
           const r = await gql(NB_ATT_Q, { id: c.id, d: { gte: new Date(dayStart(c.start)).toISOString(), lte: new Date(Date.now() + 36e5).toISOString() } });
-          c.visits = new Set(((r.managerMembers && r.managerMembers.attendances) || []).filter((a)=> a.status === 'ATTEND').map((a)=> kstDate(Date.parse(a.attendAt)))).size;
+          const dset = new Set(((r.managerMembers && r.managerMembers.attendances) || []).filter((a)=> a.status === 'ATTEND').map((a)=> kstDate(Date.parse(a.attendAt))));
+          c.visits = dset.size;
+          c.days30 = [...dset].filter((d)=> d >= c.start && d <= addDays(c.start, 29)).sort();
         }catch(e){ if(e instanceof AuthError) throw e; c.visits = null; }
       } }));
       try{ await enrichMembers(list, true); }catch(e){ if(e instanceof AuthError) throw e; }   // 누적 출석 → 띠 색 동그라미
@@ -1932,6 +1939,7 @@
       render();   // 출석 카드에 신규회원 불 반영
       drawNewbies(list);
       nbAt = Date.now();
+      try{ if(window.__rfApp) window.__rfApp.newbies(list); }catch(e){}
     }catch(e){ if(e instanceof AuthError) lockScreen(); else if(!nbAt) box.innerHTML = '<div class="mempty">' + NA + '</div>'; }
     finally{ nbBusy = false; }
   }
@@ -2343,6 +2351,7 @@
 
     // ---------- 서버 저장 (Firestore REST) ----------
     const fv = (v)=> v == null ? { nullValue: null }
+      : Array.isArray(v) ? { arrayValue: { values: v.map((x)=> fv(x)) } }
       : typeof v === 'number' ? (Number.isInteger(v) ? { integerValue: String(v) } : { doubleValue: v })
       : typeof v === 'boolean' ? { booleanValue: v }
       : v instanceof Date ? { timestampValue: v.toISOString() }
@@ -2430,6 +2439,10 @@
         writes.push(upsert('attendance/' + id + '_' + date, att));
         const mem = { lastAttend: date, todayAttendAt: new Date(c.t) };
         if(cnt != null){ mem.total = cnt; const b = getBelt(cnt); mem.belt = b ? b.name : null; }
+        const dd = c.detail;
+        if(dd && dd.n30 != null) mem.n30 = dd.n30;
+        if(dd && dd.month){ mem.monthKey = dd.month.key; mem.monthCount = dd.month.n; }
+        if(dd && dd.recentDays) mem.recentDays = dd.recentDays;
         writes.push(upsert('members/' + id, mem));
         marks.push([c.id, mark]);
       });
@@ -2565,7 +2578,23 @@
     }
     btn.addEventListener('click', ()=>{ if(!auth) connectView(); else statusView(); });
     paint();
-    window.__rfApp = { today };
+    // ---------- 신규회원 첫 30일 → 회원앱 (대시보드가 신규회원을 계산할 때마다, 10분마다) ----------
+    const K_NB = 'rfApp.nb.v1';
+    async function newbies(list){
+      if(!auth) return;
+      const sig = ls.get(K_NB) || {}, writes = [], next = {};
+      (list || []).forEach((c)=>{
+        if(!c || !c.id || !c.start || c.visits == null) return;
+        const d = { first30Start: c.start, first30Visits: c.visits, first30Days: c.days30 || [] };
+        const sgn = JSON.stringify(d); next[c.id] = sgn;
+        if(sig[c.id] !== sgn) writes.push(upsert('members/' + encodeURIComponent(String(c.id)), d));
+      });
+      if(!writes.length){ ls.set(K_NB, next); return; }
+      try{ await commit(writes); ls.set(K_NB, next); st.ok = Date.now(); st.err = ''; }
+      catch(e){ st.err = e.message || String(e); }
+      paint();
+    }
+    window.__rfApp = { today, newbies };
   })();
 
   // 오늘 화면: 출석 감지 신호가 오면 바로, 그 외엔 20초마다 확인. 자정이 지나면 새 날짜로 넘어간다.
