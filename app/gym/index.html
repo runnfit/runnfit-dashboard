@@ -454,12 +454,12 @@ const seats = [];
 for (let t = 0; t < 2; t++) { const tx = s(14.3) + t * 1.6, tz = s(14.9) + t * .5; box(scene, tx, 0, tz, .7, .75, .7, 0x111827); box(scene, tx + .9, 0, tz + .15, .35, .45, .35, 0x1F2937); solid(tx, tz, .7, .7); seats.push({ x: tx + 1.07, z: tz + .32, y: .45 }); }
 
 // 턴게이트 + 얼굴인식 단말
-const GX = s(16.85), GZ = s(14.4);
+const GX = WW - 3.3, GZ = s(14.4);   // 수건함과 사이를 넓게 (통로 약 1.7m)
 const gate = G(GX, GZ);
 box(gate, 0, 0, 0, .45, 1.0, 1.0, 0xA3A9B4); box(gate, -.02, 1.0, -.02, .49, .05, 1.04, 0x6B7280);
 box(gate, .1, 1.05, .05, .25, .45, .06, 0x0B1020); const fscr = box(gate, .13, 1.1, .02, .19, .33, .02, 0x2563EB, { basic: 1 });
 const armPivot = new THREE.Group(); armPivot.position.set(.45, .85, .5); gate.add(armPivot);
-{ const arm = new THREE.Mesh(CY, M(0xE5E7EB)); arm.scale.set(.03, 1.1, .03); arm.rotation.z = Math.PI / 2; arm.position.x = .55; armPivot.add(arm); }
+{ const arm = new THREE.Mesh(CY, M(0xE5E7EB)); arm.scale.set(.03, 1.5, .03); arm.rotation.z = Math.PI / 2; arm.position.x = .75; armPivot.add(arm); }
 solid(GX, GZ, .45, 1.0);
 label(scene, '얼굴인식 턴게이트', GX + .2, 2.3, GZ + .5, { bg: 'rgba(245,158,11,.95)', fg: '#111827', size: 28, scale: .011 });
 
@@ -607,7 +607,7 @@ npc('하체러버', 0xDB2777, 0x3B2A1A, [[s(3.0), s(2.6)], [s(3.0), s(14.5)], [s
 const me = avatar('나', 0x2563EB, 0x3B2A1A, true);
 me.traverse(o => { if (o.isMesh) { o.material = o.material.clone(); o.material.depthTest = false; o.renderOrder = 10; } });
 let entered = false, cutscene = null;
-me.position.set(GX + 1.2, 0, GZ + 1.9); me.rotation.y = Math.PI;
+me.position.set(GX + 1.3, 0, GZ + 1.9); me.rotation.y = Math.PI;
 camera.position.set(me.position.x + 1.5, 7.5, me.position.z + 6.5);
 controls.target.set(me.position.x, 1, me.position.z);
 function follow(k = 1) { const dx = (me.position.x - controls.target.x) * k, dz = (me.position.z - controls.target.z) * k; camera.position.x += dx; camera.position.z += dz; controls.target.x += dx; controls.target.z += dz; }
@@ -841,7 +841,7 @@ $('enter').onclick = () => { setName($('nick').value.trim() || '나'); $('start'
 $('skip').onclick = () => finishEntry(true);
 function finishEntry(skip) {
   cutscene = null; entered = true; $('skip').style.display = 'none'; $('face').style.display = 'none'; armPivot.rotation.y = 0;
-  if (skip) me.position.set(GX + 1.2, 0, GZ - 1.5);
+  if (skip) me.position.set(GX + 1.3, 0, GZ - 1.5);
   follow(1); me.rotation.y = Math.PI;
   $('hint').style.opacity = 1; setTimeout(() => $('hint').style.opacity = 0, 6000);
   toast('런앤핏이 기다렸어요! 오늘도 출석 완료 ✓', 3000); feed('', `${myName}님이 입장했어요 👋`, 'sys'); say(me, '출석 완료!', 3);
@@ -850,9 +850,9 @@ function walkTo(tx, tz, sp, dt) { const dx = tx - me.position.x, dz = tz - me.po
 function runCutscene(dt) {
   const c = cutscene; c.t += dt;
   if (c.step === 0) { pose(me, null, dt); if (c.t > .3) { c.step = 1; } }
-  else if (c.step === 1) { if (walkTo(GX + 1.2, GZ + 1.5, 2.0, dt)) { c.step = 2; c.t = 0; me.rotation.y = Math.PI; openFace(); } }
+  else if (c.step === 1) { if (walkTo(GX + 1.3, GZ + 1.5, 2.0, dt)) { c.step = 2; c.t = 0; me.rotation.y = Math.PI; openFace(); } }
   else if (c.step === 2) { pose(me, null, dt); if (c.t > 1.0 && !c.ok) { c.ok = 1; faceOk(); } if (c.t > 1.9) { $('face').style.display = 'none'; c.step = 3; c.t = 0; } }
-  else if (c.step === 3) { armPivot.rotation.y = Math.min(1.5, c.t * 3); if (c.t > .4 && walkTo(GX + 1.2, GZ - 1.5, 2.2, dt)) finishEntry(false); else pose(me, 'walk', 0); }
+  else if (c.step === 3) { armPivot.rotation.y = Math.min(1.5, c.t * 3); if (c.t > .4 && walkTo(GX + 1.3, GZ - 1.5, 2.2, dt)) finishEntry(false); else pose(me, 'walk', 0); }
   follow(.15);
 }
 function openFace() {
