@@ -2004,7 +2004,7 @@
       const need = arr.filter((m)=> (m.total == null || m.reg.kind === 'na') && !m._regDone);
       if(need.length){ await enrichMembers(need, true); need.forEach((m)=> m._regDone = true); }
       if(my !== beltReq) return;
-      beltPop.innerHTML = head('<b>' + arr.length + '명</b><small>' + (valid ? '최근 30일 ' : '첫 30일 예상 ') + RANGE[st] + ' · 횟수 적은 순서 · 번호 누르면 복사</small>') +
+      beltPop.innerHTML = head('<b>' + arr.length + '명</b><small>' + (st === 'hold' ? '홀딩 중인 회원' : (valid ? '최근 30일 ' : '첫 30일 예상 ') + RANGE[st]) + ' · 횟수 적은 순서 · 번호 누르면 복사</small>') +
         (arr.length ? '<div class="grid">' + arr.map((m, x)=> absentCardHtml(m, x, { head: (x + 1) + '. ' + (valid ? '최근 30일 ' + m.n30 + '회 · ' + lastText(m) : m.day + '일째 · 첫 30일 ' + (m.visits == null ? '-' : m.visits) + '회 (예상 ' + (m.pace == null ? '-' : m.pace) + '회)') })).join('') + '</div>' : '<div class="popempty">없어요</div>');
     }catch(e){
       if(e instanceof AuthError){ lockScreen(); beltPop.classList.add('hidden'); return; }
