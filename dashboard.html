@@ -463,6 +463,16 @@
   .msr mark{ background:#fff1b8; color:inherit; border-radius:3px; padding:0 1px; }
   .msr-empty{ padding:12px; color:#5d6782; font-size:13.5px; font-weight:700; }
   .searchpop{ padding:14px; z-index:60; }
+  .cfilter{ flex:1 1 100%; display:flex; align-items:center; gap:5px; background:#fff; border:1px solid var(--line); border-radius:13px; padding:6px 10px; overflow-x:auto; white-space:nowrap; scrollbar-width:none; }
+  .cfilter::-webkit-scrollbar{ display:none; }
+  .cfilter .fsep{ flex:none; width:1px; height:20px; background:#e3e7f0; margin:0 4px; }
+  .cfilter button{ flex:none; display:inline-flex; align-items:center; gap:4px; border:1.5px solid #dfe4ee; background:#fff; border-radius:999px; padding:3px 9px; font:inherit; font-size:13px; font-weight:800; color:#4a5164; cursor:pointer; }
+  .cfilter button small{ color:#9aa1b2; font-weight:800; font-size:11.5px; }
+  .cfilter button.on{ border-color:#18338c; background:#e8edfb; color:#18338c; } .cfilter button.on small{ color:#18338c; }
+  .cfilter button:disabled{ opacity:.45; cursor:default; }
+  .cfilter i.fb{ width:12px; height:12px; border-radius:50%; box-shadow:0 0 0 1px rgba(0,0,0,.25); } .cfilter i.fd{ width:11px; height:11px; border-radius:50%; }
+  .cfilter .freset{ margin-left:auto; border:0; background:transparent; color:#7a8295; padding:3px 4px; }
+  .cfilter .fsum{ flex:none; font-size:12.5px; font-weight:800; color:#18338c; margin-left:6px; }
   article.card[data-mid]{ cursor:pointer; } article.card[data-mid]:hover{ box-shadow:0 0 0 2px #18338c; }
   .grid .card[data-id]{ cursor:pointer; } .grid .card.open{ outline:3px solid #18338c; outline-offset:-3px; border-bottom-left-radius:0; border-bottom-right-radius:0; }
   .cardexp{ grid-column:1 / -1; margin-top:-10px; background:#fff; border:1px solid var(--line); border-top:0; border-radius:0 0 16px 16px; padding:6px 16px 14px; }
@@ -581,6 +591,7 @@
         <input type="search" id="search" placeholder="이름 검색" autocomplete="off" />
         <div class="count">출석한 회원<b id="countNum">-</b></div>
       </div>
+      <div id="cfilter" class="cfilter" role="group" aria-label="출석 회원 필터"></div>
     </div>
 
     <div id="notice" class="notice hidden"></div>
@@ -913,10 +924,60 @@
     '</article>';
   }
 
+  // ---------- 오늘 출석 필터 (띠 · 출석 신호등 · 등록) : 같은 묶음은 '또는', 묶음끼리는 '그리고' ----------
+  const FSEL = { b: new Set(), s: new Set(), r: new Set() };
+  try{ const v = JSON.parse(localStorage.getItem('rf_cfilter') || 'null'); if(v) ['b', 's', 'r'].forEach((k)=> (v[k] || []).forEach((x)=> FSEL[k].add(x))); }catch(e){}
+  function cardKeys(c){
+    const d = c.detail; if(!d) return null;
+    const bb = getBelt(d.count), b = d.count == null ? null : String(bb ? BELTS.indexOf(bb) : 0);
+    let st = null;
+    if(holdMap.has(c.id)) st = 'hold';
+    else { const ns = nbStatus.get(c.id);
+      if(ns && ns.st !== 'na') st = ns.st;
+      else if(d.n30 != null) st = d.n30 >= 12 ? 'ok' : d.n30 >= 8 ? 'warn' : 'risk'; }
+    const r = d.reg.kind === 'first' ? 'first' : d.reg.kind === 'nth' ? (d.reg.n >= 2 ? 'r2' : 'r1') : null;
+    return { b, s: st, r };
+  }
+  const fActive = ()=> FSEL.b.size + FSEL.s.size + FSEL.r.size > 0;
+  function passFilter(c){
+    if(!fActive()) return true;
+    const k = cardKeys(c); if(!k) return false;
+    return ['b', 's', 'r'].every((g)=> !FSEL[g].size || FSEL[g].has(k[g]));
+  }
+  function drawFilter(){
+    const box = $('cfilter'); if(!box) return;
+    const keys = cards.map(cardKeys);
+    const cnt = (g, v)=> keys.filter((k)=> k && k[g] === v).length;
+    const btn = (g, v, inner)=> { const n = cnt(g, v), on = FSEL[g].has(v);
+      return '<button type="button" data-g="' + g + '" data-v="' + v + '" class="' + (on ? 'on' : '') + '" aria-pressed="' + on + '"' + (!n && !on ? ' disabled' : '') + '>' + inner + '<small>' + n + '</small></button>'; };
+    const LB = BELTS.map((b)=> String(b.name || '').charAt(0));
+    let h = BELTS.map((b, i)=> btn('b', String(i), '<i class="fb" style="background:' + esc(b.bg) + '"></i>' + esc(LB[i]))).join('');
+    h += '<i class="fsep"></i>' + [['risk', '위험', '#e5484d'], ['warn', '주의', '#f5b82e'], ['ok', '습관', '#2fb36b'], ['hold', '홀딩', '#9ca3af']].map((x)=> btn('s', x[0], '<i class="fd" style="background:' + x[2] + '"></i>' + x[1])).join('');
+    h += '<i class="fsep"></i>' + [['first', '첫'], ['r1', '재'], ['r2', '2재']].map((x)=> btn('r', x[0], x[1])).join('');
+    if(fActive()){
+      const names = { s: { risk: '위험', warn: '주의', ok: '습관', hold: '홀딩' }, r: { first: '첫', r1: '재', r2: '2재' } };
+      const parts = [];
+      if(FSEL.b.size) parts.push([...FSEL.b].sort().map((i)=> LB[+i]).join('·'));
+      if(FSEL.s.size) parts.push([...FSEL.s].map((v)=> names.s[v]).join('·'));
+      if(FSEL.r.size) parts.push([...FSEL.r].map((v)=> names.r[v]).join('·'));
+      h += '<span class="fsum">' + esc(parts.join(' · ')) + ' → <b>' + cards.filter(passFilter).length + '명</b></span>';
+    }
+    h += '<button type="button" class="freset" data-reset="1"' + (fActive() ? '' : ' disabled') + '>↺ 전체</button>';
+    box.innerHTML = h;
+  }
+  if($('cfilter')) $('cfilter').addEventListener('click', (e)=>{
+    const b = e.target.closest('button'); if(!b || b.disabled) return;
+    if(b.dataset.reset){ ['b', 's', 'r'].forEach((g)=> FSEL[g].clear()); }
+    else { const set = FSEL[b.dataset.g], v = b.dataset.v; set.has(v) ? set.delete(v) : set.add(v); }
+    try{ localStorage.setItem('rf_cfilter', JSON.stringify({ b: [...FSEL.b], s: [...FSEL.s], r: [...FSEL.r] })); }catch(err){}
+    render();
+  });
+
   function render(){
     const q = $('search').value.trim();
-    const shown = q ? cards.filter((c)=> c.name.indexOf(q) >= 0) : cards;
-    $('countNum').textContent = cards.length + '명';
+    const shown = cards.filter((c)=> (!q || c.name.indexOf(q) >= 0) && passFilter(c));
+    $('countNum').textContent = fActive() ? shown.length + ' / ' + cards.length + '명' : cards.length + '명';
+    drawFilter();
     const isToday = viewDate === todayKst();
     $('title').textContent = isToday ? '오늘 출석' : '출석';
     $('dateText').textContent = dot(viewDate) + ' ' + weekday(viewDate);
@@ -926,6 +987,7 @@
     if(authed === false){ grid.innerHTML = ''; return; }
     if(!cards.length && !loading){ showNotice('<b>' + dot(viewDate) + '</b>에 출석한 회원이 없어요.'); grid.innerHTML = ''; return; }
     if(q && !shown.length){ showNotice('"<b>' + esc(q) + '</b>" 이름의 출석 회원이 없어요.'); grid.innerHTML = ''; return; }
+    if(!shown.length){ showNotice('고른 조건에 맞는 출석 회원이 없어요. <b>↺ 전체</b>를 누르면 다시 다 보여요.'); grid.innerHTML = ''; return; }
     hideNotice();
     grid.innerHTML = shown.map(cardHtml).join('');
     if(typeof placeExp === 'function') placeExp();
