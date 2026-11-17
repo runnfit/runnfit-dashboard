@@ -936,8 +936,7 @@
     const d = c.detail; if(!d) return null;
     const bb = getBelt(d.count), b = d.count == null ? null : String(bb ? BELTS.indexOf(bb) : 0);
     let st = null;
-    if(holdMap.has(c.id)) st = 'hold';
-    else { const ns = nbStatus.get(c.id);
+    { const ns = nbStatus.get(c.id);
       if(ns && ns.st !== 'na') st = ns.st;
       else if(d.n30 != null) st = d.n30 >= 12 ? 'ok' : d.n30 >= 8 ? 'warn' : 'risk'; }
     const r = d.reg.kind === 'first' ? 'first' : d.reg.kind === 'nth' ? (d.reg.n >= 2 ? 'r2' : 'r1') : null;
@@ -959,7 +958,7 @@
       return '<button type="button" data-g="' + g + '" data-v="' + v + '" class="' + (on ? 'on' : '') + '" aria-pressed="' + on + '"' + (!n && !on ? ' disabled' : '') + '>' + inner + '<small>' + n + '</small></button>'; };
     const LB = BELTS.map((b)=> String(b.name || '').charAt(0));
     let h = BELTS.map((b, i)=> btn('b', String(i), '<i class="fb" style="background:' + esc(b.bg) + '"></i>' + esc(LB[i]))).join('');
-    h += '<i class="fsep"></i>' + [['risk', '위험', '#e5484d'], ['warn', '주의', '#f5b82e'], ['ok', '습관', '#2fb36b'], ['hold', '홀딩', '#9ca3af']].map((x)=> btn('s', x[0], '<i class="fd" style="background:' + x[2] + '"></i>' + x[1])).join('');
+    h += '<i class="fsep"></i>' + [['risk', '위험', '#e5484d'], ['warn', '주의', '#f5b82e'], ['ok', '습관', '#2fb36b']].map((x)=> btn('s', x[0], '<i class="fd" style="background:' + x[2] + '"></i>' + x[1])).join('');
     h += '<i class="fsep"></i>' + [['first', '첫'], ['r1', '재'], ['r2', '2재']].map((x)=> btn('r', x[0], x[1])).join('');
     box.innerHTML = h;
     const sum = $('cfSum'), rs = $('cfReset'), gi = $('cfGap');
@@ -971,7 +970,7 @@
       if(FSEL.b.size) parts.push([...FSEL.b].sort().map((i)=> LB[+i]).join('·'));
       if(FSEL.s.size) parts.push([...FSEL.s].map((v)=> names.s[v]).join('·'));
       if(FSEL.r.size) parts.push([...FSEL.r].map((v)=> names.r[v]).join('·'));
-      if(FGAP > 0) parts.push(FGAP + '일 이상 만에 출석');
+      if(FGAP > 0) parts.push(FGAP + '일↑');
       sum.innerHTML = esc(parts.join(' · ')) + ' → <b>' + cards.filter(passFilter).length + '명</b>';
     } else sum.innerHTML = ''; }
   }
