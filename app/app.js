@@ -114,7 +114,7 @@ function renderLogin(err){
     }catch(e){
       sendBtn.disabled = false;
       const c = (e && e.code) || '';
-      msg(/billing|operation-not-allowed/.test(c) ? '문자 인증이 아직 준비 중이에요. (센터 설정 필요 · ' + c + ')'
+      msg(/billing|operation-not-allowed/.test(c) ? '문자 인증이 아직 준비 중이에요. (센터 설정 필요 · ' + c + ' · ' + String((e && e.message) || '').replace(/^Firebase: /, '').slice(0, 120) + ')'
         : /too-many-requests/.test(c) ? '요청이 너무 많아요. 잠시 후 다시 해주세요.'
         : /invalid-phone/.test(c) ? '휴대폰 번호를 확인해 주세요.'
         : '인증번호를 보내지 못했어요. (' + (c || e.message) + ')');
