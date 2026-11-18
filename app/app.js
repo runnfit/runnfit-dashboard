@@ -19,7 +19,7 @@ auth.languageCode = 'ko';
 const db = getFirestore(fbApp);
 
 // ---------- 공통 ----------
-const B = '#093692';
+const B = '#153189';
 const BELTS = [
   { from: 1, name: '흰 띠', bg: '#F4F7FB' }, { from: 10, name: '노란 띠', bg: '#FFD54A' },
   { from: 30, name: '파란 띠', bg: '#093692' }, { from: 50, name: '빨간 띠', bg: '#B91C32' }, { from: 100, name: '검은 띠', bg: '#111827' },
@@ -204,9 +204,9 @@ function go(t){
   tab = t;
   if(t === 'pixel'){ location.href = './gym/'; return; }
   $tabs.classList.remove('hidden'); $app.classList.remove('nonav');
-  const active = { help: 'home', home: 'home', challenge: 'challenge', workout: 'challenge', voice: 'voice', me: 'me' }[t];
+  const active = { wod: 'home', session: 'home', done: 'home', help: 'home', home: 'home', challenge: 'challenge', workout: 'challenge', voice: 'voice', me: 'me' }[t];
   $tabs.querySelectorAll('button').forEach((b)=> b.classList.toggle('on', b.dataset.tab === active));
-  ({ help: renderHelp, home: renderHome, challenge: renderChallenge, workout: renderWorkout, voice: renderVoice, me: renderMe })[t]();
+  ({ wod: renderWod, session: renderSession, done: renderDone, help: renderHelp, home: renderHome, challenge: renderChallenge, workout: renderWorkout, voice: renderVoice, me: renderMe })[t]();
   window.scrollTo(0, 0);
 }
 $tabs.addEventListener('click', (e)=>{ const b = e.target.closest('button[data-tab]'); if(b) go(b.dataset.tab); });
@@ -275,8 +275,10 @@ function renderHome(){
       '<div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px">' + journey + '</div>' +
     '</div>' +
     '<div class="m" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">' + left + right + '</div>' +
+    wodHomeCard() +
     '<div style="height:18px"></div>';
   document.getElementById('bellBtn').onclick = showNotices;
+  bindWodHome();
   document.getElementById('helpToggle').onclick = ()=>{ helpOpen = !helpOpen; const y = window.scrollY; renderHome(); window.scrollTo(0, y); };
   $app.querySelectorAll('[data-help]').forEach((b)=> b.onclick = ()=>{ helpKind = b.dataset.help; go('help'); });
   const gb = document.getElementById('goalBtn'); if(gb) gb.onclick = (e)=>{ e.preventDefault(); changeGoal(); };
@@ -352,11 +354,11 @@ function renderChallenge(){
     const cells = Array.from({ length: lead }, ()=> '<div></div>').concat(Array.from({ length: total }, (_, i)=>{
       const d = addDays(first, i), on = days.has(d), isT = d === today();
       const st = on ? 'background:' + B + ';color:#fff' : isT ? 'background:#fff;color:' + B + ';box-shadow:inset 0 0 0 3px ' + B : d < today() ? 'background:#E9EEF6;color:#6B7280' : 'background:#fff;color:#9CA3AF;box-shadow:inset 0 0 0 1px var(--line)';
-      return '<div style="height:38px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:' + (on || isT ? 900 : 500) + ';' + st + '">' + (on ? CHECK('#FFD54A', 14) : isT ? '오늘' : (i + 1)) + '</div>';
+      return '<div data-day="' + d + '" style="height:38px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:' + (on || isT ? 900 : 500) + ';' + st + '">' + (on ? CHECK('#FFD54A', 14) : isT ? '오늘' : (i + 1)) + '</div>';
     })).join('');
     const wk = w.list.map((d, i)=>{ const on = w.days.has(d), isT = d === today();
       return '<div style="text-align:center"><div style="font-size:11px;color:var(--muted)">' + '월화수목금토일'[i] + '</div><div style="height:30px;margin-top:3px;display:flex;align-items:center;justify-content:center;' + (on ? 'background:' + B : isT ? 'background:#fff;box-shadow:inset 0 0 0 3px ' + B : 'background:#E9EEF6') + '">' + (on ? CHECK('#FFD54A', 14) : '') + '</div></div>'; }).join('');
-    $app.innerHTML = topbar('이번 주 출석') +
+    $app.innerHTML = topbar('내 운동') +
       '<div class="hero m" style="padding:16px;text-align:center"><div style="font-size:13px;color:var(--muted)">' + (goal ? '내가 정한 목표 주 ' + goal + '회' : '아직 목표를 안 정했어요') + '</div>' +
         '<div style="display:flex;align-items:baseline;justify-content:center;gap:6px;margin-top:8px"><span class="pxf" style="font-size:30px;color:' + B + '">' + n + '</span><span style="font-size:16px;font-weight:700;color:var(--muted)">' + (goal ? '/ ' + goal + '회 출석' : '회 출석') + '</span></div>' +
         '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:12px">' + wk + '</div>' +
@@ -364,15 +366,16 @@ function renderChallenge(){
         '<div style="margin-top:10px"><a href="#" id="goalBtn2" style="font-weight:700;font-size:13px">' + (goal ? '목표 바꾸기' : '목표 정하기') + '</a></div></div>' +
       '<div class="card m" style="padding:12px"><div style="display:flex;justify-content:space-between;margin-bottom:10px"><div style="font-size:14px;font-weight:900">' + Number(mk.slice(5)) + '월 출석 도장 · ' + mN + '회</div><div style="font-size:12px;color:var(--muted)">파란 칸 = 출석</div></div>' +
         '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;font-size:11px;color:var(--muted);text-align:center;margin-bottom:4px">' + ['월', '화', '수', '목', '금', '토', '일'].map((x)=> '<div>' + x + '</div>').join('') + '</div>' +
-        '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px">' + cells + '</div></div>';
+        '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px">' + cells + '</div></div><div id="myWod"></div>';
     document.getElementById('goalBtn2').onclick = (e)=>{ e.preventDefault(); changeGoal(); };
+    paintMyWod();
     return;
   }
   const set = new Set(f30.days);
   const cells = Array.from({ length: 30 }, (_, i)=>{
     const d = addDays(f30.start, i), on = set.has(d), isT = d === today();
     const st = on ? 'background:' + B + ';color:#fff' : isT ? 'background:#fff;color:' + B + ';box-shadow:inset 0 0 0 3px ' + B : d < today() ? 'background:#E9EEF6;color:#6B7280' : 'background:#fff;color:#9CA3AF;box-shadow:inset 0 0 0 1px var(--line)';
-    return '<div style="height:38px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:' + (on || isT ? 900 : 500) + ';' + st + '" aria-label="' + (i + 1) + '일차">' + (on ? CHECK('#FFD54A', 14) : isT ? '오늘' : (i + 1)) + '</div>';
+    return '<div data-day="' + d + '" style="height:38px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:' + (on || isT ? 900 : 500) + ';' + st + '" aria-label="' + (i + 1) + '일차">' + (on ? CHECK('#FFD54A', 14) : isT ? '오늘' : (i + 1)) + '</div>';
   }).join('');
   const reward = (n, title)=>{ const done = f30.visits >= n; return '<div style="display:flex;align-items:center;gap:10px;padding:8px 0">' + (done ? '<div style="width:28px;height:28px;background:' + B + ';display:flex;align-items:center;justify-content:center">' + CHECK('#FFD54A') + '</div>' : '<div style="width:28px;height:28px;box-shadow:inset 0 0 0 2px var(--line)"></div>') + '<div class="pxf" style="font-size:10px;color:' + B + ';width:34px">' + n + '회</div><div style="flex:1;font-size:14px;font-weight:' + (done ? 500 : 700) + '">' + title + '</div><div style="font-size:12px;color:var(--muted)">' + (done ? '획득!' : (n - f30.visits) + '회 남음') + '</div></div>'; };
   const bar = Array.from({ length: 12 }, (_, i)=> '<div class="seg ' + (i < f30.visits ? 'on' : '') + '" style="height:10px"></div>').join('');
@@ -386,7 +389,8 @@ function renderChallenge(){
     '<div class="card m" style="padding:12px"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><div style="font-size:14px;font-weight:900">30일 출석 도장</div><div style="font-size:12px;color:var(--muted)">파란 칸 = 출석</div></div>' +
       '<div style="display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:4px">' + cells + '</div></div>' +
     '<div class="card m" style="padding:6px 14px">' + reward(6, '첫 도장 뱃지') + reward(12, '도전 성공 · [센터 보상]') + reward(16, '출석왕 · [센터 보상]') + '</div>' +
-    '<div style="height:18px"></div>';
+    '<div id="myWod"></div><div style="height:18px"></div>';
+  paintMyWod();
 }
 
 // ---------- 런앤핏에 한마디 ----------
@@ -513,6 +517,306 @@ async function loadMyHelp(){
         '<span style="font-size:12px;font-weight:900;border-radius:6px;padding:3px 8px;' + (doneH ? 'background:' + B + ';color:#fff' : 'background:#E3E9FF;color:' + B) + '">' + (doneH ? '연락 완료' : '확인 중') + '</span></div>'; }).join('')
       : '<div class="m muted" style="font-size:13px">아직 신청한 내역이 없어요.</div>';
   }catch(e){ box.innerHTML = '<div class="m muted" style="font-size:13px">불러오지 못했어요.</div>'; }
+}
+
+// ---------- 이번 주 런앤핏 운동 프로그램 (띠별 WOD · 운동 기록) ----------
+const WBELTS = [
+  { k: '노', name: '노란 띠', bg: '#FFD54A', fg: '#3A2A00', soft: '#FFF4CC' },
+  { k: '파', name: '파란 띠', bg: '#093692', fg: '#fff', soft: '#E3E9FF' },
+  { k: '빨', name: '빨간 띠', bg: '#B91C32', fg: '#fff', soft: '#FDE8EC' },
+  { k: '검', name: '검은 띠', bg: '#111827', fg: '#fff', soft: '#E9EBEF' },
+];
+const WPROG = { A: '스쿼트 중심 전신', B: '힙힌지·밀기 중심 전신', C: '당기기·한쪽 하체 전신' };
+// 11월 셋째 주 (센터 모니터판과 같은 내용). 직원 관리 화면에서 매주 바꾸면 wods/current 가 이걸 덮어씀
+const DEFAULT_WOD = { start: '2026-11-16', end: '2026-11-22', programs: {
+  노: { A: [['01', '레그프레스'], ['12', '체스트프레스'], ['08', '랫풀다운'], ['맨몸', '스쿼트'], ['13', '암컬'], ['체력', '스텝박스 기본 스텝', '20회×3']],
+        B: [['03', '레그컬'], ['14', '숄더프레스'], ['06', '롱풀'], ['맨몸', '힙힌지'], ['11', '팩덱플라이'], ['체력', '제자리 피칭', '30초×3']],
+        C: [['19', '레그프레스'], ['09', '시티드로우'], ['12', '체스트프레스'], ['04', '레그익스텐션'], ['21', '케이블 삼두 푸시다운'], ['체력', '스텝박스 사이드 스텝', '20회×3']] },
+  파: { A: [['덤벨', '덤벨 스쿼트'], ['덤벨', '덤벨 벤치프레스'], ['09', '시티드로우'], ['KB', '케틀벨 RDL'], ['덤벨', '덤벨 레터럴 레이즈'], ['체력', '점핑잭', '30회×3']],
+        B: [['KB', '케틀벨 데드리프트'], ['덤벨', '덤벨 숄더프레스'], ['08', '랫풀다운'], ['덤벨', '덤벨 리버스 런지'], ['21', '케이블 삼두 푸시다운'], ['체력', '스텝박스 교차 스텝', '20회×3']],
+        C: [['덤벨', '덤벨 스플릿 스쿼트'], ['덤벨', '원암 덤벨로우'], ['덤벨', '덤벨 인클라인 프레스'], ['03', '레그컬'], ['덤벨', '덤벨 레터럴 레이즈'], ['체력', '마운틴클라이머', '20회×3']] },
+  빨: { A: [['23', '바벨 백스쿼트'], ['18', '바벨 벤치프레스'], ['07', '어시스트 풀업'], ['덤벨', '덤벨 RDL'], ['21', '케이블 삼두 푸시다운'], ['체력', '스텝업', '20회×3']],
+        B: [['24', '바벨 데드리프트'], ['14', '숄더프레스'], ['09', '시티드로우'], ['덤벨', '덤벨 리버스 런지'], ['13', '암컬'], ['체력', '버피', '10회×3']],
+        C: [['22', '스미스 스쿼트'], ['바벨', '바벨 벤트오버로우'], ['덤벨', '덤벨 인클라인 프레스'], ['03', '레그컬'], ['덤벨', '덤벨 레터럴 레이즈'], ['체력', '에어스킵', '30회×3']] },
+  검: { A: [['23', '바벨 백스쿼트'], ['덤벨', '덤벨 벤치프레스'], ['맨몸', '풀업'], ['덤벨', '덤벨 워킹 런지'], ['덤벨', '덤벨 레터럴 레이즈'], ['체력', '스쿼트 점프', '10회×3']],
+        B: [['24', '바벨 데드리프트'], ['바벨', '바벨 오버헤드프레스'], ['맨몸', '풀업'], ['덤벨', '덤벨 리버스 런지'], ['덤벨', '덤벨 암컬'], ['체력', '버피', '15회×3']],
+        C: [['덤벨', '덤벨 불가리안 스플릿 스쿼트'], ['덤벨', '원암 덤벨로우'], ['덤벨', '덤벨 인클라인 프레스'], ['KB', '케틀벨 RDL'], ['덤벨', '덤벨 레터럴 레이즈'], ['체력', '마운틴클라이머', '40회×3']] },
+} };
+let WOD = null;          // { start, end, programs: { 노: { A: [{t,n,x}] } } }
+let wodBelt = null;      // 프로그램 화면에서 보고 있는 띠
+let myLogs = null;       // 내 운동 기록 (최근 순)
+let wodSel = null;       // 내 운동에서 고른 날짜
+const SKEY = 'rfWod.session.v1';
+
+function normWod(w){
+  const out = { start: w.start, end: w.end, programs: {} };
+  WBELTS.forEach(({ k })=>{ out.programs[k] = {}; ['A', 'B', 'C'].forEach((p)=>{
+    const src = (w.programs && w.programs[k] && w.programs[k][p]) || [];
+    out.programs[k][p] = src.map((r)=> Array.isArray(r) ? { t: r[0], n: r[1], x: r[2] || '' } : { t: r.t, n: r.n, x: r.x || '' });
+  }); });
+  return out;
+}
+async function loadWod(){
+  if(WOD) return WOD;
+  try{ const s = await getDoc(doc(db, 'wods', 'current')); if(s.exists() && s.data().programs) { WOD = normWod(s.data()); return WOD; } }catch(e){}
+  WOD = normWod(DEFAULT_WOD); return WOD;
+}
+const wodRange = ()=> WOD ? dotDate(WOD.start).slice(5) + ' – ' + dotDate(WOD.end).slice(5) : '';
+function myBeltKey(){ const t = Number(me.total) || 0; return t >= 100 ? '검' : t >= 50 ? '빨' : t >= 30 ? '파' : '노'; }
+const wBelt = (k)=> WBELTS.find((b)=> b.k === k) || WBELTS[0];
+function kindOf(t){
+  if(/^\d+$/.test(t)) return ['17', '18', '22', '23', '24'].includes(t) ? 'bar' : 'machine';
+  return { '덤벨': 'db', 'KB': 'kb', '바벨': 'bar', '맨몸': 'body', '체력': 'cond' }[t] || 'body';
+}
+const weighted = (k)=> k === 'machine' || k === 'bar' || k === 'db' || k === 'kb';
+const kgStep = (k)=> k === 'db' ? 1 : k === 'kb' ? 2 : k === 'bar' ? 2.5 : 5;
+function tagHtml(t){
+  const st = t === '체력' ? 'background:#FFD54A;color:#3A2A00' : /^\d+$/.test(t) ? 'background:' + B + ';color:#fff' : 'background:#fff;color:#6B7280;box-shadow:inset 0 0 0 1px #D5DCE8';
+  return '<span style="min-width:36px;text-align:center;border-radius:5px;font-size:11px;font-weight:900;padding:1px 4px;flex:none;' + st + '">' + esc(t) + '</span>';
+}
+const ARROW = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+const CHK = (c, s)=> '<svg width="' + (s || 20) + '" height="' + (s || 20) + '" viewBox="0 0 24 24" fill="none" stroke="' + (c || '#fff') + '" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+const getSession = ()=>{ try{ return JSON.parse(localStorage.getItem(SKEY) || 'null'); }catch(e){ return null; } };
+const putSession = (s)=>{ try{ s ? localStorage.setItem(SKEY, JSON.stringify(s)) : localStorage.removeItem(SKEY); }catch(e){} };
+
+// 홈 칸 (예전 오늘의 운동 자리)
+function wodHomeCard(){
+  const s = getSession(), mb = wBelt(myBeltKey()), white = (Number(me.total) || 0) < 10;
+  return '<div class="m" style="background:' + B + ';color:#fff;border-radius:14px;padding:14px 16px">' +
+    '<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:700;color:var(--y)">이번 주 런앤핏 운동 프로그램</span><span style="font-size:12px;opacity:.8" id="wodRange">' + wodRange() + '</span></div>' +
+    '<div style="font-size:17px;font-weight:900;margin-top:4px;line-height:1.35">출석만 하세요! 운동은 런앤핏이 준비했어요</div>' +
+    '<div style="margin-top:10px;background:rgba(255,255,255,.12);border-radius:10px;padding:9px 12px;font-size:13px;line-height:1.5">' +
+      (white ? '<b style="color:var(--y)">흰 띠는 기본 머신 사용법부터!</b> 노란 띠 프로그램으로 천천히 시작해 보세요' : '<b style="color:var(--y)">내 띠 추천 ' + mb.name + '</b> · 다른 띠 프로그램도 자유롭게 도전해봐도 좋아요') + '</div>' +
+    '<button type="button" id="wodGo" style="width:100%;margin-top:10px;height:44px;border:0;border-radius:10px;background:#fff;color:' + B + ';font-weight:900;font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:4px;cursor:pointer;font-family:inherit">' +
+      (s ? wBelt(s.belt).name + ' ' + s.prog + ' 이어서 하기 ' : '이번 주 운동 프로그램 보기 ') + ARROW + '</button></div>';
+}
+function bindWodHome(){
+  const b = document.getElementById('wodGo'); if(!b) return;
+  b.onclick = ()=> go(getSession() ? 'session' : 'wod');
+  if(!WOD) loadWod().then(()=>{ const r = document.getElementById('wodRange'); if(r) r.textContent = wodRange(); });
+}
+
+// 프로그램 고르기 (P1)
+async function renderWod(){
+  $app.innerHTML = topbar('이번 주 운동 프로그램') + '<div class="loading">불러오는 중…</div>';
+  await loadWod();
+  if(!wodBelt) wodBelt = myBeltKey();
+  const mk = myBeltKey();
+  const tabs = WBELTS.map((b)=> '<button type="button" data-belt="' + b.k + '" style="flex:1;position:relative;border:0;border-radius:10px;padding:10px 0 9px;font-family:inherit;font-size:13px;font-weight:900;cursor:pointer;' +
+    (b.k === wodBelt ? 'background:' + b.bg + ';color:' + b.fg : 'background:transparent;color:#374151') + '">' + b.name +
+    (b.k === mk ? '<i style="position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:' + B + ';color:#fff;font-style:normal;font-size:9.5px;border-radius:4px;padding:0 5px;white-space:nowrap">내 띠 추천</i>' : '') + '</button>').join('');
+  const card = (p, first)=>{ const items = WOD.programs[wodBelt][p] || [];
+    return '<div class="card m" style="padding:12px 14px">' +
+      '<div style="display:flex;align-items:center;gap:10px"><b style="width:34px;height:34px;border-radius:8px;background:' + B + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-style:italic">' + p + '</b><b style="font-size:15px">' + WPROG[p] + '</b></div>' +
+      '<div style="margin-top:6px">' + items.map((it)=> '<div style="display:flex;gap:8px;align-items:center;padding:4px 0;font-size:14px">' + tagHtml(it.t) + '<span style="flex:1">' + esc(it.n) + '</span>' + (it.x ? '<span style="font-size:12.5px;color:' + B + ';font-weight:700">' + esc(it.x) + '</span>' : '') + '</div>').join('') + '</div>' +
+      '<button type="button" data-start="' + p + '" class="btn' + (first ? '' : ' ghost') + '" style="width:100%;margin-top:8px;height:44px;font-size:14px' + (first ? '' : ';box-shadow:none;background:#E3E9FF') + '">' + p + '로 운동 시작하기</button></div>'; };
+  $app.innerHTML = '<div class="top" style="justify-content:flex-start;gap:6px;padding-left:12px"><button class="back" type="button" data-go="home" aria-label="뒤로">' + BACK + '</button><div class="ttl">이번 주 운동 프로그램</div><span style="margin-left:auto;font-size:12px;color:var(--muted)">' + wodRange() + '</span></div>' +
+    '<div class="m" style="font-size:12.5px;color:#4B5563">내 띠는 추천! 다른 띠 프로그램도 자유롭게 도전해봐도 좋아요</div>' +
+    '<div class="m" style="margin-top:18px;display:flex;gap:4px;background:#fff;border-radius:12px;padding:4px;box-shadow:0 1px 3px rgba(0,0,0,.06)">' + tabs + '</div>' +
+    card('A', true) + card('B') + card('C') +
+    '<div class="m" style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:6px">반복 10~15회 · 3~5세트 · 휴식 60~90초 · 고중량은 휴식 2~3분<br>기구가 비어 있는 운동부터 해도 OK!</div><div style="height:18px"></div>';
+  $app.querySelectorAll('[data-belt]').forEach((b)=> b.onclick = ()=>{ wodBelt = b.dataset.belt; renderWod(); });
+  $app.querySelectorAll('[data-start]').forEach((b)=> b.onclick = ()=> startSession(wodBelt, b.dataset.start));
+}
+
+async function loadMyLogs(force){
+  if(myLogs && !force) return myLogs;
+  try{
+    const s = await getDocs(query(collection(db, 'workout_logs'), where('uid', '==', auth.currentUser.uid), limit(200)));
+    myLogs = s.docs.map((d)=> Object.assign({ id: d.id }, d.data())).sort((a, b)=> (b.date || '').localeCompare(a.date || '') || ((b.createdAt && b.createdAt.seconds) || 0) - ((a.createdAt && a.createdAt.seconds) || 0));
+  }catch(e){ console.warn(e); myLogs = myLogs || []; }
+  return myLogs;
+}
+function lastOf(name){
+  for(const l of (myLogs || [])) for(const it of (l.items || [])) if(it.n === name && it.sets && it.sets.length) return it.sets;
+  return null;
+}
+async function startSession(belt, prog){
+  const old = getSession();
+  if(old && !confirm('하던 운동(' + wBelt(old.belt).name + ' ' + old.prog + ')이 있어요. 새로 시작할까요?')){ go('session'); return; }
+  await loadMyLogs();
+  const items = (WOD.programs[belt][prog] || []).map((it)=>{
+    const kind = kindOf(it.t), last = lastOf(it.n);
+    const m = /(\d+)\s*(회|초)\s*[×x]\s*(\d+)/.exec(it.x || '');
+    const unit = m ? m[2] : '회', n = m ? Number(m[3]) : 3, baseReps = m ? Number(m[1]) : 12;
+    const defKg = { machine: 20, bar: 20, db: 5, kb: 8 }[kind] || 0;
+    const sets = Array.from({ length: n }, (_, i)=>{ const l = last && (last[i] || last[last.length - 1]);
+      return { kg: weighted(kind) ? (l && l.kg != null ? l.kg : defKg) : null, reps: l && l.reps ? l.reps : baseReps, done: false, prev: l ? (weighted(kind) && l.kg != null ? l.kg + '×' + l.reps : l.reps + unit) : '' }; });
+    return { t: it.t, n: it.n, x: it.x, kind, unit, sets };
+  });
+  putSession({ belt, prog, items, cur: 0, start: Date.now() });
+  go('session');
+}
+
+// 운동 기록 (R3 + S1 휠 + 쉬는 시간)
+let restT = null, restLeft = 0;
+function renderSession(){
+  const s = getSession(); if(!s){ go('wod'); return; }
+  const it = s.items[s.cur], bl = wBelt(s.belt);
+  const doneIt = (x)=> x.sets.length && x.sets.every((z)=> z.done);
+  const nDone = s.items.filter(doneIt).length;
+  const strip = s.items.map((x, i)=>{ const d = doneIt(x), on = i === s.cur;
+    return '<button type="button" data-ex="' + i + '" style="flex:1;height:36px;border:0;border-radius:8px;font-family:inherit;font-size:11.5px;font-weight:900;cursor:pointer;display:flex;align-items:center;justify-content:center;' +
+      (d ? 'background:' + B + ';color:#fff' : on ? 'background:#fff;color:' + B + ';box-shadow:inset 0 0 0 2.5px ' + B : 'background:#E9EEF6;color:#6B7280') + '">' + (d ? CHK('#fff', 14) : esc(x.t)) + '</button>'; }).join('');
+  const w = weighted(it.kind);
+  const box = (v, u, i, f)=> '<button type="button" data-pick="' + i + '" data-f="' + f + '" style="width:' + (w ? 76 : 120) + 'px;height:42px;border:0;border-radius:9px;background:#F1F4FA;font-family:inherit;font-size:17px;font-weight:900;cursor:pointer;color:var(--ink)">' + v + '<span style="font-size:11px;font-weight:500;margin-left:2px">' + u + '</span></button>';
+  const rows = it.sets.map((z, i)=> '<div style="display:flex;align-items:center;gap:8px;padding:10px 0;border-top:1px solid #F0F2F7">' +
+    '<span style="width:50px"><b style="display:block;font-size:14px;color:#374151">' + (i + 1) + '세트</b>' + (z.prev ? '<span style="font-size:10.5px;color:#9CA3AF">지난번 ' + esc(z.prev) + '</span>' : '') + '</span>' +
+    (w ? box(z.kg, 'kg', i, 'kg') + '<span style="color:#9CA3AF">×</span>' : '') + box(z.reps, it.unit, i, 'reps') + '<span style="flex:1"></span>' +
+    '<button type="button" data-done="' + i + '" aria-label="' + (i + 1) + '세트 완료" style="width:46px;height:46px;border:0;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;' + (z.done ? 'background:' + B : 'background:#fff;box-shadow:inset 0 0 0 2px #C7D3EE') + '">' + (z.done ? CHK() : '') + '</button></div>').join('');
+  $app.innerHTML = '<div class="top" style="justify-content:flex-start;gap:6px;padding-left:12px"><button class="back" type="button" id="sBack" aria-label="뒤로">' + BACK + '</button><div class="ttl" style="font-size:17px">' + bl.name + ' ' + s.prog + ' · ' + WPROG[s.prog] + '</div><span style="margin-left:auto;font-size:12.5px;color:' + B + ';font-weight:900;white-space:nowrap">' + nDone + ' / ' + s.items.length + ' 완료</span></div>' +
+    '<div class="m" style="display:flex;gap:5px">' + strip + '</div><div class="m" style="margin-top:6px;font-size:11.5px;color:var(--muted)">번호를 누르면 그 운동으로 이동 · 순서는 자유예요</div>' +
+    '<div class="card m" style="padding:14px 16px"><div style="display:flex;align-items:center;gap:10px">' + tagHtml(it.t) + '<b style="font-size:19px">' + esc(it.n) + '</b></div>' +
+      '<div style="font-size:12.5px;color:#4B5563;margin-top:4px">' + (it.x ? esc(it.x) : '10~15회 × 3세트') + ' · 휴식 60~90초</div>' + rows +
+      '<button type="button" id="addSet" style="width:100%;border:0;background:none;font-family:inherit;font-size:13px;color:var(--muted);padding:10px 0 2px;cursor:pointer">+ 세트 추가</button></div>' +
+    '<div id="rest"></div><div style="height:96px"></div>' +
+    '<div style="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));width:min(480px,100%);padding:0 22px;box-sizing:border-box;display:flex;gap:8px;z-index:5">' +
+      '<button type="button" id="nextEx" class="btn" style="flex:1;background:#E3E9FF;color:' + B + '">다음 운동</button><button type="button" id="finish" class="btn" style="flex:1.4">오늘 운동 마치기</button></div>';
+  paintRest();
+  document.getElementById('sBack').onclick = ()=> go('wod');
+  $app.querySelectorAll('[data-ex]').forEach((b)=> b.onclick = ()=>{ s.cur = Number(b.dataset.ex); putSession(s); renderSession(); });
+  $app.querySelectorAll('[data-done]').forEach((b)=> b.onclick = ()=>{ const z = it.sets[Number(b.dataset.done)]; z.done = !z.done; putSession(s); if(z.done) startRest(90); renderSession(); });
+  $app.querySelectorAll('[data-pick]').forEach((b)=> b.onclick = ()=> openWheel(s, Number(b.dataset.pick)));
+  document.getElementById('addSet').onclick = ()=>{ const l = it.sets[it.sets.length - 1] || { kg: null, reps: 12 }; it.sets.push({ kg: l.kg, reps: l.reps, done: false, prev: '' }); putSession(s); renderSession(); };
+  document.getElementById('nextEx').onclick = ()=>{ const n = s.items.length; let k = s.cur; for(let i = 1; i <= n; i++){ const j = (s.cur + i) % n; if(!doneIt(s.items[j])){ k = j; break; } } s.cur = k === s.cur ? (s.cur + 1) % n : k; putSession(s); renderSession(); };
+  document.getElementById('finish').onclick = ()=> finishSession();
+}
+function startRest(sec){ restLeft = sec; clearInterval(restT); restT = setInterval(()=>{ restLeft--; if(restLeft <= 0){ clearInterval(restT); restT = null; try{ navigator.vibrate && navigator.vibrate([200, 100, 200]); }catch(e){} } paintRest(); }, 1000); paintRest(); }
+function paintRest(){
+  const el = document.getElementById('rest'); if(!el) return;
+  if(!restT || restLeft <= 0){ el.innerHTML = ''; return; }
+  el.innerHTML = '<div class="m" style="background:' + B + ';color:#fff;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:10px"><span style="font-size:13px;opacity:.9">쉬는 시간</span><b style="font-size:24px;letter-spacing:1px">' + Math.floor(restLeft / 60) + ':' + String(restLeft % 60).padStart(2, '0') + '</b>' +
+    '<button type="button" id="rPlus" style="margin-left:auto;border:0;background:rgba(255,255,255,.16);color:#fff;border-radius:8px;padding:7px 10px;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer">+30초</button><button type="button" id="rSkip" style="border:0;background:#fff;color:' + B + ';border-radius:8px;padding:7px 10px;font-family:inherit;font-size:12.5px;font-weight:900;cursor:pointer">건너뛰기</button></div>';
+  document.getElementById('rPlus').onclick = ()=>{ restLeft += 30; paintRest(); };
+  document.getElementById('rSkip').onclick = ()=>{ clearInterval(restT); restT = null; paintRest(); };
+}
+function wheelCol(vals, cur, unit){
+  return '<div class="wcol" style="flex:1;height:220px;overflow-y:auto;scroll-snap-type:y mandatory;position:relative;z-index:1;-webkit-overflow-scrolling:touch;scrollbar-width:none">' +
+    '<div style="height:88px"></div>' + vals.map((v)=> '<div data-v="' + v + '" style="height:44px;scroll-snap-align:center;display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:900">' + v + '<span style="font-size:13px;font-weight:500;margin-left:3px">' + unit + '</span></div>').join('') + '<div style="height:88px"></div></div>';
+}
+function openWheel(s, i){
+  const it = s.items[s.cur], z = it.sets[i], w = weighted(it.kind), step = kgStep(it.kind);
+  const kgs = []; for(let v = 0; v <= (it.kind === 'db' || it.kind === 'kb' ? 60 : 300); v = Math.round((v + step) * 10) / 10) kgs.push(v);
+  const reps = []; if(it.unit === '초'){ for(let v = 5; v <= 180; v += 5) reps.push(v); } else { for(let v = 1; v <= 60; v++) reps.push(v); }
+  const prev = i > 0 ? it.sets[0] : null, big = it.kind === 'db' ? 2 : 5;
+  const bg = sheet('<div class="ttl">' + (i + 1) + '세트 · ' + esc(it.n) + '</div><div class="muted" style="font-size:13px;margin-top:2px">위아래로 굴려서 고르세요' + (z.prev ? ' · 지난번 ' + esc(z.prev) : '') + '</div>' +
+    '<div style="position:relative;display:flex;gap:12px;margin-top:12px"><div style="position:absolute;left:0;right:0;top:88px;height:44px;background:#E3E9FF;border-radius:10px"></div>' +
+      (w ? wheelCol(kgs, z.kg, 'kg') : '') + wheelCol(reps, z.reps, it.unit) + '</div>' +
+    '<div style="display:flex;gap:6px;margin-top:12px">' +
+      (z.prev ? '<button type="button" class="chipq" data-q="prev">지난번과 같게</button>' : '') + (prev ? '<button type="button" class="chipq" data-q="first">1세트와 같게</button>' : '') + (w ? '<button type="button" class="chipq" data-q="plus">+' + big + 'kg</button>' : '') + '</div>' +
+    '<button type="button" class="btn" id="wOk" style="width:100%;margin-top:12px">확인</button>');
+  bg.querySelectorAll('.chipq').forEach((b)=> b.style.cssText = 'flex:1;height:36px;border:0;border-radius:18px;background:#F1F4FA;font-family:inherit;font-size:12.5px;font-weight:700;cursor:pointer');
+  const cols = bg.querySelectorAll('.wcol');
+  const setCol = (col, v)=>{ const k = [...col.querySelectorAll('[data-v]')].findIndex((d)=> Number(d.dataset.v) >= v); col.scrollTop = Math.max(0, k) * 44; };
+  const readCol = (col)=>{ const ds = col.querySelectorAll('[data-v]'); const k = Math.min(ds.length - 1, Math.max(0, Math.round(col.scrollTop / 44))); return Number(ds[k].dataset.v); };
+  requestAnimationFrame(()=>{ if(w){ setCol(cols[0], z.kg || 0); setCol(cols[1], z.reps); } else setCol(cols[0], z.reps); });
+  bg.querySelectorAll('[data-q]').forEach((b)=> b.onclick = ()=>{
+    const q = b.dataset.q;
+    if(q === 'prev'){ const p = /([\d.]+)×(\d+)/.exec(z.prev) || /(\d+)/.exec(z.prev); if(p){ if(w && p[2]){ setCol(cols[0], Number(p[1])); setCol(cols[1], Number(p[2])); } else setCol(cols[w ? 1 : 0], Number(p[1])); } }
+    if(q === 'first' && prev){ if(w) setCol(cols[0], prev.kg || 0); setCol(cols[w ? 1 : 0], prev.reps); }
+    if(q === 'plus' && w) setCol(cols[0], readCol(cols[0]) + big);
+  });
+  bg.querySelector('#wOk').onclick = ()=>{ if(w){ z.kg = readCol(cols[0]); z.reps = readCol(cols[1]); } else z.reps = readCol(cols[0]);
+    // 뒤 세트가 아직 안 한 세트면 같은 값으로 따라가게
+    for(let j = i + 1; j < it.sets.length; j++) if(!it.sets[j].done){ if(w) it.sets[j].kg = z.kg; it.sets[j].reps = z.reps; }
+    putSession(s); bg.remove(); renderSession(); };
+}
+
+// 완료 (1·2·3 섞은 화면)
+let lastDone = null;
+async function finishSession(){
+  const s = getSession(); if(!s) return;
+  const doneSets = s.items.reduce((a, x)=> a + x.sets.filter((z)=> z.done).length, 0);
+  if(!doneSets){ toast('완료한 세트가 아직 없어요. 세트 칸을 체크해 주세요!'); return; }
+  const left = s.items.filter((x)=> !x.sets.every((z)=> z.done)).length;
+  if(left && !confirm('아직 ' + left + '개 운동이 남았어요. 오늘 운동을 마칠까요?')) return;
+  await loadMyLogs();
+  const items = s.items.map((x)=> ({ t: x.t, n: x.n, kind: x.kind, unit: x.unit, sets: x.sets.filter((z)=> z.done).map((z)=> ({ kg: weighted(x.kind) ? Number(z.kg) || 0 : null, reps: Number(z.reps) || 0 })) })).filter((x)=> x.sets.length);
+  const kg = Math.round(items.reduce((a, x)=> a + x.sets.reduce((b, z)=> b + (z.kg || 0) * (x.unit === '초' ? 0 : z.reps), 0), 0));
+  const minutes = Math.max(1, Math.round((Date.now() - s.start) / 60000));
+  // 성장 알림: 지난 기록보다 무거워진 운동, 처음 도전한 띠
+  let grow = '';
+  for(const x of items){ if(!weighted(x.kind)) continue; const mx = Math.max(...x.sets.map((z)=> z.kg || 0)); let best = null;
+    for(const l of myLogs) for(const y of (l.items || [])) if(y.n === x.n) for(const z of (y.sets || [])) if(z.kg != null) best = best == null ? z.kg : Math.max(best, z.kg);
+    if(best != null && mx > best){ grow = x.n + ' +' + (Math.round((mx - best) * 10) / 10) + 'kg!'; break; } }
+  if(!grow && s.belt !== myBeltKey() && !myLogs.some((l)=> l.belt === s.belt)) grow = wBelt(s.belt).name + ' 첫 도전!';
+  const rec = { uid: auth.currentUser.uid, memberId: me.id, name: me.name || '', nickname: me.nickname || '', total: Number(me.total) || 0, myBelt: myBeltKey(), belt: s.belt, prog: s.prog, date: today(),
+    items, exDone: s.items.filter((x)=> x.sets.length && x.sets.every((z)=> z.done)).length, exTotal: s.items.length, sets: doneSets, kg, minutes, grow, cheer: false, createdAt: serverTimestamp() };
+  const btn = document.getElementById('finish'); if(btn) btn.disabled = true;
+  try{ const ref = doc(collection(db, 'workout_logs')); await setDoc(ref, rec); myLogs.unshift(Object.assign({ id: ref.id }, rec, { createdAt: { seconds: Date.now() / 1000 } })); }
+  catch(e){ console.warn(e); toast('저장하지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.'); if(btn) btn.disabled = false; return; }
+  putSession(null); clearInterval(restT); restT = null;
+  lastDone = rec; go('done');
+}
+function doneHero(r){
+  const d = new Date(r.date + 'T12:00:00+09:00'), wd = '일월화수목금토'[d.getUTCDay()];
+  const st = [[r.exDone + '/' + r.exTotal, '운동'], [r.sets, '세트'], [r.kg.toLocaleString(), 'kg 들었어요'], [r.minutes, '분']];
+  return '<div style="background:' + B + ';color:#fff;padding:22px 22px;border-radius:0 0 28px 28px">' +
+    '<div style="display:flex;align-items:center;justify-content:space-between"><img src="./logo-white.png" alt="RUN N FIT" style="width:120px"><span style="font-size:13px;opacity:.85">' + dotDate(r.date) + ' (' + wd + ')</span></div>' +
+    '<div style="text-align:center;margin-top:20px"><span style="width:56px;height:56px;border-radius:16px;background:var(--y);display:inline-flex;align-items:center;justify-content:center">' + CHK(B, 30) + '</span>' +
+    '<div style="font-size:25px;font-weight:900;margin-top:10px">오늘 운동 완료! 짱!</div><div style="font-size:13px;opacity:.85;margin-top:4px"><b style="color:var(--y)">' + wBelt(r.belt).name + ' ' + r.prog + '</b> · ' + WPROG[r.prog] + ' · ' + r.total + '번째 출석</div></div>' +
+    '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:16px">' + st.map(([v, l])=> '<div style="border-radius:12px;padding:10px 12px;background:rgba(255,255,255,.12)"><b style="font-size:22px">' + v + '</b><div style="font-size:12px;opacity:.8">' + l + '</div></div>').join('') + '</div>' +
+    (r.grow ? '<div style="margin-top:10px;background:rgba(255,213,74,.16);border-radius:10px;padding:9px 12px;font-size:13px"><b style="color:var(--y)">' + esc(r.grow) + '</b> ' + (/kg!$/.test(r.grow) ? '지난번보다 무거워졌어요' : '멋진 도전이에요') + '</div>' : '') + '</div>';
+}
+function itemList(r){
+  return r.items.map((x)=> '<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-top:1px solid #F0F2F7">' + tagHtml(x.t) + '<b style="font-size:13.5px;flex:1">' + esc(x.n) + '</b><span style="font-size:12.5px;color:#4B5563">' +
+    (x.sets[0].kg != null ? x.sets[0].kg + 'kg × ' + x.sets[0].reps : x.sets[0].reps + (x.unit || '회')) + ' · ' + x.sets.length + '세트</span></div>').join('');
+}
+function renderDone(){
+  const r = lastDone; if(!r){ go('home'); return; }
+  $app.innerHTML = doneHero(r) +
+    '<div class="m" style="display:flex;gap:8px"><button type="button" class="btn" data-go="home" style="flex:1;background:#E3E9FF;color:' + B + '">홈으로</button><button type="button" class="btn" id="share" style="flex:1.3">이 화면 공유하기</button></div>' +
+    '<div class="card m" style="padding:4px 14px"><div style="font-size:13px;font-weight:900;padding:8px 0 4px">오늘 한 운동</div>' + itemList(r) + '</div><div style="height:18px"></div>';
+  document.getElementById('share').onclick = ()=> shareDone(r);
+}
+async function shareDone(r){
+  const W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+  const F = (w, s)=> w + ' ' + s + "px 'Noto Sans KR', sans-serif";
+  g.fillStyle = B; g.fillRect(0, 0, W, H);
+  const logo = await new Promise((res)=>{ const im = new Image(); im.onload = ()=> res(im); im.onerror = ()=> res(null); im.src = './logo-white.png'; });
+  if(logo) g.drawImage(logo, 80, 80, 330, 330 * logo.height / logo.width);
+  const d = new Date(r.date + 'T12:00:00+09:00');
+  g.fillStyle = 'rgba(255,255,255,.85)'; g.font = F(500, 38); g.textAlign = 'right'; g.fillText(dotDate(r.date) + ' (' + '일월화수목금토'[d.getUTCDay()] + ')', W - 80, 125);
+  g.textAlign = 'center'; g.fillStyle = '#FFD54A'; g.beginPath(); g.roundRect ? g.roundRect(W / 2 - 75, 230, 150, 150, 40) : g.rect(W / 2 - 75, 230, 150, 150); g.fill();
+  g.strokeStyle = B; g.lineWidth = 16; g.lineCap = 'round'; g.lineJoin = 'round'; g.beginPath(); g.moveTo(W / 2 - 38, 308); g.lineTo(W / 2 - 10, 336); g.lineTo(W / 2 + 42, 280); g.stroke();
+  g.fillStyle = '#fff'; g.font = F(900, 92); g.fillText('오늘 운동 완료! 짱!', W / 2, 500);
+  g.font = F(500, 38); g.fillStyle = '#FFD54A'; g.fillText(wBelt(r.belt).name + ' ' + r.prog + ' · ' + WPROG[r.prog] + ' · ' + r.total + '번째 출석', W / 2, 570);
+  const st = [[r.exDone + '/' + r.exTotal, '운동'], [String(r.sets), '세트'], [r.kg.toLocaleString(), 'kg 들었어요'], [String(r.minutes), '분']];
+  st.forEach(([v, l], i)=>{ const x = 80 + (i % 2) * 470, y = 640 + Math.floor(i / 2) * 230; g.fillStyle = 'rgba(255,255,255,.12)'; g.beginPath(); g.roundRect ? g.roundRect(x, y, 450, 200, 32) : g.rect(x, y, 450, 200); g.fill();
+    g.textAlign = 'left'; g.fillStyle = '#fff'; g.font = F(900, 80); g.fillText(v, x + 40, y + 105); g.font = F(500, 34); g.fillStyle = 'rgba(255,255,255,.8)'; g.fillText(l, x + 40, y + 160); });
+  if(r.grow){ g.fillStyle = 'rgba(255,213,74,.16)'; g.beginPath(); g.roundRect ? g.roundRect(80, 1130, W - 160, 110, 28) : g.rect(80, 1130, W - 160, 110); g.fill(); g.textAlign = 'center'; g.font = F(900, 40); g.fillStyle = '#FFD54A'; g.fillText(r.grow, W / 2, 1200); }
+  const blob = await new Promise((res)=> c.toBlob(res, 'image/png'));
+  const file = new File([blob], 'runnfit-' + r.date + '.png', { type: 'image/png' });
+  try{ if(navigator.canShare && navigator.canShare({ files: [file] })){ await navigator.share({ files: [file], title: '런앤핏 오늘 운동 완료!' }); return; } }catch(e){ if(e && e.name === 'AbortError') return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name; document.body.appendChild(a); a.click(); a.remove(); toast('사진을 저장했어요. 인스타에 올려 보세요!');
+}
+
+// 미션 탭 · 내 운동 (K1): 도장판에 A·B·C, 날짜 누르면 기록, 운동별 성장
+async function paintMyWod(){
+  const box = document.getElementById('myWod'); if(!box) return;
+  await loadMyLogs();
+  const byDay = {}; (myLogs || []).forEach((l)=>{ (byDay[l.date] = byDay[l.date] || []).push(l); });
+  document.querySelectorAll('[data-day]').forEach((cell)=>{ const ls = byDay[cell.dataset.day]; if(!ls) return;
+    cell.style.cursor = 'pointer'; cell.style.flexDirection = 'column'; cell.style.lineHeight = '1.05';
+    if(!cell.querySelector('.wl')) cell.insertAdjacentHTML('beforeend', '<i class="wl" style="font-style:normal;font-size:9px;font-weight:900;color:#FFD54A">' + ls.map((l)=> l.prog).join('') + '</i>');
+    if(cell.dataset.day === wodSel) cell.style.outline = '3px solid #FFD54A'; else cell.style.outline = '';
+    cell.onclick = ()=>{ wodSel = cell.dataset.day; paintMyWod(); }; });
+  if(!myLogs.length){ box.innerHTML = '<div class="card m" style="padding:14px;font-size:13.5px;line-height:1.6;color:#374151"><b style="color:' + B + '">아직 운동 기록이 없어요</b><br>홈의 \'이번 주 런앤핏 운동 프로그램\'에서 운동을 시작하면 여기에 쌓여요!</div>'; return; }
+  if(!wodSel || !byDay[wodSel]) wodSel = myLogs[0].date;
+  const dl = byDay[wodSel];
+  const dayHtml = dl.map((r)=> '<div class="m" style="background:' + B + ';color:#fff;border-radius:14px;padding:12px 14px"><div style="display:flex;justify-content:space-between;font-size:12.5px;gap:8px"><b><span style="color:var(--y)">' + dotDate(r.date).slice(5) + '</span> · ' + wBelt(r.belt).name + ' ' + r.prog + '</b><span style="opacity:.85">' + r.minutes + '분 · ' + (r.kg || 0).toLocaleString() + 'kg</span></div>' +
+    (r.cheer ? '<div style="margin-top:6px;background:rgba(255,213,74,.16);border-radius:8px;padding:6px 10px;font-size:12.5px"><b style="color:var(--y)">런앤핏이 응원해요!</b> 오늘도 정말 잘했어요</div>' : '') +
+    '<div style="margin-top:6px">' + r.items.map((x)=> '<div style="display:flex;gap:8px;align-items:center;font-size:12.5px;padding:3px 0">' + tagHtml(x.t).replace('background:' + B + ';color:#fff', 'background:#fff;color:' + B) + '<span style="flex:1">' + esc(x.n) + '</span><span style="opacity:.85">' + (x.sets[0].kg != null ? x.sets[0].kg + '×' + x.sets[0].reps : x.sets[0].reps + (x.unit || '회')) + ' · ' + x.sets.length + '</span></div>').join('') + '</div></div>').join('');
+  // 운동별 성장: 처음 무게 → 최근 무게, 최고 기록
+  const g = {}; [...myLogs].reverse().forEach((l)=> (l.items || []).forEach((x)=>{ if(!x.sets || x.sets[0].kg == null) return; const mx = Math.max(...x.sets.map((z)=> z.kg || 0));
+    const o = g[x.n] = g[x.n] || { t: x.t, first: mx, last: mx, best: mx }; o.last = mx; o.best = Math.max(o.best, mx); }));
+  const grows = Object.entries(g).sort((a, b)=> (b[1].last - b[1].first) - (a[1].last - a[1].first)).slice(0, 8);
+  box.innerHTML = '<div class="m" style="font-size:14px;font-weight:900">' + dotDate(wodSel).slice(5) + ' 운동 기록 <span style="font-size:12px;color:var(--muted);font-weight:500">· 날짜를 누르면 그날 기록</span></div>' + dayHtml +
+    (grows.length ? '<div class="card m" style="padding:12px 14px"><b style="font-size:14px">운동별 성장</b>' + grows.map(([n, o])=> '<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #F0F2F7;font-size:13px">' + tagHtml(o.t) + '<b style="flex:1">' + esc(n) + '</b><span style="color:var(--muted)">' + o.first + 'kg</span><span style="color:' + B + ';font-weight:900">→ ' + o.last + 'kg</span>' + (o.last >= o.best && o.last > o.first ? '<span style="background:#FFF4CC;color:#5B4300;font-size:10.5px;font-weight:900;border-radius:4px;padding:0 5px">최고</span>' : '') + '</div>').join('') + '</div>' : '') +
+    '<div style="height:12px"></div>';
+  // 응원 받은 기록 알림 (한 번만)
+  const seen = JSON.parse(localStorage.getItem('rfWod.cheerSeen') || '[]'); const nw = myLogs.filter((l)=> l.cheer && !seen.includes(l.id));
+  if(nw.length){ toast('런앤핏이 ' + dotDate(nw[0].date).slice(5) + ' 운동을 응원했어요! 💙'); localStorage.setItem('rfWod.cheerSeen', JSON.stringify(seen.concat(nw.map((l)=> l.id)).slice(-100))); }
 }
 
 // ---------- 내 정보 ----------

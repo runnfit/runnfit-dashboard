@@ -4,12 +4,12 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex">
-<meta name="theme-color" content="#093692">
+<meta name="theme-color" content="#153189">
 <title>회원앱 관리 · 런앤핏</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
 <style>
-  :root{ --b:#093692; --b2:#2563EB; --ink:#111827; --muted:#6B7280; --line:#E5E9F2; --bg:#F4F7FB; --soft:#E3E9FF; }
+  :root{ --b:#153189; --b2:#153189; --ink:#111827; --muted:#6B7280; --line:#E5E9F2; --bg:#F4F7FB; --soft:#E3E9FF; }
   *{ box-sizing:border-box; }
   html,body{ margin:0; height:100%; }
   body{ font-family:'Noto Sans KR',system-ui,sans-serif; color:var(--ink); background:var(--bg); word-break:keep-all; font-size:14px; }
@@ -76,9 +76,9 @@
   .soon{ background:#fff; border-radius:12px; padding:40px; text-align:center; color:var(--muted); margin-top:16px; }
   /* 로그인 */
   body.embed .top .logo, body.embed .top .ttl{ display:none; }
-  body.embed .top{ height:52px; }
+  body.embed .top{ height:52px; background:#18338c; }
   body.embed .nav{ margin-left:0; }
-  .login{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; background:linear-gradient(160deg,#093692,#2563EB); }
+  .login{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; background:#153189; }
   .login .box{ background:#fff; border-radius:16px; padding:30px 28px; width:min(380px,100%); }
   .login h1{ margin:0; font-size:22px; } .login p{ color:var(--muted); margin:6px 0 18px; font-size:13.5px; line-height:1.5; }
   .login label{ display:block; font-weight:700; font-size:13px; margin:12px 0 6px; }
@@ -108,8 +108,9 @@
     <img class="logo" src="logo.png" alt="RUN N FIT"><span class="ttl">회원앱 관리</span><span class="ttl" id="embedNote" style="display:none"></span>
     <nav class="nav" aria-label="화면">
       <button data-view="todo" class="on">할 일 <span class="badge hidden" id="todoBadge">0</span></button>
+      <button data-view="logs">운동 기록 <span class="badge hidden" id="logBadge">0</span></button>
       <button data-view="members">가입 회원</button>
-      <button data-view="soon" title="곧 열려요">공지 · 주간 WOD</button>
+      <button data-view="soon">주간 WOD</button>
     </nav>
     <div class="me"><span id="demoTag" class="demo hidden">예시 화면</span><span class="live"><i></i>실시간</span><span id="who"></span><a id="popOut" href="./" target="runfit_admin" rel="noopener" style="display:none;color:#fff;font-weight:700;font-size:12.5px;text-decoration:none;background:rgba(255,255,255,.15);border-radius:8px;padding:6px 10px">새 창 ↗</a><button id="logout" type="button">나가기</button></div>
   </header>
@@ -142,8 +143,26 @@
       </div>
     </section>
 
+    <section id="v-logs" class="hidden">
+      <div class="card" style="margin-top:16px">
+        <div style="display:flex;align-items:center;gap:8px;padding:14px 16px;flex-wrap:wrap">
+          <b style="font-size:16px" id="lTitle">오늘 운동 완료한 회원</b><span class="live" style="color:#15803D"><i></i>실시간</span>
+          <span style="margin-left:auto;display:flex;gap:6px"><button class="chip on" data-l="today">오늘</button><button class="chip" data-l="week">이번 주</button><button class="chip" data-l="all">전체</button></span>
+        </div>
+        <div id="lBody" style="max-height:calc(100vh - 250px);overflow:auto"></div>
+      </div>
+    </section>
+
     <section id="v-soon" class="hidden">
-      <div class="soon"><b style="font-size:17px;color:var(--ink)">공지 · 주간 WOD 올리기는 다음 단계에서 열려요</b><br><br>회원앱 홈의 '오늘의 운동' 자리는 주간 WOD로 바뀔 예정이에요.</div>
+      <div class="card" style="margin-top:16px;padding:16px 18px">
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+          <b style="font-size:16px">이번 주 WOD 런앤핏 운동 프로그램</b>
+          <input type="date" id="wStart" class="search" style="width:160px"> ~ <input type="date" id="wEnd" class="search" style="width:160px">
+          <span style="flex:1"></span><span class="msg" id="wMsg"></span><button class="btn" id="wSave">회원앱에 올리기</button>
+        </div>
+        <div style="font-size:12.5px;color:var(--muted);margin-top:8px;line-height:1.6">칸 왼쪽: 기구 번호(01~24) 또는 덤벨 · KB · 바벨 · 맨몸 · 체력 / 가운데: 운동 이름 / 오른쪽: 체력 운동 횟수(예: 20회×3, 30초×3). 올리면 회원앱 홈 '이번 주 런앤핏 운동 프로그램'이 바로 바뀌어요.</div>
+        <div id="wGrid" style="display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px"></div>
+      </div>
     </section>
   </main>
 </div>
@@ -151,16 +170,16 @@
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { getFirestore, collection, query, orderBy, limit, getDocs, getDoc, doc, onSnapshot, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { getFirestore, collection, query, orderBy, limit, getDocs, getDoc, doc, onSnapshot, updateDoc, setDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const DEMO = /[?&]demo/.test(location.search);
 const EMBED = /[?&]embed/.test(location.search) && window.parent !== window;
 if(EMBED){ document.getElementById('demoLink').href = '?demo&embed'; document.body.classList.add('embed'); document.getElementById('popOut').style.display = ''; }
-const B = '#093692';
+const B = '#153189';
 const $ = (id)=> document.getElementById(id);
 const esc = (s)=> String(s == null ? '' : s).replace(/[&<>"']/g, (c)=> ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const KST = ()=> new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
-const BELT = [[100, '검', '#111827'], [50, '빨', '#B91C32'], [30, '파', '#093692'], [10, '노', '#FFD54A'], [0, '흰', '#CBD5E1']];
+const BELT = [[100, '검', '#111827'], [50, '빨', '#B91C32'], [30, '파', '#153189'], [10, '노', '#FFD54A'], [0, '흰', '#CBD5E1']];
 const belt = (t)=> BELT.find((b)=> (t || 0) >= b[0]);
 function weekCount(m){
   const t = KST(), dow = (new Date(t + 'T12:00:00+09:00').getUTCDay() + 6) % 7;
@@ -188,7 +207,7 @@ const ymd = (ms)=> ms ? new Date(ms + 9 * 3600e3).toISOString().slice(0, 10).rep
 const phoneFmt = (p)=>{ const d = String(p || '').replace(/^\+82/, '0').replace(/\D/g, ''); return d.length === 11 ? d.slice(0, 3) + '-' + d.slice(3, 7) + '-' + d.slice(7) : d || '-'; };
 
 // ---------- 상태 ----------
-const S = { members: [], help: [], voice: [], inq: [], goal: [], people: [], f: 'new', k: 'all', sel: null, mView: 'joined', mSort: 'joined', q: '' };
+const S = { logs: [], logSeen: Number(localStorage.getItem('rfAdmin.logSeen') || 0), lf: 'today', wod: null, members: [], help: [], voice: [], inq: [], goal: [], people: [], f: 'new', k: 'all', sel: null, mView: 'joined', mSort: 'joined', q: '' };
 let api = null;     // { save(kind, id, patch) }
 
 // ---------- 그리기 ----------
@@ -222,7 +241,8 @@ function paintStats(){
     '<div class="stat"><div class="l">오늘 출석</div><div class="v">' + att + '명</div><div class="s">그중 앱 가입 ' + attApp + '명</div></div>' +
     '<div class="stat"><div class="l">미니런앤핏에 지금</div><div class="v" style="color:' + B + '">' + now.length + '명</div><div class="s">회원 ' + (now.length - staffNow) + ' · 직원 ' + staffNow + '</div></div>' +
     '<div class="stat"><div class="l">처리 전 할 일</div><div class="v" style="color:' + (open ? '#B91C32' : '#15803D') + '">' + open + '개</div><div class="s">도움 요청 ' + S.help.filter((x)=> x.status !== 'done').length + ' · 한마디 ' + S.voice.filter((x)=> !(x.status === 'answered' || x.reply)).length + ' · 체험·상담 ' + S.inq.filter((x)=> x.status !== 'done').length + ' · 목표 ' + S.goal.filter((x)=> x.status !== 'done').length + '</div></div>' +
-    '<div class="stat"><div class="l">이번 달 도움 요청</div><div class="v">' + S.help.filter((x)=> ymd(tsMs(x.createdAt)).slice(0, 7) === today.slice(0, 7).replace('-', '.')).length + '건</div><div class="s">운동가이드 ' + S.help.filter((x)=> x.kind !== 'pt').length + ' · PT 상담 ' + S.help.filter((x)=> x.kind === 'pt').length + ' (전체)</div></div>';
+    '<div class="stat"><div class="l">오늘 운동 완료</div><div class="v" style="color:' + B + '">' + S.logs.filter((l)=> l.date === today).length + '명</div><div class="s">오늘 ' + S.logs.filter((l)=> l.date === today).reduce((a, l)=> a + (l.kg || 0), 0).toLocaleString() + 'kg · 이번 주 ' + S.logs.filter((l)=> l.date >= weekStart()).length + '회</div></div>';
+  const lb = $('logBadge'), ln = S.logs.filter((l)=> tsMs(l.createdAt) > S.logSeen && l.date === today).length; lb.textContent = ln; lb.classList.toggle('hidden', !ln || !$('v-logs').classList.contains('hidden'));
   const b = $('todoBadge'); b.textContent = open; b.classList.toggle('hidden', !open);
   document.title = (open ? '(' + open + ') ' : '') + '회원앱 관리 · 런앤핏';
   if(EMBED){ try{ window.parent.postMessage({ rfAdminOpen: open }, '*'); }catch(e){} }
@@ -262,7 +282,7 @@ function paintPanel(t){
   } else if(t.k === 'goal'){
     const m = memberOf(x) || {}, wk = weekCount(m);
     P.innerHTML = '<div style="display:flex;align-items:center;gap:10px">' + ico('goal', '#E8F7EE') + '<h2>출석 목표를 정했어요</h2>' + (t.done ? '<span class="tag t-done">확인 완료</span>' : '<span class="tag t-new">확인 전</span>') + '<span style="margin-left:auto;color:var(--muted);font-size:12.5px">' + ago(t.at) + '</span></div>' +
-      '<div style="margin-top:16px;background:#093692;color:#fff;border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:16px"><div style="font-size:34px;font-weight:900">주 ' + x.goal + '회</div><div style="font-size:13.5px;line-height:1.6;opacity:.92">' + (x.prev ? '이전 목표 주 ' + x.prev + '회에서 바꿨어요' : '처음으로 목표를 정했어요') + '<br>이번 주 지금까지 <b>' + wk + '회</b> 출석</div></div>' +
+      '<div style="margin-top:16px;background:#153189;color:#fff;border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:16px"><div style="font-size:34px;font-weight:900">주 ' + x.goal + '회</div><div style="font-size:13.5px;line-height:1.6;opacity:.92">' + (x.prev ? '이전 목표 주 ' + x.prev + '회에서 바꿨어요' : '처음으로 목표를 정했어요') + '<br>이번 주 지금까지 <b>' + wk + '회</b> 출석</div></div>' +
       '<dl class="kv"><dt>회원</dt><dd><b>' + esc(x.name || m.name || '') + '</b> · 닉네임 ' + esc(x.nickname || m.nickname || '-') + '</dd><dt>전화</dt><dd>' + phoneFmt(m.phone) + '</dd>' +
       '<dt>출석</dt><dd>총 ' + (m.total || 0) + '회 · ' + belt(m.total)[1] + ' 띠 · 최근 ' + esc(m.lastAttend || '-') + '</dd></dl>' +
       '<div class="quote" style="font-size:14px">💡 센터에서 마주치면 "목표 봤어요! 주 ' + x.goal + '회 같이 해봐요" 한마디 응원해 주세요.</div>' +
@@ -300,43 +320,123 @@ async function save(kind, id, patch, ok){
 }
 
 // 가입 회원
-const COLS = [['nick', '닉네임'], ['goal', '주 목표'], ['name', '이름'], ['phone', '전화'], ['joined', '앱 가입일'], ['total', '총 출석'], ['last', '최근 출석'], ['exp', '회원권']];
+const COLS = [['nick', '닉네임'], ['staff', '직원'], ['goal', '주 목표'], ['name', '이름'], ['phone', '전화'], ['joined', '앱 가입일'], ['total', '총 출석'], ['last', '최근 출석'], ['exp', '회원권']];
 function paintMembers(){
   const joinedOnly = S.mView === 'joined', q = S.q.trim();
   let rows = S.members.filter((m)=> !!(m.uid || m.appJoinedAt) === joinedOnly);
   if(q) rows = rows.filter((m)=> (m.name || '').includes(q) || (m.nickname || '').includes(q) || String(m.phone || '').slice(-4) === q);
-  const key = { goal: (m)=> -(m.weeklyGoal || 0), nick: (m)=> m.nickname || '', name: (m)=> m.name || '', phone: (m)=> m.phone || '', joined: (m)=> -tsMs(m.appJoinedAt), total: (m)=> -(m.total || 0), last: (m)=> -(Date.parse(m.lastAttend || 0) || 0), exp: (m)=> m.gymExp || '' }[S.mSort];
+  const key = { staff: (m)=> m.staff ? 0 : 1, goal: (m)=> -(m.weeklyGoal || 0), nick: (m)=> m.nickname || '', name: (m)=> m.name || '', phone: (m)=> m.phone || '', joined: (m)=> -tsMs(m.appJoinedAt), total: (m)=> -(m.total || 0), last: (m)=> -(Date.parse(m.lastAttend || 0) || 0), exp: (m)=> m.gymExp || '' }[S.mSort];
   rows.sort((a, b)=>{ const x = key(a), y = key(b); return x < y ? -1 : x > y ? 1 : 0; });
   const jn = S.members.filter((m)=> m.uid || m.appJoinedAt).length;
   $('mCount').textContent = jn + '명 / 유효 ' + S.members.length + '명';
-  $('mHead').innerHTML = '<tr>' + COLS.filter((c)=> joinedOnly || !['nick', 'joined', 'goal'].includes(c[0])).map((c)=> '<th data-sort="' + c[0] + '">' + c[1] + (S.mSort === c[0] ? ' ▾' : '') + '</th>').join('') + '</tr>';
+  $('mHead').innerHTML = '<tr>' + COLS.filter((c)=> joinedOnly || !['nick', 'joined', 'goal', 'staff'].includes(c[0])).map((c)=> '<th data-sort="' + c[0] + '">' + c[1] + (S.mSort === c[0] ? ' ▾' : '') + '</th>').join('') + '</tr>';
   const today = KST();
   $('mBody').innerHTML = rows.length ? rows.map((m)=>{ const bl = belt(m.total);
-    return '<tr>' + (joinedOnly ? '<td><span class="nick"><i class="dot" title="' + bl[1] + ' 띠" style="background:' + bl[2] + (bl[1] === '흰' ? ';box-shadow:inset 0 0 0 1.5px #9CA3AF;background:#fff' : '') + '"></i>' + esc(m.nickname || '-') + '</span></td><td>' + (m.weeklyGoal ? '<b style="color:' + B + '">주 ' + m.weeklyGoal + '회</b> <span style="color:var(--muted);font-size:12px">이번 주 ' + weekCount(m) + '회</span>' : '<span style="color:#9CA3AF">-</span>') + '</td>' : '') +
+    return '<tr>' + (joinedOnly ? '<td><span class="nick"><i class="dot" title="' + bl[1] + ' 띠" style="background:' + bl[2] + (bl[1] === '흰' ? ';box-shadow:inset 0 0 0 1.5px #9CA3AF;background:#fff' : '') + '"></i>' + esc(m.nickname || '-') + '</span></td><td>' + (m.staff ? '<button class="chip" data-staff="' + m.id + '" data-on="1" style="background:' + B + ';color:#fff">블루 이름표 ✓</button>' : '<button class="chip" data-staff="' + m.id + '">직원으로</button>') + '</td><td>' + (m.weeklyGoal ? '<b style="color:' + B + '">주 ' + m.weeklyGoal + '회</b> <span style="color:var(--muted);font-size:12px">이번 주 ' + weekCount(m) + '회</span>' : '<span style="color:#9CA3AF">-</span>') + '</td>' : '') +
       '<td>' + (joinedOnly ? '' : '<span class="nick" style="font-weight:500"><i class="dot" style="background:' + bl[2] + (bl[1] === '흰' ? ';box-shadow:inset 0 0 0 1.5px #9CA3AF;background:#fff' : '') + '"></i>') + esc(m.name || '') + (joinedOnly ? '' : '</span>') + '</td><td>' + phoneFmt(m.phone) + '</td>' +
       (joinedOnly ? '<td>' + ymd(tsMs(m.appJoinedAt)) + '</td>' : '') +
       '<td>' + (m.total || 0) + '회 <span style="color:var(--muted);font-size:12px">' + bl[1] + ' 띠</span></td>' +
       '<td>' + (m.lastAttend === today ? '<b style="color:#15803D">오늘 ✓</b>' : esc(m.lastAttend || '-')) + '</td><td>' + esc(m.gymExp || '-') + '</td></tr>'; }).join('')
-    : '<tr><td colspan="8" class="empty">' + (q ? '찾는 회원이 없어요' : joinedOnly ? '아직 가입한 회원이 없어요' : '모두 가입했어요 🎉') + '</td></tr>';
+    : '<tr><td colspan="9" class="empty">' + (q ? '찾는 회원이 없어요' : joinedOnly ? '아직 가입한 회원이 없어요' : '모두 가입했어요 🎉') + '</td></tr>';
   $('mHead').querySelectorAll('[data-sort]').forEach((th)=> th.onclick = ()=>{ S.mSort = th.dataset.sort; paintMembers(); });
+  $('mBody').querySelectorAll('[data-staff]').forEach((b)=> b.onclick = async ()=>{
+    const m = S.members.find((x)=> x.id === b.dataset.staff); if(!m) return; const on = !m.staff;
+    if(!confirm((m.nickname || m.name) + (on ? '님을 직원으로 표시할까요?\n미니런앤핏에서 블루 이름표로 보여요.' : '님의 직원 표시를 끌까요?'))) return;
+    b.disabled = true;
+    try{ await api.save('members', m.id, { staff: on }); m.staff = on; paintMembers(); }
+    catch(e){ console.warn(e); b.disabled = false; alert('바꾸지 못했어요. 직원 계정으로 로그인했는지 확인해 주세요.'); }
+  });
 }
 const seen = new Set(); let primed = false;
 function notifyNew(){
-  const list = todos();
+  const list = todos().concat(S.logs.map((x)=> ({ k: 'log', id: x.id, x, done: false })));
   if(!primed){ list.forEach((t)=> seen.add(t.k + t.id)); if(S.members.length || list.length) primed = true; return; }
   list.filter((t)=> !t.done && !seen.has(t.k + t.id)).forEach((t)=>{
     seen.add(t.k + t.id); const x = t.x, who = x.nickname || x.name || '회원';
-    const text = t.k === 'goal' ? who + '님이 출석 목표를 주 ' + x.goal + '회로 정했어요' : t.k === 'help' ? who + '님이 ' + (x.kind === 'pt' ? 'PT 상담' : '1:1 운동가이드') + '을 신청했어요' : t.k === 'voice' ? '런앤핏에 한마디가 도착했어요' : '비회원 ' + (x.kind || '문의') + ' 신청이 왔어요';
+    const text = t.k === 'log' ? who + '님이 ' + beltName(x.belt) + ' ' + x.prog + ' 운동을 완료했어요 · ' + (x.kg || 0).toLocaleString() + 'kg' : t.k === 'goal' ? who + '님이 출석 목표를 주 ' + x.goal + '회로 정했어요' : t.k === 'help' ? who + '님이 ' + (x.kind === 'pt' ? 'PT 상담' : '1:1 운동가이드') + '을 신청했어요' : t.k === 'voice' ? '런앤핏에 한마디가 도착했어요' : '비회원 ' + (x.kind || '문의') + ' 신청이 왔어요';
     if(EMBED){ try{ window.parent.postMessage({ rfAdminNew: text }, '*'); }catch(e){} }
   });
 }
-function paint(){ notifyNew(); paintStats(); paintList(); if(!$('v-members').classList.contains('hidden')) paintMembers(); }
+function paint(){ notifyNew(); paintStats(); if(!$('v-logs').classList.contains('hidden')) paintLogs(); paintList(); if(!$('v-members').classList.contains('hidden')) paintMembers(); }
+
+
+// ---------- 운동 기록 ----------
+const BELTW = { 노: ['노란 띠', '#FFD54A', '#3A2A00'], 파: ['파란 띠', '#093692', '#fff'], 빨: ['빨간 띠', '#B91C32', '#fff'], 검: ['검은 띠', '#111827', '#fff'] };
+const beltName = (k)=> (BELTW[k] || BELTW['노'])[0];
+function weekStart(){ const t = KST(), dow = (new Date(t + 'T12:00:00+09:00').getUTCDay() + 6) % 7; return new Date(Date.parse(t + 'T12:00:00+09:00') - dow * 864e5 + 9 * 3600e3).toISOString().slice(0, 10); }
+const wtag = (t)=> '<span style="min-width:34px;text-align:center;border-radius:5px;font-size:11px;font-weight:900;padding:1px 4px;' + (t === '체력' ? 'background:#FFD54A;color:#3A2A00' : /^\d+$/.test(t) ? 'background:' + B + ';color:#fff' : 'background:#fff;color:#6B7280;box-shadow:inset 0 0 0 1px #D5DCE8') + '">' + esc(t) + '</span>';
+function paintLogs(){
+  const t = KST(), ws = weekStart();
+  const rows = S.logs.filter((l)=> S.lf === 'all' || (S.lf === 'today' ? l.date === t : l.date >= ws)).sort((a, b)=> tsMs(b.createdAt) - tsMs(a.createdAt));
+  $('lTitle').textContent = S.lf === 'today' ? '오늘 운동 완료한 회원' : S.lf === 'week' ? '이번 주 운동 기록' : '전체 운동 기록';
+  $('lBody').innerHTML = rows.length ? rows.map((l)=>{ const bw = BELTW[l.belt] || BELTW['노'], other = l.myBelt && l.belt !== l.myBelt;
+    const tm = tsMs(l.createdAt) ? new Date(tsMs(l.createdAt) + 9 * 3600e3).toISOString().slice(11, 16) : '';
+    return '<div style="display:flex;align-items:center;gap:12px;padding:11px 16px;border-top:1px solid #F0F2F7">' +
+      '<span style="width:84px;color:var(--muted);font-size:12.5px">' + (S.lf === 'today' ? tm : dotD(l.date) + ' ' + tm) + '</span>' +
+      '<b style="width:110px;font-size:14px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + esc(l.nickname || l.name || '회원') + '</b>' +
+      '<span style="background:' + bw[1] + ';color:' + bw[2] + ';border-radius:5px;font-size:12px;font-weight:900;padding:2px 8px;white-space:nowrap">' + bw[0] + ' ' + esc(l.prog) + '</span>' +
+      (other ? '<span style="font-size:11px;color:var(--muted)">(내 띠 ' + beltName(l.myBelt) + ')</span>' : '') +
+      '<span style="font-size:13px;color:#374151;white-space:nowrap">' + (l.exDone || 0) + '/' + (l.exTotal || 6) + ' · ' + (l.kg || 0).toLocaleString() + 'kg · ' + (l.minutes || 0) + '분</span>' +
+      '<span style="flex:1;font-size:12.5px;color:' + B + ';font-weight:700">' + esc(l.grow || '') + '</span>' +
+      (l.cheer ? '<span class="tag t-done">응원 보냄</span>' : '<button class="btn sec" data-cheer="' + l.id + '" style="height:32px;padding:0 12px;font-size:12.5px">응원하기</button>') +
+      '<button class="chip" data-log="' + l.id + '">기록 ›</button></div>'; }).join('')
+    : '<div class="empty">' + (S.lf === 'today' ? '오늘 아직 운동을 마친 회원이 없어요' : '기록이 없어요') + '</div>';
+  $('lBody').querySelectorAll('[data-cheer]').forEach((b)=> b.onclick = async ()=>{ b.disabled = true; try{ await api.save('logs', b.dataset.cheer, { cheer: true, cheerBy: api.who, cheerAt: serverTimestamp() }); }catch(e){ b.disabled = false; alert('응원을 보내지 못했어요. 보안 규칙 게시를 확인해 주세요.'); } });
+  $('lBody').querySelectorAll('[data-log]').forEach((b)=> b.onclick = ()=> showLog(S.logs.find((l)=> l.id === b.dataset.log)));
+}
+const dotD = (d)=> d ? d.slice(5).replace('-', '.') : '';
+function showLog(l){
+  if(!l) return;
+  const m = document.createElement('div');
+  m.style.cssText = 'position:fixed;inset:0;background:rgba(17,24,39,.45);z-index:40;display:flex;align-items:center;justify-content:center;padding:20px';
+  m.innerHTML = '<div style="background:#fff;border-radius:14px;padding:20px 22px;width:min(560px,100%);max-height:85vh;overflow:auto">' +
+    '<div style="display:flex;align-items:center;gap:10px"><h2 style="margin:0;font-size:18px">' + esc(l.nickname || l.name) + ' · ' + beltName(l.belt) + ' ' + esc(l.prog) + '</h2><span style="margin-left:auto;color:var(--muted);font-size:12.5px">' + esc(l.date) + '</span></div>' +
+    '<div style="font-size:13px;color:#374151;margin-top:6px">' + esc(l.name || '') + ' · 총 ' + (l.total || 0) + '회 출석 · ' + (l.minutes || 0) + '분 · ' + (l.kg || 0).toLocaleString() + 'kg' + (l.grow ? ' · <b style="color:' + B + '">' + esc(l.grow) + '</b>' : '') + '</div>' +
+    (l.items || []).map((x)=> '<div style="display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-top:1px solid #F0F2F7;margin-top:6px">' + wtag(x.t) + '<div style="flex:1"><b style="font-size:14px">' + esc(x.n) + '</b><div style="font-size:12.5px;color:#4B5563;margin-top:2px">' + (x.sets || []).map((z, i)=> (i + 1) + '세트 ' + (z.kg != null ? z.kg + 'kg × ' : '') + z.reps + (x.unit || '회')).join(' · ') + '</div></div></div>').join('') +
+    '<div style="text-align:right;margin-top:12px"><button class="btn sec" id="lmClose">닫기</button></div></div>';
+  document.body.appendChild(m); m.onclick = (e)=>{ if(e.target === m || e.target.id === 'lmClose') m.remove(); };
+}
+document.querySelectorAll('[data-l]').forEach((b)=> b.onclick = ()=>{ S.lf = b.dataset.l; document.querySelectorAll('[data-l]').forEach((x)=> x.classList.toggle('on', x === b)); paintLogs(); });
+
+// ---------- 주간 WOD 입력 ----------
+const WPROGS = { A: '스쿼트 중심 전신', B: '힙힌지·밀기 중심 전신', C: '당기기·한쪽 하체 전신' };
+const DEF_WOD = { start: '2026-11-16', end: '2026-11-22', programs: {
+  노: { A: [['01', '레그프레스'], ['12', '체스트프레스'], ['08', '랫풀다운'], ['맨몸', '스쿼트'], ['13', '암컬'], ['체력', '스텝박스 기본 스텝', '20회×3']], B: [['03', '레그컬'], ['14', '숄더프레스'], ['06', '롱풀'], ['맨몸', '힙힌지'], ['11', '팩덱플라이'], ['체력', '제자리 피칭', '30초×3']], C: [['19', '레그프레스'], ['09', '시티드로우'], ['12', '체스트프레스'], ['04', '레그익스텐션'], ['21', '케이블 삼두 푸시다운'], ['체력', '스텝박스 사이드 스텝', '20회×3']] },
+  파: { A: [['덤벨', '덤벨 스쿼트'], ['덤벨', '덤벨 벤치프레스'], ['09', '시티드로우'], ['KB', '케틀벨 RDL'], ['덤벨', '덤벨 레터럴 레이즈'], ['체력', '점핑잭', '30회×3']], B: [['KB', '케틀벨 데드리프트'], ['덤벨', '덤벨 숄더프레스'], ['08', '랫풀다운'], ['덤벨', '덤벨 리버스 런지'], ['21', '케이블 삼두 푸시다운'], ['체력', '스텝박스 교차 스텝', '20회×3']], C: [['덤벨', '덤벨 스플릿 스쿼트'], ['덤벨', '원암 덤벨로우'], ['덤벨', '덤벨 인클라인 프레스'], ['03', '레그컬'], ['덤벨', '덤벨 레터럴 레이즈'], ['체력', '마운틴클라이머', '20회×3']] },
+  빨: { A: [['23', '바벨 백스쿼트'], ['18', '바벨 벤치프레스'], ['07', '어시스트 풀업'], ['덤벨', '덤벨 RDL'], ['21', '케이블 삼두 푸시다운'], ['체력', '스텝업', '20회×3']], B: [['24', '바벨 데드리프트'], ['14', '숄더프레스'], ['09', '시티드로우'], ['덤벨', '덤벨 리버스 런지'], ['13', '암컬'], ['체력', '버피', '10회×3']], C: [['22', '스미스 스쿼트'], ['바벨', '바벨 벤트오버로우'], ['덤벨', '덤벨 인클라인 프레스'], ['03', '레그컬'], ['덤벨', '덤벨 레터럴 레이즈'], ['체력', '에어스킵', '30회×3']] },
+  검: { A: [['23', '바벨 백스쿼트'], ['덤벨', '덤벨 벤치프레스'], ['맨몸', '풀업'], ['덤벨', '덤벨 워킹 런지'], ['덤벨', '덤벨 레터럴 레이즈'], ['체력', '스쿼트 점프', '10회×3']], B: [['24', '바벨 데드리프트'], ['바벨', '바벨 오버헤드프레스'], ['맨몸', '풀업'], ['덤벨', '덤벨 리버스 런지'], ['덤벨', '덤벨 암컬'], ['체력', '버피', '15회×3']], C: [['덤벨', '덤벨 불가리안 스플릿 스쿼트'], ['덤벨', '원암 덤벨로우'], ['덤벨', '덤벨 인클라인 프레스'], ['KB', '케틀벨 RDL'], ['덤벨', '덤벨 레터럴 레이즈'], ['체력', '마운틴클라이머', '40회×3']] } } };
+function wodRows(w, k, p){ const src = (w.programs[k] && w.programs[k][p]) || []; return Array.from({ length: 6 }, (_, i)=>{ const r = src[i] || ['', '', '']; return Array.isArray(r) ? r : [r.t, r.n, r.x]; }); }
+async function paintWodEditor(){
+  if(!S.wod){ S.wod = DEF_WOD; try{ const w = api.loadWod && await api.loadWod(); if(w) S.wod = w; }catch(e){} }
+  const w = S.wod; $('wStart').value = w.start; $('wEnd').value = w.end;
+  const inp = (v, ph, wd, k)=> '<input data-w="' + k + '" value="' + esc(v || '') + '" placeholder="' + ph + '" style="width:' + wd + ';height:32px;border:1.5px solid #D5DCE8;border-radius:7px;padding:0 6px;font:inherit;font-size:13px;box-sizing:border-box">';
+  $('wGrid').innerHTML = Object.keys(BELTW).map((k)=>{ const bw = BELTW[k];
+    return '<div style="border-radius:12px;overflow:hidden;box-shadow:inset 0 0 0 1.5px #E5E9F2"><div style="background:' + bw[1] + ';color:' + bw[2] + ';padding:8px 12px;font-weight:900">' + bw[0] + '</div>' +
+      ['A', 'B', 'C'].map((p)=> '<div style="padding:8px 10px;border-top:1px solid #EEF1F6"><div style="font-size:12.5px;font-weight:900;margin-bottom:4px">' + p + ' · ' + WPROGS[p] + '</div>' +
+        wodRows(w, k, p).map((r, i)=> '<div style="display:flex;gap:4px;margin-top:3px">' + inp(r[0], '번호', '52px', k + p + i + 't') + inp(r[1], '운동 이름', '100%', k + p + i + 'n') + inp(r[2], i === 5 ? '20회×3' : '', '70px', k + p + i + 'x') + '</div>').join('') + '</div>').join('') + '</div>'; }).join('');
+}
+function readWodEditor(){
+  const v = (id)=> { const el = document.querySelector('[data-w="' + id + '"]'); return el ? el.value.trim() : ''; };
+  const out = { start: $('wStart').value, end: $('wEnd').value, programs: {} };
+  Object.keys(BELTW).forEach((k)=>{ out.programs[k] = {}; ['A', 'B', 'C'].forEach((p)=>{ out.programs[k][p] = []; for(let i = 0; i < 6; i++){ const n = v(k + p + i + 'n'); if(n) out.programs[k][p].push({ t: v(k + p + i + 't') || '맨몸', n, x: v(k + p + i + 'x') }); } }); });
+  return out;
+}
+$('wSave').onclick = async ()=>{
+  const w = readWodEditor(), m = $('wMsg');
+  if(!w.start || !w.end){ m.className = 'msg err'; m.textContent = '날짜를 넣어 주세요.'; return; }
+  $('wSave').disabled = true;
+  try{ await api.saveWod(w); S.wod = w; m.className = 'msg ok'; m.textContent = '회원앱에 올렸어요!'; }
+  catch(e){ console.warn(e); m.className = 'msg err'; m.textContent = /permission/i.test(String(e)) ? '권한이 없어요. 보안 규칙 게시를 확인해 주세요.' : '올리지 못했어요. 다시 해주세요.'; }
+  $('wSave').disabled = false;
+};
 
 // 화면 이동 · 필터
 document.querySelectorAll('.nav [data-view]').forEach((b)=> b.onclick = ()=>{
   document.querySelectorAll('.nav [data-view]').forEach((x)=> x.classList.toggle('on', x === b));
-  ['todo', 'members', 'soon'].forEach((v)=> $('v-' + v).classList.toggle('hidden', v !== b.dataset.view));
+  ['todo', 'logs', 'members', 'soon'].forEach((v)=> $('v-' + v).classList.toggle('hidden', v !== b.dataset.view));
   if(b.dataset.view === 'members') paintMembers();
+  if(b.dataset.view === 'logs'){ S.logSeen = Date.now(); try{ localStorage.setItem('rfAdmin.logSeen', String(S.logSeen)); }catch(e){} paintLogs(); paintStats(); }
+  if(b.dataset.view === 'soon') paintWodEditor();
 });
 document.querySelectorAll('[data-f]').forEach((b)=> b.onclick = ()=>{ S.f = b.dataset.f; document.querySelectorAll('[data-f]').forEach((x)=> x.classList.toggle('on', x === b)); S.sel = null; paintList(); });
 document.querySelectorAll('[data-k]').forEach((b)=> b.onclick = ()=>{ S.k = b.dataset.k; document.querySelectorAll('[data-k]').forEach((x)=> x.classList.toggle('on', x === b)); S.sel = null; paintList(); });
@@ -364,7 +464,11 @@ if(DEMO){
   S.goal = [{ id: 'g1', memberId: 'm2', name: '박하나', nickname: '스쿼트요정', goal: 4, prev: 3, status: 'new', createdAt: T(9) }, { id: 'g2', memberId: 'm0', name: '김민수', nickname: '달리는민수', goal: 3, prev: 0, status: 'done', createdAt: T(60 * 5) }];
   S.inq = [{ id: 'q1', name: '박서준', phone: '01033334444', kind: '무료 체험', src: 'pixel-gym', createdAt: T(18) }];
   S.people = Array.from({ length: 6 }, (_, i)=> ({ ts: T(0), staff: i === 0 }));
-  api = { who: '예시', save: async (kind, id, patch)=>{ const L = S[kind], x = L.find((y)=> y.id === id); Object.assign(x, patch, patch.answeredAt || patch.handledAt ? { answeredAt: T(0), handledAt: T(0) } : {}); paint(); } };
+  api = { who: '예시', save: async (kind, id, patch)=>{ const L = S[kind] || S.logs, x = L.find((y)=> y.id === id); Object.assign(x, patch, patch.answeredAt || patch.handledAt ? { answeredAt: T(0), handledAt: T(0) } : {}); paint(); } };
+  const td = KST(), mk = (min, o)=> Object.assign({ id: 'L' + min, date: td, createdAt: T(min), exTotal: 6, cheer: false, items: [{ t: '01', n: '레그프레스', sets: [{ kg: 60, reps: 12 }, { kg: 60, reps: 12 }, { kg: 60, reps: 12 }] }, { t: '12', n: '체스트프레스', sets: [{ kg: 30, reps: 12 }, { kg: 30, reps: 12 }, { kg: 30, reps: 10 }] }, { t: '체력', n: '스텝박스 기본 스텝', unit: '회', sets: [{ kg: null, reps: 20 }, { kg: null, reps: 20 }, { kg: null, reps: 20 }] }] }, o);
+  S.logs = [mk(3, { nickname: '꾸준왕', name: '정민호', total: 23, myBelt: '노', belt: '노', prog: 'A', exDone: 6, kg: 3240, minutes: 52, grow: '체스트프레스 +5kg!' }), mk(16, { nickname: '스쿼트요정', name: '박하나', total: 57, myBelt: '빨', belt: '빨', prog: 'B', exDone: 6, kg: 6820, minutes: 61, grow: '바벨 데드리프트 +10kg!' }), mk(41, { nickname: '새싹러너', name: '이지은', total: 12, myBelt: '노', belt: '노', prog: 'C', exDone: 4, kg: 1920, minutes: 38, grow: '' }), mk(89, { nickname: '달리는민수', name: '김민수', total: 31, myBelt: '노', belt: '파', prog: 'A', exDone: 6, kg: 4110, minutes: 55, grow: '파란 띠 첫 도전!', cheer: true })];
+  api.loadWod = async ()=> null; api.saveWod = async ()=>{};
+  setTimeout(()=>{ S.logs.unshift(mk(0, { id: 'Lnew', nickname: '오운완요정', name: '정유진', total: 104, myBelt: '검', belt: '검', prog: 'B', exDone: 6, kg: 8450, minutes: 70, grow: '' })); paint(); }, 9000);
   setTimeout(()=>{ S.goal.unshift({ id: 'g3', memberId: 'm4', name: '정유진', nickname: '오운완요정', goal: 5, prev: 0, status: 'new', createdAt: T(0) }); paint(); }, 7000);
   showShell('예시 직원'); $('demoTag').classList.remove('hidden'); $('logout').onclick = ()=> location.href = EMBED ? './?embed' : './';
   paint();
@@ -372,7 +476,7 @@ if(DEMO){
   // ---------- 실제 연결 ----------
   const app = initializeApp({ apiKey: 'AIzaSyBbE0ktG6f5t-1xvVEg56f18DE_QdtIrts', authDomain: 'runnfit-member.firebaseapp.com', projectId: 'runnfit-member', storageBucket: 'runnfit-member.firebasestorage.app', messagingSenderId: '1029886465637', appId: '1:1029886465637:web:36ac86705e3504f6c0588c' });
   const auth = getAuth(app), db = getFirestore(app);
-  const COL = { help: 'help_requests', voice: 'voices', inq: 'inquiries' };
+  const COL = { help: 'help_requests', voice: 'voices', inq: 'inquiries', goal: 'goal_logs', logs: 'workout_logs', members: 'members' };
   let unsubs = [];
   $('loginForm').onsubmit = async (e)=>{ e.preventDefault(); const m = $('loginMsg'); m.textContent = ''; $('loginBtn').disabled = true;
     try{ await signInWithEmailAndPassword(auth, $('em').value.trim(), $('pw').value); }
@@ -386,7 +490,9 @@ if(DEMO){
     try{ const s = await getDoc(doc(db, 'staff', u.uid)); role = s.exists() ? (s.data().role || 'staff') : null; }catch(e){}
     if(!role){ $('loginMsg').textContent = '이 계정은 회원앱 직원으로 등록되어 있지 않아요.'; await signOut(auth); return; }
     const who = (u.email || '').split('@')[0];
-    api = { who, save: (kind, id, patch)=> updateDoc(doc(db, COL[kind], id), patch) };
+    api = { who, save: (kind, id, patch)=> updateDoc(doc(db, COL[kind], id), patch),
+      loadWod: async ()=>{ const s = await getDoc(doc(db, 'wods', 'current')); return s.exists() ? s.data() : null; },
+      saveWod: async (w)=>{ const d = Object.assign({}, w, { updatedAt: serverTimestamp(), updatedBy: who }); await setDoc(doc(db, 'wods', 'current'), d); await setDoc(doc(db, 'wods', w.start), d); } };
     showShell(who + (role === 'owner' ? ' (대표)' : ''));
     paint();
     const listen = (key, q)=> unsubs.push(onSnapshot(q, (s)=>{ S[key] = s.docs.map((d)=> ({ id: d.id, ...d.data() })); paint(); }, (e)=> console.warn(key, e)));
@@ -394,6 +500,7 @@ if(DEMO){
     listen('voice', query(collection(db, 'voices'), orderBy('createdAt', 'desc'), limit(200)));
     listen('inq', query(collection(db, 'inquiries'), orderBy('createdAt', 'desc'), limit(200)));
     listen('goal', query(collection(db, 'goal_logs'), orderBy('createdAt', 'desc'), limit(200)));
+    listen('logs', query(collection(db, 'workout_logs'), orderBy('createdAt', 'desc'), limit(300)));
     listen('people', collection(db, 'gym_people'));
     const loadMembers = async ()=>{ try{ const s = await getDocs(collection(db, 'members')); S.members = s.docs.map((d)=> ({ id: d.id, ...d.data() })); paint(); }catch(e){ console.warn('members', e); } };
     loadMembers(); const t = setInterval(loadMembers, 5 * 60e3); unsubs.push(()=> clearInterval(t));
