@@ -586,7 +586,7 @@ function wodHomeCard(){
     '<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;font-weight:700;color:var(--y)">이번 주 런앤핏 운동 프로그램</span><span style="font-size:12px;opacity:.8" id="wodRange">' + wodRange() + '</span></div>' +
     '<div style="font-size:17px;font-weight:900;margin-top:4px;line-height:1.35">출석만 하세요! 운동은 런앤핏이 준비했어요</div>' +
     '<div style="margin-top:10px;background:rgba(255,255,255,.12);border-radius:10px;padding:9px 12px;font-size:13px;line-height:1.5">' +
-      (white ? '<b style="color:var(--y)">흰 띠는 기본 머신 사용법부터!</b> 노란 띠 프로그램으로 천천히 시작해 보세요' : '<b style="color:var(--y)">내 띠 추천 ' + mb.name + '</b> · 다른 띠 프로그램도 자유롭게 도전해봐도 좋아요') + '</div>' +
+      (white ? '<b style="color:var(--y)">흰 띠는 기본 머신 사용법부터!</b><br>노란 띠 프로그램으로 천천히 시작해 보세요' : '<b style="color:var(--y)">내 띠 추천 ' + mb.name + '!</b><br>다른 띠 프로그램도 자유롭게 도전해봐도 좋아요') + '</div>' +
     '<button type="button" id="wodGo" style="width:100%;margin-top:10px;height:44px;border:0;border-radius:10px;background:#fff;color:' + B + ';font-weight:900;font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:4px;cursor:pointer;font-family:inherit">' +
       (s ? wBelt(s.belt).name + ' ' + s.prog + ' 이어서 하기 ' : '이번 주 운동 프로그램 보기 ') + ARROW + '</button></div>';
 }
@@ -611,7 +611,7 @@ async function renderWod(){
       '<div style="margin-top:6px">' + items.map((it)=> '<div style="display:flex;gap:8px;align-items:center;padding:4px 0;font-size:14px">' + tagHtml(it.t) + '<span style="flex:1">' + esc(it.n) + '</span>' + (it.x ? '<span style="font-size:12.5px;color:' + B + ';font-weight:700">' + esc(it.x) + '</span>' : '') + '</div>').join('') + '</div>' +
       '<button type="button" data-start="' + p + '" class="btn' + (first ? '' : ' ghost') + '" style="width:100%;margin-top:8px;height:44px;font-size:14px' + (first ? '' : ';box-shadow:none;background:#E3E9FF') + '">' + p + '로 운동 시작하기</button></div>'; };
   $app.innerHTML = '<div class="top" style="justify-content:flex-start;gap:6px;padding-left:12px"><button class="back" type="button" data-go="home" aria-label="뒤로">' + BACK + '</button><div class="ttl">이번 주 운동 프로그램</div><span style="margin-left:auto;font-size:12px;color:var(--muted)">' + wodRange() + '</span></div>' +
-    '<div class="m" style="font-size:12.5px;color:#4B5563">내 띠는 추천! 다른 띠 프로그램도 자유롭게 도전해봐도 좋아요</div>' +
+    '<div class="m" style="font-size:13px;color:#4B5563;line-height:1.6"><b style="color:var(--ink)">내 띠는 추천!</b><br>다른 띠 프로그램도 자유롭게 도전해봐도 좋아요!<br>A · B · C 중 선택해서 진행해보세요!</div>' +
     '<div class="m" style="margin-top:18px;display:flex;gap:4px;background:#fff;border-radius:12px;padding:4px;box-shadow:0 1px 3px rgba(0,0,0,.06)">' + tabs + '</div>' +
     card('A', true) + card('B') + card('C') +
     '<div class="m" style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:6px">반복 10~15회 · 3~5세트 · 휴식 60~90초 · 고중량은 휴식 2~3분<br>기구가 비어 있는 운동부터 해도 OK!</div><div style="height:18px"></div>';
@@ -667,7 +667,7 @@ function renderSession(){
   $app.innerHTML = '<div class="top" style="justify-content:flex-start;gap:6px;padding-left:12px"><button class="back" type="button" id="sBack" aria-label="뒤로">' + BACK + '</button><div class="ttl" style="font-size:17px">' + bl.name + ' ' + s.prog + ' · ' + WPROG[s.prog] + '</div><span style="margin-left:auto;font-size:12.5px;color:' + B + ';font-weight:900;white-space:nowrap">' + nDone + ' / ' + s.items.length + ' 완료</span></div>' +
     '<div class="m" style="display:flex;gap:5px">' + strip + '</div><div class="m" style="margin-top:6px;font-size:11.5px;color:var(--muted)">번호를 누르면 그 운동으로 이동 · 순서는 자유예요</div>' +
     '<div class="card m" style="padding:14px 16px"><div style="display:flex;align-items:center;gap:10px">' + tagHtml(it.t) + '<b style="font-size:19px">' + esc(it.n) + '</b></div>' +
-      '<div style="font-size:12.5px;color:#4B5563;margin-top:4px">' + (it.x ? esc(it.x) : '10~15회 × 3세트') + ' · 휴식 60~90초</div>' + rows +
+      '<div style="font-size:12.5px;color:#4B5563;margin-top:4px">' + (it.x ? esc(it.x) : '10~15회 × 3세트') + ' · 휴식 60~90초</div>' + '<div style="display:flex;justify-content:flex-end;margin-top:8px;font-size:11.5px;font-weight:700;color:' + B + '">완료하면 체크해 주세요 ↓</div>' + rows +
       '<button type="button" id="addSet" style="width:100%;border:0;background:none;font-family:inherit;font-size:13px;color:var(--muted);padding:10px 0 2px;cursor:pointer">+ 세트 추가</button></div>' +
     '<div id="rest"></div><div style="height:96px"></div>' +
     '<div style="position:fixed;left:50%;transform:translateX(-50%);bottom:calc(84px + env(safe-area-inset-bottom));width:min(480px,100%);padding:0 22px;box-sizing:border-box;display:flex;gap:8px;z-index:5">' +
