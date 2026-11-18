@@ -171,7 +171,7 @@ function askNickname(){
 // ---------- 화면 전환 ----------
 function go(t){
   tab = t;
-  if(t === 'pixel'){ toast('픽셀 헬스장은 곧 열려요! 조금만 기다려 주세요'); t = tab = 'home'; }
+  if(t === 'pixel'){ location.href = './gym/'; return; }
   $tabs.classList.remove('hidden'); $app.classList.remove('nonav');
   const active = { home: 'home', challenge: 'challenge', workout: 'challenge', voice: 'voice', me: 'me' }[t];
   $tabs.querySelectorAll('button').forEach((b)=> b.classList.toggle('on', b.dataset.tab === active));

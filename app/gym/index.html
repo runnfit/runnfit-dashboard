@@ -66,6 +66,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 .dev .ok{display:flex;align-items:center;gap:10px;padding:10px;background:#1E3A8A;min-height:58px}
 .dev .ok i{width:38px;height:38px;border-radius:50%;background:#2563EB;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:20px;font-weight:900;flex:none}
 #skip{right:12px;top:calc(56px + env(safe-area-inset-top));display:none;background:rgba(255,255,255,.95);color:var(--b);border:0;border-radius:999px;padding:8px 14px;font-weight:900;font-family:inherit}
+#start .btn.g{width:240px;height:48px;margin-top:8px;font-size:15px}
 .inrow{display:flex;gap:6px;margin-top:6px}
 #feed{left:10px;bottom:calc(106px + env(safe-area-inset-bottom));width:min(300px,72%);display:flex;flex-direction:column;align-items:flex-start;gap:4px;pointer-events:none}
 #feed div{max-width:100%;background:rgba(15,23,42,.42);color:#fff;font-size:12.5px;line-height:1.35;padding:4px 9px;border-radius:10px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:opacity 1.2s,transform .3s;text-shadow:0 1px 2px rgba(0,0,0,.4);animation:fin .3s ease-out}
@@ -96,7 +97,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="top" class="ui"><span class="chip logo">RUN N FIT</span><span class="chip" id="clock">☀️ 08:00</span><span class="sp"></span><span class="chip" id="cnt">💙 함께 운동 중</span><button class="chip" id="bMy" style="border:0;font-family:inherit;background:#093692;color:#fff;position:relative">MY<i id="myDot" style="display:none;position:absolute;top:2px;right:2px;width:9px;height:9px;border-radius:50%;background:#EF4444;box-shadow:0 0 0 2px #fff"></i></button></div>
+<div id="top" class="ui"><a class="chip logo" href="../" style="text-decoration:none">‹ RUN N FIT</a><span class="chip" id="clock">☀️ 08:00</span><span class="sp"></span><span class="chip" id="cnt">💙 함께 운동 중</span><button class="chip" id="bMy" style="border:0;font-family:inherit;background:#093692;color:#fff;position:relative">MY<i id="myDot" style="display:none;position:absolute;top:2px;right:2px;width:9px;height:9px;border-radius:50%;background:#EF4444;box-shadow:0 0 0 2px #fff"></i></button></div>
 <div id="hint" class="ui">👆 톡 눌러 이동 · ☝️ 밀어서 방향 · 🤏 두 손가락 확대</div>
 <button id="skip" class="ui">건너뛰기 ›</button>
 <div id="toast" class="ui"></div>
@@ -131,14 +132,31 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 <div id="start">
   <div class="lg">RUN N FIT</div>
   <p><b style="color:#0B1B4D;font-size:18px">런앤핏 픽셀 헬스장</b><br>실제 정릉 런앤핏 배치 그대로<br>턴게이트에서 얼굴인식하고 들어가요</p>
-  <input id="nick" maxlength="8" placeholder="닉네임">
-  <button class="btn p" id="enter">입장하기</button>
-  <small>체험판 · 다른 회원은 예시 캐릭터예요</small>
+  <div id="startMsg" style="font-size:14px;color:#1E3A8A;margin-bottom:10px;line-height:1.5;display:none"></div>
+  <input id="nick" maxlength="8" placeholder="닉네임" style="display:none">
+  <button class="btn p" id="enter" disabled>확인하고 있어요…</button>
+  <a class="btn p" id="loginBtn" href="../" style="display:none;width:240px;height:54px;margin-top:10px;font-size:16px;line-height:54px;text-decoration:none;border-radius:12px">런앤핏 앱에서 로그인하기</a>
+  <button class="btn g" id="guestBtn" style="display:none">비회원 둘러보기</button>
+  <small id="startSmall">회원 정보는 런앤핏 앱 로그인으로 확인해요</small>
 </div>
+<div id="guestBar" class="ui" style="display:none;left:10px;right:10px;bottom:calc(12px + env(safe-area-inset-bottom));background:#fff;border-radius:16px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.3)">
+  <div style="font-size:14px;font-weight:900">유리문 너머로 구경 중이에요 👀</div><div style="font-size:12px;color:#4B5563;margin:2px 0 8px">런앤핏 회원이 되면 들어가서 함께 운동할 수 있어요</div>
+  <div style="display:flex;gap:6px"><button class="btn p" id="gTrial" style="flex:1;height:44px">무료 체험 신청</button><button class="btn g" id="gTalk" style="flex:1;height:44px">상담 받기</button></div>
+</div>
+<div id="mInq" class="modal"><div class="sheet"><h3 id="inqT">무료 체험 신청</h3><div style="font-size:12.5px;color:#4B5563;margin:-4px 0 10px">남겨 주시면 런앤핏에서 연락드릴게요</div>
+  <div class="inrow"><input id="inqName" maxlength="10" placeholder="이름"></div><div class="inrow"><input id="inqPhone" maxlength="13" inputmode="tel" placeholder="연락처 (010-0000-0000)"></div>
+  <button class="btn p" id="inqSend" style="width:100%;margin-top:10px">신청하기</button><button class="btn g" style="width:100%;margin-top:6px" data-close>닫기</button></div></div>
 
 <script type="module">
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getFirestore, collection, query, where, limit, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, orderBy, serverTimestamp, increment } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+const DEMO = /[?&]demo/.test(location.search);   // ?demo 를 붙이면 예시 회원이 나오는 체험판
+const fbApp = initializeApp({ apiKey: 'AIzaSyBbE0ktG6f5t-1xvVEg56f18DE_QdtIrts', authDomain: 'runnfit-member.firebaseapp.com', projectId: 'runnfit-member', storageBucket: 'runnfit-member.firebasestorage.app', messagingSenderId: '1029886465637', appId: '1:1029886465637:web:36ac86705e3504f6c0588c' });
+const auth = getAuth(fbApp), db = getFirestore(fbApp);
+let LIVE = false, myUid = null, ME = null;   // ME: 회원 정보 (닉네임 · 출석 · 띠)
 
 const K = 1.7;                       // 배치도 → 3D 넓힘 배율 (여유 공간)
 const s = v => v * K;
@@ -607,12 +625,13 @@ floorText('프리웨이트존', 4.1, s(8.85), 3.4, '#FDBA74', .55);
 
 // ── 캐릭터
 // 띠 색 (이름표 밑줄 · 지난 이야기 밑줄)
-const BELTHEX = { 흰: '#F3F4F6', 노: '#F5B301', 파: '#2563EB', 빨: '#DC2626', 검: '#0B0D12' };
+const BELTHEX = { 흰: '#F3F4F6', 노: '#FFD54A', 파: '#093692', 빨: '#B91C32', 검: '#111827' };
+const beltKey = n => { n = Number(n) || 0; return n >= 100 ? '검' : n >= 50 ? '빨' : n >= 30 ? '파' : n >= 10 ? '노' : n >= 1 ? '흰' : ''; };
 const BELTOF = { 새벽러너: '빨', 걷기왕: '노', 스쿼트요정: '빨', '3대500': '검', 꾸준이: '노', 출석요정: '파', 쉬는중: '흰', 일광욕: '파', 스트레칭중: '흰', 응원단장: '파', 하체러버: '노', 덤벨러: '빨', 물멍중: '흰', 오운완요정: '노', 정릉불꽃: '파', 아침형인간: '빨', 헬린이: '흰', 하루한번: '노', 새싹러너: '흰' };
 const STAFF = new Set(['런관장']);
 let MYBELT = '노';
-function nameTag(name, me, staff) { return staff ? textSprite(name, { bg: '#2563EB', fg: '#fff', size: 30, scale: .011 }) : textSprite(name, { bg: '#FFFFFF', fg: '#111827', size: 30, scale: .011, stripe: BELTHEX[me ? MYBELT : BELTOF[name]] || '#F3F4F6', border: me ? '#2563EB' : null }); }
-function avatar(name, shirt, hair, me, staff) {
+function nameTag(name, me, staff, belt) { return staff ? textSprite(name, { bg: '#2563EB', fg: '#fff', size: 30, scale: .011 }) : textSprite(name, { bg: '#FFFFFF', fg: '#111827', size: 30, scale: .011, stripe: BELTHEX[me ? MYBELT : (belt !== undefined ? belt : BELTOF[name])] || '#E5E7EB', border: me ? '#2563EB' : null }); }
+function avatar(name, shirt, hair, me, staff, belt) {
   const g = new THREE.Group(), body = new THREE.Group(); g.add(body);
   const legL = new THREE.Group(), legR = new THREE.Group(); legL.position.set(-.1, .45, 0); legR.position.set(.1, .45, 0); body.add(legL, legR);
   box(legL, -.085, -.45, -.1, .17, .45, .2, 0x111827); box(legR, -.085, -.45, -.1, .17, .45, .2, 0x111827);
@@ -628,12 +647,12 @@ function avatar(name, shirt, hair, me, staff) {
   box(torso, -.24, .5, -.2, .48, .44, .4, 0xF2C9A0);
   box(torso, -.26, .85, -.22, .52, .14, .44, hair); box(torso, -.26, .6, -.22, .52, .3, .08, hair);
   box(torso, -.13, .67, .2, .06, .07, .01, 0x111827); box(torso, .07, .67, .2, .06, .07, .01, 0x111827);
-  const tg = nameTag(name, me, staff); tg.position.y = 1.9; g.add(tg);
+  const tg = nameTag(name, me, staff, belt); tg.position.y = 1.9; g.add(tg);
   g.userData = { name, me, body, torso, legL, legR, armL, armR, tag: tg, phase: Math.random() * 6, bubble: null, bubbleT: 0, act: null };
   scene.add(g); return g;
 }
 function say(av, txt, sec = 3.5) {
-  feed(av.userData.name, txt, av.userData.me ? 'me' : '');
+  if (av === me) { feed(myName, txt, 'me'); if (LIVE) pubMe({ say: String(txt).slice(0, 40), sayT: Date.now() }); } else if (DEMO) showFeed(av.userData.name, txt);
   if (av.userData.bubble) av.remove(av.userData.bubble);
   const b = textSprite(txt, { bg: '#fff', fg: '#111827', size: 32, scale: .011, border: '#111827' });
   b.position.y = av.userData.act === 'lie' ? 1.0 : 2.35; av.add(b); av.userData.bubble = b; av.userData.bubbleT = sec;
@@ -709,6 +728,7 @@ function npc(name, shirt, hair, path, speed, lines, act, rotY, staff) {
   const a = avatar(name, shirt, hair, false, staff); a.position.set(path[0][0], act === 'tmrun' || act === 'tmwalk' ? .27 : 0, path[0][1]); a.userData.act = act || null; if (rotY !== undefined) a.rotation.y = rotY;
   const rec = { a, path, i: 1, speed, lines, wait: Math.random() * 3, talkT: 4 + Math.random() * 8, busy: 0 }; a.userData.npc = rec; NPCS.push(rec); return a;
 }
+if (DEMO) {
 npc('새벽러너', 0x15803D, 0x7C2D12, [[treadmills[1].x, treadmills[1].z]], 0, ['오늘 5km 간다'], 'tmrun', Math.PI);
 npc('걷기왕', 0xF59E0B, 0x3B2A1A, [[treadmills[6].x, treadmills[6].z]], 0, ['걷기도 운동!'], 'tmwalk', Math.PI);
 npc('스쿼트요정', 0xB91C32, 0x111827, [[.55 + .77, s(5.3) + .68]], 0, ['3세트 남았다', '하체는 배신 안 해'], 'squat', 0);
@@ -723,6 +743,7 @@ npc('응원단장', 0xF97316, 0x111827, [[12.6, -13.6], [12.6, -7.2], [26.6, -7.
 npc('물멍중', 0x0EA5E9, 0x3B2A1A, [[24.2, -9.9]], 0, ['물고기 귀엽다'], null, Math.PI);
 npc('덤벨러', 0x0F766E, 0x111827, [[1.9, s(10.6) + 2.2]], 0, ['덤벨 컬 10회째', '팔이 터진다'], 'curl', -Math.PI / 2);
 npc('하체러버', 0xDB2777, 0x3B2A1A, [[s(3.0), s(2.6)], [s(3.0), s(14.5)], [s(5.7), s(14.5)], [s(5.7), s(2.6)]], 1.0, []);
+}
 
 // ── 나
 const me = avatar('나', 0x2563EB, 0x3B2A1A, true);
@@ -830,7 +851,7 @@ const TERR = [
 ];
 TERR.forEach(([ic, nm, ds, fn]) => { const b = document.createElement('button'); b.className = 'tl'; b.innerHTML = `<span>${ic}</span><div><b>${nm}</b><i>${ds}</i></div>`; b.onclick = () => { closeAll(); toast(`${nm}(으)로 가는 중`); fn(); }; $('terrList').appendChild(b); });
 $('bTerr').onclick = () => { if (!entered) return; openM('mTerr'); };
-const book = [
+const book = !DEMO ? [] : [
   { n: '새벽러너', t: '오늘도 6시 출석 완료! 런앤핏 덕분에 아침이 즐거워요', time: '06:12', like: 14 },
   { n: '스쿼트요정', t: '하체 같이해요 🦵 다들 화이팅!', time: '07:40', like: 9 },
   { n: '런관장', t: '꾸준함이 최고의 재능입니다. 오늘도 와주셔서 감사해요 💙', time: '08:05', like: 21 },
@@ -842,10 +863,12 @@ CHIPS.forEach(c => { const b = document.createElement('button'); b.textContent =
 function renderBook() {
   $('bookCnt').textContent = `지금까지 ${book.length}개의 마음이 모였어요`;
   $('bookList').innerHTML = book.slice().reverse().map((e, ri) => { const i = book.length - 1 - ri; return `<div class="bk"><div class="av">${esc(e.n[0])}</div><div style="flex:1;min-width:0"><div class="nm">${esc(e.n)}<span class="tm">${e.time}</span></div><div class="tx">${esc(e.t)}</div><button class="lk" data-l="${i}">♥ ${e.like}</button></div></div>`; }).join('');
-  $('bookList').querySelectorAll('[data-l]').forEach(b => b.onclick = () => { book[+b.dataset.l].like++; renderBook(); drawBoard(book); });
+  $('bookList').querySelectorAll('[data-l]').forEach(b => b.onclick = () => { const e = book[+b.dataset.l]; if (LIVE) { if (likedOnce('b' + e.id)) return; updateDoc(doc(db, 'gym_book', e.id), { likes: increment(1) }).catch(() => toast('잠시 후 다시 해주세요')); return; } e.like++; renderBook(); drawBoard(book); });
 }
 drawBoard(book); if (document.fonts) document.fonts.ready.then(() => drawBoard(book));
-$('bookSend').onclick = () => { const t = $('bookMsg').value.trim(); if (!t) return; const nb = { n: myName, t, time: hhmm(), like: 0, cm: [] }; book.push(nb); react(nb, 'book'); renderBook(); drawBoard(book); $('bookMsg').value = ''; $('bookList').scrollTop = 0;
+$('bookSend').onclick = () => { const t = $('bookMsg').value.trim(); if (!t) return;
+  if (LIVE) addDoc(collection(db, 'gym_book'), { uid: myUid, nick: myName, belt: MYBELT, text: t.slice(0, 60), likes: 0, ts: serverTimestamp() }).catch(() => toast('저장하지 못했어요. 잠시 후 다시 해주세요'));
+  else { const nb = { n: myName, t, time: hhmm(), like: 0, cm: [] }; book.push(nb); react(nb, 'book'); renderBook(); drawBoard(book); } $('bookMsg').value = ''; $('bookList').scrollTop = 0;
   burst(BOOK.x + BOOK.w / 2, 3.2, BOOK.z + .6, ['💙', '✨', '🤍'], 10, '고마워요!'); feed('', `${myName}님이 방명록에 마음을 남겼어요 💙`, 'sys'); toast('방명록에 남겼어요! 보드에 붙었어요 💙'); };
 
 // 동작: 인사 · 달리기 · 걷기 · 스트레칭 · 눕기 · 앉기 · 스쿼트 · 파이팅
@@ -917,12 +940,17 @@ function emote(kind, target) {
   me.userData.act = kind; say(me, line, 2.2); burst(me.position.x, 2.2, me.position.z, list, 9, word);
   feed('', t ? `${myName}님이 ${t.a.userData.name}님에게 ${ic} ${line}` : `${myName}님 ${ic} ${line}`, 'sys');
   setTimeout(() => { if (me.userData.act === kind) me.userData.act = null; }, 2200);
-  if (t) setTimeout(() => { // 상대도 같은 동작으로 응답
+  pubEmo(kind, t && t.remote ? t.uid : null);
+  if (t && !t.remote) setTimeout(() => { // 상대도 같은 동작으로 응답
     t.busy = 2.4; t.a.userData.act = kind === 'heart' ? 'heart' : kind; say(t.a, kind === 'heart' ? '저도 ♥' : kind === 'best' ? '고마워요! 👍' : '와~ 👏', 2); burst(t.a.position.x, 2.2, t.a.position.z, list, 6);
   }, 900);
 }
 function highFive(n) {
-  toast(`${n.a.userData.name}님에게 하이파이브 요청 🙌`);
+  if (n.remote) { addDoc(collection(db, 'gym_hi5'), { from: myUid, fromNick: myName, to: n.uid, st: 'req', ts: serverTimestamp() }).then(() => toast(`${n.a.userData.name}님에게 하이파이브 요청을 보냈어요 🙌`)).catch(() => toast('잠시 후 다시 해주세요')); return; }
+  hi5Anim(n, true);
+}
+function hi5Anim(n, post) {
+  toast(`${n.a.userData.name}님과 하이파이브! 🙌`);
   n.busy = 99; if (!n.restore) n.restore = { act: n.a.userData.act, rot: n.a.rotation.y };
   const ax = n.a.position.x, az = n.a.position.z;
   const spots = [[0, .9], [0, -.9], [.9, 0], [-.9, 0]].map(([dx, dz]) => [ax + dx, az + dz]).filter(([x, z]) => !isBlocked(x, z, .28));
@@ -931,8 +959,8 @@ function highFive(n) {
     faceEach(n); n.a.userData.act = 'hi5'; me.userData.act = 'hi5'; say(n.a, '좋아요! 🙌', 1.5);
     setTimeout(() => {
       burst((me.position.x + ax) / 2, 1.9, (me.position.z + az) / 2, ['✋', '💥', '✨', '💙'], 12, '짝!');
-      feed('', `${myName}님과 ${n.a.userData.name}님이 하이파이브! 🙌`, 'sys'); toast(`${n.a.userData.name}님과 하이파이브! 🙌`);
-      setTimeout(() => { if (me.userData.act === 'hi5') me.userData.act = null; n.busy = .3; }, 900);
+      if (post) feed('', `${myName}님과 ${n.a.userData.name}님이 하이파이브! 🙌`, 'sys');
+      setTimeout(() => { if (me.userData.act === 'hi5') me.userData.act = null; n.busy = .3; if (n.remote && n.a.userData.act === 'hi5') n.a.userData.act = null; }, 900);
     }, 700);
   };
   if (Math.hypot(tx - me.position.x, tz - me.position.z) > .4) goTo(tx, tz, go); else go();
@@ -946,6 +974,7 @@ function showPerson(n) {
 }
 // 다른 회원이 나에게 하이파이브 요청 (예시)
 setInterval(() => {
+  if (!DEMO) return;
   if (!entered || route || document.querySelector('.modal[style*="flex"]') || $('req')) return;
   const n = NPCS.filter(q => q.path.length > 1 || !q.a.userData.act)[Math.floor(Math.random() * 4)]; if (!n) return;
   const d = document.createElement('div'); d.id = 'req'; d.className = 'ui';
@@ -957,24 +986,26 @@ setInterval(() => {
   setTimeout(() => { if (d.isConnected) { d.remove(); n.busy = .1; } }, 10000);
 }, 38000);
 // ── 소원나무: 소원 매달기 · 응원 · 댓글
-const wishes = [
+const wishes = !DEMO ? [] : [
   { n: '새벽러너', t: '올해 안에 하프 마라톤 완주하기', cheer: 12, cm: [['런관장', '할 수 있어요! 같이 뛰어요 🏃'], ['걷기왕', '응원합니다!']] },
   { n: '스쿼트요정', t: '스쿼트 100kg 성공 🦵', cheer: 8, cm: [['3대500', '자세만 지키면 금방!']] },
   { n: '꾸준이', t: '첫 30일 동안 12번 출석해서 노란 띠 받기', cheer: 15, cm: [] },
   { n: '하체러버', t: '엄마랑 같이 건강하게 등산 가기', cheer: 6, cm: [['응원단장', '너무 멋진 소원이에요 💙']] },
 ];
-for (let i = 0; i < 24; i++) hangWish();   // 미리 매달린 소원 종이
+for (let i = 0; i < (DEMO ? 24 : 8); i++) hangWish();   // 미리 매달린 소원 종이 (장식)
 let openWish = -1;
 function renderWish() {
   $('wishList').innerHTML = wishes.slice().reverse().map((w, ri) => { const i = wishes.length - 1 - ri; return `<div class="wish"><div class="w0">${esc(w.n)}님의 소원</div><div class="w1">${esc(w.t)}</div>
     <div class="wb"><button data-c="${i}">💙 응원 ${w.cheer}</button><button data-o="${i}">💬 댓글 ${w.cm.length}</button></div>
     ${openWish === i ? `<div class="cm">${w.cm.map(c => `<b>${esc(c[0])}</b> ${esc(c[1])}`).join('<br>') || '첫 댓글을 남겨 주세요'}</div><div class="inrow"><input id="cmIn" maxlength="30" placeholder="응원 댓글 달기"><button class="btn p" id="cmSend" style="width:64px;height:40px">달기</button></div>` : ''}</div>`; }).join('');
-  $('wishList').querySelectorAll('[data-c]').forEach(b => b.onclick = () => { const w = wishes[+b.dataset.c]; w.cheer++; renderWish(); burst(WISH.x, 4, WISH.z, ['💙', '✨'], 6); });
+  $('wishList').querySelectorAll('[data-c]').forEach(b => b.onclick = () => { const w = wishes[+b.dataset.c]; if (LIVE) { if (!likedOnce('w' + w.id)) updateDoc(doc(db, 'gym_wishes', w.id), { cheer: increment(1) }).catch(() => {}); } else { w.cheer++; renderWish(); } burst(WISH.x, 4, WISH.z, ['💙', '✨'], 6); });
   $('wishList').querySelectorAll('[data-o]').forEach(b => b.onclick = () => { openWish = openWish === +b.dataset.o ? -1 : +b.dataset.o; renderWish(); });
-  if ($('cmSend')) $('cmSend').onclick = () => { const t = $('cmIn').value.trim(); if (!t) return; const w = wishes[openWish]; w.cm.push([myName, t, hhmm()]); myNew(); feed('', `${myName}님이 ${w.n}님의 소원에 응원 댓글을 남겼어요 🌳`, 'sys'); renderWish(); };
+  if ($('cmSend')) $('cmSend').onclick = () => { const t = $('cmIn').value.trim(); if (!t) return; const w = wishes[openWish]; if (LIVE) addDoc(collection(db, 'gym_comments'), { wishId: w.id, owner: w.uid, wishText: w.t.slice(0, 60), wishNick: w.n, uid: myUid, nick: myName, belt: MYBELT, text: t.slice(0, 60), ts: serverTimestamp() }).catch(() => toast('저장하지 못했어요')); else { w.cm.push([myName, t, hhmm()]); myNew(); } feed('', `${myName}님이 ${w.n}님의 소원에 응원 댓글을 남겼어요 🌳`, 'sys'); renderWish(); };
 }
 // ── MY: 내가 남긴 글(방명록 · 소원) + 반응 · 내 댓글
 let myTab = 1;
+const isMine = x => x.uid ? x.uid === myUid : x.n === myName;
+function likedOnce(k) { try { const key = 'rnfLiked'; const a = JSON.parse(localStorage.getItem(key) || '[]'); if (a.includes(k)) { toast('이미 마음을 보냈어요 💙'); return true; } a.push(k); localStorage.setItem(key, JSON.stringify(a.slice(-500))); } catch (e) {} return false; }
 function myNew() { if ($('mMy').style.display !== 'flex') $('myDot').style.display = 'block'; else renderMy(); }
 function react(item, kind) {   // 체험판: 다른 회원 반응 예시
   const who = ['새벽러너', '꾸준이', '런관장', '스쿼트요정', '응원단장'];
@@ -988,11 +1019,11 @@ function renderMy() {
   $('myT1').className = 'btn ' + (myTab === 1 ? 'p' : 'g'); $('myT2').className = 'btn ' + (myTab === 2 ? 'p' : 'g');
   let html = '';
   if (myTab === 1) {
-    const mine = [...book.filter(b => b.n === myName).map(b => ({ k: '📖 방명록', t: b.t, time: b.time, r: `♥ ${b.like}`, cm: b.cm || [] })), ...wishes.filter(w => w.n === myName).map(w => ({ k: '🌳 소원나무', t: w.t, time: w.time || '', r: `💙 응원 ${w.cheer}`, cm: w.cm }))];
+    const mine = [...book.filter(isMine).map(b => ({ k: '📖 방명록', t: b.t, time: b.time, r: `♥ ${b.like}`, cm: b.cm || [] })), ...wishes.filter(isMine).map(w => ({ k: '🌳 소원나무', t: w.t, time: w.time || '', r: `💙 응원 ${w.cheer}`, cm: w.cm }))];
     html = mine.reverse().map(m => `<div class="wish"><div class="w0">${m.k} · ${m.time}</div><div class="w1">${esc(m.t)}</div><div class="wb"><button>${m.r}</button><button>💬 댓글 ${m.cm.length}</button></div>${m.cm.length ? `<div class="cm">${m.cm.map(c => `<b>${esc(c[0])}</b> ${esc(c[1])}`).join('<br>')}</div>` : ''}</div>`).join('');
     if (!html) html = '<div style="text-align:center;color:#6B7280;font-size:13px;padding:24px 0">아직 남긴 글이 없어요<br>방명록이나 소원나무에 남겨 보세요 🌿</div>';
   } else {
-    const mc = []; wishes.forEach(w => w.cm.forEach(c => { if (c[0] === myName) mc.push({ to: w.n, about: w.t, t: c[1], time: c[2] || '' }); }));
+    const mc = []; wishes.forEach(w => w.cm.forEach(c => { if (c[3] ? c[3] === myUid : c[0] === myName) mc.push({ to: w.n, about: w.t, t: c[1], time: c[2] || '' }); }));
     html = mc.reverse().map(m => `<div class="wish"><div class="w0">🌳 ${esc(m.to)}님의 소원 · ${m.time}</div><div style="font-size:12.5px;color:#6B7280;margin-bottom:4px">“${esc(m.about)}”</div><div class="w1">💬 ${esc(m.t)}</div></div>`).join('');
     if (!html) html = '<div style="text-align:center;color:#6B7280;font-size:13px;padding:24px 0">아직 단 댓글이 없어요<br>다른 회원의 소원에 응원 댓글을 남겨 보세요 💙</div>';
   }
@@ -1000,7 +1031,7 @@ function renderMy() {
 }
 $('bMy').onclick = () => { if (!entered) return; $('myDot').style.display = 'none'; renderMy(); openM('mMy'); };
 $('myT1').onclick = () => { myTab = 1; renderMy(); }; $('myT2').onclick = () => { myTab = 2; renderMy(); };
-$('wishSend').onclick = () => { const t = $('wishMsg').value.trim(); if (!t) return; const nw = { n: myName, t, cheer: 0, cm: [], time: hhmm() }; wishes.push(nw); hangWish(); react(nw, 'wish'); $('wishMsg').value = ''; renderWish(); closeAll();
+$('wishSend').onclick = () => { const t = $('wishMsg').value.trim(); if (!t) return; if (LIVE) addDoc(collection(db, 'gym_wishes'), { uid: myUid, nick: myName, belt: MYBELT, text: t.slice(0, 40), cheer: 0, ts: serverTimestamp() }).catch(() => toast('저장하지 못했어요')); else { const nw = { n: myName, t, cheer: 0, cm: [], time: hhmm() }; wishes.push(nw); hangWish(); react(nw, 'wish'); } $('wishMsg').value = ''; renderWish(); closeAll();
   burst(WISH.x, 3.5, WISH.z, ['🌟', '💛', '✨', '🍀'], 12, '소원 매달기!'); feed('', `${myName}님이 소원나무에 소원을 매달았어요 🌳`, 'sys'); toast('소원을 매달았어요! 꼭 이뤄질 거예요 🌟', 2600); };
 // 눌러서 바로 가는 장소 (방명록 · 소원나무 · 분수 · 연못 · 포토존)
 const places = [];
@@ -1037,10 +1068,10 @@ function updateCard() {
 
 // ── 입장 연출: 엘리베이터 → 복도 → 얼굴인식 → 턴게이트
 let myName = '나';
-function setName(n) { myName = n; me.userData.name = n; me.remove(me.userData.tag); const tg = nameTag(n, true); tg.position.y = 1.9; me.add(tg); me.userData.tag = tg; }
+function setName(n) { myName = n; me.userData.name = n; me.remove(me.userData.tag); const tg = nameTag(n, true, !!(ME && ME.staff)); tg.position.y = 1.9; me.add(tg); me.userData.tag = tg; }
 const RANDOM = ['달리는민수', '새싹러너', '정릉불꽃', '오운완요정', '꾸준왕'];
 $('nick').value = RANDOM[Math.floor(Math.random() * RANDOM.length)];
-$('enter').onclick = () => { setName($('nick').value.trim() || '나'); $('start').style.display = 'none'; $('skip').style.display = 'block'; cutscene = { t: 0, step: 0 }; };
+$('enter').onclick = () => { if (DEMO) setName($('nick').value.trim() || '나'); $('start').style.display = 'none'; $('skip').style.display = 'block'; cutscene = { t: 0, step: 0 }; };
 $('skip').onclick = () => finishEntry(true);
 $('guideOk').onclick = () => { $('guide').style.display = 'none'; try { localStorage.setItem('rnfGuide', '1'); } catch (e) {} };
 function finishEntry(skip) {
@@ -1050,14 +1081,16 @@ function finishEntry(skip) {
   $('hint').style.opacity = 1; setTimeout(() => $('hint').style.opacity = 0, 6000);
   let seen = false; try { seen = localStorage.getItem('rnfGuide') === '1'; } catch (e) {}
   if (!seen) setTimeout(() => $('guide').style.display = 'flex', 900);
-  toast('런앤핏이 기다렸어요! 오늘도 출석 완료 ✓', 3000); feed('', `${myName}님이 입장했어요 👋`, 'sys'); say(me, '출석 완료!', 3);
+  const att = !ME || ME.attendedToday;
+  toast(att ? '런앤핏이 기다렸어요! 오늘도 출석 완료 ✓' : '런앤핏이 기다렸어요! 오늘도 센터에서 만나요 💙', 3000); feed('', `${myName}님이 입장했어요 👋`, 'sys'); say(me, att ? '출석 완료!' : '안녕하세요!', 3);
+  if (LIVE) liveEnter();
 }
 function walkTo(tx, tz, sp, dt) { const dx = tx - me.position.x, dz = tz - me.position.z, d = Math.hypot(dx, dz); if (d < .05) return true; const st = Math.min(d, sp * dt); me.position.x += dx / d * st; me.position.z += dz / d * st; me.rotation.y = Math.atan2(dx, dz); pose(me, 'walk', dt); return false; }
 function runCutscene(dt) {
   const c = cutscene; c.t += dt;
   if (c.step === 0) { pose(me, null, dt); if (c.t > .3) { c.step = 1; } }
   else if (c.step === 1) { if (walkTo(GX + 1.3, GZ + 1.5, 2.0, dt)) { c.step = 2; c.t = 0; me.rotation.y = Math.PI; openFace(); } }
-  else if (c.step === 2) { pose(me, null, dt); if (c.t > 1.0 && !c.ok) { c.ok = 1; faceOk(); } if (c.t > 1.9) { $('face').style.display = 'none'; c.step = 3; c.t = 0; } }
+  else if (c.step === 2) { pose(me, null, dt); if (c.t > 1.0 && !c.ok) { c.ok = 1; GUEST ? faceNo() : faceOk(); } if (GUEST && c.t > 2.3) { $('face').style.display = 'none'; cutscene = null; $('guestBar').style.display = 'block'; return; } if (!GUEST && c.t > 1.9) { $('face').style.display = 'none'; c.step = 3; c.t = 0; } }
   else if (c.step === 3) { armPivot.rotation.y = Math.min(1.5, c.t * 3); if (c.t > .4 && walkTo(GX + 1.3, GZ - 1.5, 2.2, dt)) finishEntry(false); else pose(me, 'walk', 0); }
   follow(.15);
 }
@@ -1069,7 +1102,7 @@ function openFace() {
 }
 function faceOk() {
   $('fScan').style.display = 'none';
-  $('fOk').innerHTML = `<i>✓</i><div><div style="font-size:15px;font-weight:900">${myName} 님</div><div style="font-size:11px;opacity:.9">안녕하세요! 오늘 23번째 출석</div></div>`;
+  $('fOk').innerHTML = `<i>✓</i><div><div style="font-size:15px;font-weight:900">${myName} 님</div><div style="font-size:11px;opacity:.9">${ME ? (ME.attendedToday ? `오늘 출석 완료 ✓ · 총 ${ME.total}번째 출석` : `오늘은 아직 출석 전이에요 · 총 ${ME.total}번 출석`) : '안녕하세요! 오늘 23번째 출석'}</div></div>`;
   fscr.material = M(0x22C55E, { basic: 1 }); setTimeout(() => fscr.material = M(0x2563EB, { basic: 1 }), 2500);
 }
 
@@ -1100,6 +1133,7 @@ function loop() {
     if (marker.visible) marker.material.opacity = .6 + Math.sin(clock.elapsedTime * 6) * .4;
   } else pose(me, null, dt);
   for (const n of NPCS) {
+    if (n.remote) { remoteStep(n, dt); continue; }
     const { a, path } = n; let mv = null;
     if (n.busy > 0) { n.busy -= dt; if (n.busy <= 0 && n.restore) { n.a.userData.act = n.restore.act; n.a.rotation.y = n.restore.rot; n.restore = null; } }
     else if (path.length > 1) { if (n.wait > 0) n.wait -= dt; else { const [tx, tz] = path[n.i], dx = tx - a.position.x, dz = tz - a.position.z, d = Math.hypot(dx, dz); if (d < .1) { n.i = (n.i + 1) % path.length; n.wait = Math.random() * 2; } else { const st = Math.min(d, n.speed * dt); a.position.x += dx / d * st; a.position.z += dz / d * st; a.rotation.y = Math.atan2(dx, dz); mv = 'walk'; } } }
@@ -1121,7 +1155,8 @@ function loop() {
   if (FOUNT.jet) { const k = 1 + Math.sin(clock.elapsedTime * 5) * .08; FOUNT.jet.scale.set(k, 1 + Math.sin(clock.elapsedTime * 3) * .15, k); }
   for (const f of POND.fish) { f.a += f.sp * dt; f.f.position.x = POND.x + Math.cos(f.a) * f.r * POND.rx / 2.4; f.f.position.z = POND.z + Math.sin(f.a) * f.r * POND.rz / 2.4; f.f.rotation.y = -f.a; }
   for (const t of WISH.tags) t.rotation.z = Math.sin(clock.elapsedTime * 1.5 + t.position.x) * .12;
-  $('cnt').textContent = `💙 ${NPCS.length + 1}명 함께 운동 중`;
+  $("cnt").textContent = `💙 ${NPCS.length + (GUEST ? 0 : 1)}명 함께 운동 중`;
+  if (LIVE) liveTick(dt);
   controls.update(); renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
@@ -1129,19 +1164,165 @@ function loop() {
 const feedLog = [];
 function esc(t) { return String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
 function hhmm() { const d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
-function nameHtml(n) { if (STAFF.has(n)) return `<b class="st">${esc(n)}</b>`; const b = n === myName ? MYBELT : BELTOF[n]; const c = BELTHEX[b] || '#F3F4F6'; return `<b style="border-bottom-color:${c}${b === '검' ? ';box-shadow:0 2px 0 #F5B301' : ''}">${esc(n)}</b>`; }
-function renderFeedAll() { const el = $('feedAll'); el.innerHTML = feedLog.map(f => `<div class="r"><i>${f.t}</i><div>${f.n ? nameHtml(f.n) : ''}${esc(f.x)}</div></div>`).join('') || '<div class="r">아직 이야기가 없어요</div>'; el.scrollTop = el.scrollHeight; }
+function nameHtml(n, belt, staff) { if (staff || (staff === undefined && STAFF.has(n))) return `<b class="st">${esc(n)}</b>`; const b = belt !== undefined ? belt : n === myName ? MYBELT : BELTOF[n]; const c = BELTHEX[b] || '#F3F4F6'; return `<b style="border-bottom-color:${c}${b === '검' ? ';box-shadow:0 2px 0 #F5B301' : ''}">${esc(n)}</b>`; }
+function renderFeedAll() { const el = $('feedAll'); el.innerHTML = feedLog.map(f => `<div class="r"><i>${f.t}</i><div>${f.n ? nameHtml(f.n, f.b, f.s) : ''}${esc(f.x)}</div></div>`).join('') || '<div class="r">아직 이야기가 없어요</div>'; el.scrollTop = el.scrollHeight; }
 $('feedBtn').onclick = () => { const el = $('feedAll'), open = el.style.display !== 'block'; el.style.display = open ? 'block' : 'none'; $('feed').style.display = open ? 'none' : 'flex'; $('feedBtn').textContent = open ? '💬 접기 ▾' : '💬 지난 이야기 ▴'; if (open) renderFeedAll(); };
 function feed(name, txt, cls = '') {
-  feedLog.push({ t: hhmm(), n: name, x: txt }); if (feedLog.length > 300) feedLog.shift(); if ($('feedAll').style.display === 'block') renderFeedAll();
+  if (LIVE) { addDoc(collection(db, 'gym_feed'), { uid: myUid, nick: name || '', text: String(txt).slice(0, 80), sys: !name, belt: MYBELT, staff: !!ME.staff, ts: serverTimestamp() }).catch(() => {}); return; }
+  showFeed(name, txt, cls);
+}
+function showFeed(name, txt, cls = '', belt, staff, t) {
+  feedLog.push({ t: t || hhmm(), n: name, x: txt, b: belt, s: staff }); if (feedLog.length > 300) feedLog.shift(); if ($('feedAll').style.display === 'block') renderFeedAll();
   const box = $('feed'), d = document.createElement('div'); if (cls) d.className = cls;
-  d.innerHTML = name ? nameHtml(name) + esc(txt) : esc(txt);
+  d.innerHTML = name ? nameHtml(name, belt, staff) + esc(txt) : esc(txt);
   box.appendChild(d); while (box.children.length > 5) box.removeChild(box.firstChild);
   setTimeout(() => d.classList.add('old'), 7000);
 }
 const VISIT = ['오운완요정', '정릉불꽃', '아침형인간', '헬린이', '하루한번', '새싹러너'];
-setInterval(() => { if (!entered) return; const r = Math.random(); const n = VISIT[Math.floor(Math.random() * VISIT.length)];
+setInterval(() => { if (!entered || !DEMO) return; const r = Math.random(); const n = VISIT[Math.floor(Math.random() * VISIT.length)];
   if (r < .35) feed('', `${n}님이 입장했어요 👋`, 'sys'); else if (r < .55) feed('', `${n}님이 08 랫풀다운 3세트 완료 💪`, 'sys'); else if (r < .7) feed('', `${n}님이 방명록에 응원을 남겼어요 🌿`, 'sys'); }, 9000);
+// ═════════ 실서비스 연결: 회원 로그인 · 실시간 함께 걷기 · 저장 ═════════
+let GUEST = false;
+const KSTd = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
+const tsTime = t => { const d = t && t.toDate ? t.toDate() : new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+function startMember() { $('startMsg').style.display = 'block'; $('startMsg').innerHTML = `<b>${esc(myName)}</b>님, 반가워요!<br>${ME.attendedToday ? '오늘 출석 완료 ✓' : '오늘은 아직 출석 전이에요'} · 총 ${ME.total}번 출석`; $('enter').disabled = false; $('enter').textContent = '입장하기'; $('startSmall').textContent = '턴게이트에서 얼굴인식하고 들어가요'; }
+function startGuest(msg) {
+  $('startMsg').style.display = 'block'; $('startMsg').innerHTML = msg || '런앤핏 회원은 앱에서 로그인하면<br>바로 들어올 수 있어요';
+  $('enter').style.display = 'none'; $('loginBtn').style.display = 'block'; $('guestBtn').style.display = 'block'; $('startSmall').textContent = '비회원은 유리문 너머로 구경할 수 있어요';
+  watchPeople();
+}
+$('guestBtn').onclick = () => { GUEST = true; setName('방문자'); $('start').style.display = 'none'; ['bar', 'bMy', 'feedBtn', 'feed'].forEach(id => $(id).style.display = 'none'); cutscene = { t: 0, step: 0 }; };
+function faceNo() { $('fScan').style.display = 'none'; $('fOk').innerHTML = '<i style="background:#DC2626">!</i><div><div style="font-size:15px;font-weight:900">등록되지 않은 얼굴</div><div style="font-size:11px;opacity:.9">회원만 들어갈 수 있어요</div></div>'; fscr.material = M(0xDC2626, { basic: 1 }); }
+let inqKind = '무료 체험';
+$('gTrial').onclick = () => { inqKind = '무료 체험'; $('inqT').textContent = '무료 체험 신청'; openM('mInq'); };
+$('gTalk').onclick = () => { inqKind = '상담'; $('inqT').textContent = '상담 받기'; openM('mInq'); };
+$('inqSend').onclick = () => { const name = $('inqName').value.trim(), phone = $('inqPhone').value.replace(/[^0-9]/g, '');
+  if (!name || !/^01\d{8,9}$/.test(phone)) { toast('이름과 연락처를 확인해 주세요'); return; }
+  addDoc(collection(db, 'inquiries'), { name: name.slice(0, 10), phone, kind: inqKind, src: 'pixel-gym', createdAt: serverTimestamp() }).then(() => { closeAll(); toast('신청했어요! 곧 연락드릴게요 💙', 3000); }).catch(() => toast('잠시 후 다시 시도해 주세요')); };
+
+// 다른 회원 (실시간)
+const remotes = new Map(), PAL = [0x15803D, 0xF59E0B, 0xB91C32, 0x374151, 0x7C3AED, 0x0EA5E9, 0x16A34A, 0xF472B6, 0x14B8A6, 0xF97316, 0xDB2777, 0x0F766E];
+const hashc = t => { let h = 0; for (const c of t) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h); };
+function addRemote(uid, d) {
+  const a = avatar(d.nick || '회원', d.staff ? 0x0B0D12 : PAL[hashc(uid) % PAL.length], 0x3B2A1A, false, !!d.staff, d.belt || '');
+  a.position.set(d.x ?? GX + 1.3, d.y || 0, d.z ?? GZ - 1.5);
+  const r = { a, path: [[0, 0]], i: 0, speed: 0, lines: [], wait: 0, talkT: 1e9, busy: 0, remote: true, uid, route: null, final: null, seen: Date.now() };
+  a.userData.npc = r; NPCS.push(r); remotes.set(uid, r); return r;
+}
+function dropRemote(uid) { const r = remotes.get(uid); if (!r) return; scene.remove(r.a); NPCS.splice(NPCS.indexOf(r), 1); remotes.delete(uid); if (curPerson === r) { curPerson = null; card.style.display = 'none'; } }
+function setFinal(r, f) { r.a.position.set(f.x, f.y, f.z); r.a.rotation.y = f.rot; const u = r.a.userData; u.act = f.act; u.mtype = f.mt; u.mstand = f.ms; }
+function applyRemote(r, d) {
+  r.seen = Date.now();
+  if (d.mv) { if (!r.route || r.tx !== d.tx || r.tz !== d.tz) { r.tx = d.tx; r.tz = d.tz; r.a.userData.act = null; r.a.position.y = 0; r.route = findPath(r.a.position.x, r.a.position.z, d.tx, d.tz) || [[d.tx, d.tz]]; } r.final = null; }
+  else { const f = { x: d.x, y: d.y || 0, z: d.z, rot: d.rot || 0, act: d.act || null, mt: d.mt || null, ms: !!d.ms };
+    if (!r.init) setFinal(r, f);
+    else if (!r.route && Math.hypot(f.x - r.a.position.x, f.z - r.a.position.z) > .6) { r.a.position.y = 0; r.a.userData.act = null; r.route = findPath(r.a.position.x, r.a.position.z, f.x, f.z) || [[f.x, f.z]]; r.final = f; }
+    else if (r.route) r.final = f; else setFinal(r, f); }
+  if (d.sayT && d.sayT !== r.sayT) { if (r.init) say(r.a, d.say || ''); r.sayT = d.sayT; }
+  if (d.emo && d.emo.t !== r.emoT) { if (r.init) remoteEmo(r, d.emo); r.emoT = d.emo.t; }
+  r.init = true;
+}
+function remoteStep(r, dt) {
+  let mode = null;
+  if (r.route && r.route.length) {
+    const [tx, tz] = r.route[0], dx = tx - r.a.position.x, dz = tz - r.a.position.z, d = Math.hypot(dx, dz);
+    let rest = d; for (let i = 1; i < r.route.length; i++) rest += Math.hypot(r.route[i][0] - r.route[i - 1][0], r.route[i][1] - r.route[i - 1][1]);
+    const fast = rest > 7;
+    if (d < .08) { r.route.shift(); if (!r.route.length) { r.route = null; if (r.final) { setFinal(r, r.final); r.final = null; } } }
+    else { const st = Math.min(d, (fast ? 5.2 : 3.4) * dt); r.a.position.x += dx / d * st; r.a.position.z += dz / d * st; r.a.rotation.y = Math.atan2(dx, dz); mode = fast ? 'run' : 'walk'; }
+  }
+  pose(r.a, mode, dt);
+}
+function remoteEmo(r, e) {
+  const E = EMO[e.k]; if (!E) return; const prev = r.a.userData.act; r.a.userData.act = e.k; burst(r.a.position.x, 2.2, r.a.position.z, E[2], 8, E[3]);
+  setTimeout(() => { if (r.a.userData.act === e.k) r.a.userData.act = prev; }, 2200);
+  if (e.to === myUid) { const dx = me.position.x - r.a.position.x, dz = me.position.z - r.a.position.z; r.a.rotation.y = Math.atan2(dx, dz); toast(`${r.a.userData.name}님이 나에게 ${E[0]} ${E[1]}`, 2600); }
+}
+// 내 상태 보내기 (이동 목표 · 도착 자리 · 동작)
+let lastPub = '', lastPubT = 0, lastBeat = 0;
+function myState() { if (route && route.length) { const l = route[route.length - 1]; return { mv: 1, tx: +l[0].toFixed(2), tz: +l[1].toFixed(2) }; }
+  const u = me.userData; return { mv: 0, x: +me.position.x.toFixed(2), y: +me.position.y.toFixed(2), z: +me.position.z.toFixed(2), rot: +me.rotation.y.toFixed(2), act: u.act || null, mt: u.mtype || null, ms: !!u.mstand }; }
+function pubMe(extra = {}) { if (!LIVE) return; setDoc(doc(db, 'gym_people', myUid), { nick: myName, belt: MYBELT, staff: !!ME.staff, ...myState(), ...extra, ts: serverTimestamp() }, { merge: true }).catch(() => {}); }
+function pubEmo(k, to) { if (LIVE) pubMe({ emo: { k, to: to || null, t: Date.now() } }); }
+function liveTick() {
+  if (!entered) return; const now = Date.now(), k = JSON.stringify(myState());
+  if ((k !== lastPub && now - lastPubT > 350) || now - lastBeat > 25000) { lastPub = k; lastPubT = lastBeat = now; pubMe(); }
+}
+setInterval(() => { for (const [uid, r] of remotes) if (Date.now() - r.seen > 75000) dropRemote(uid); }, 5000);
+function liveEnter() { pubMe(); }
+addEventListener('pagehide', () => { if (LIVE && myUid) deleteDoc(doc(db, 'gym_people', myUid)).catch(() => {}); });
+let peopleOn = false;
+function watchPeople() {
+  if (peopleOn) return; peopleOn = true;
+  onSnapshot(query(collection(db, 'gym_people'), orderBy('ts', 'desc'), limit(80)), snap => snap.docChanges().forEach(ch => {
+    const id = ch.doc.id; if (id === myUid) return;
+    if (ch.type === 'removed') { dropRemote(id); return; }
+    const d = ch.doc.data(), t = d.ts && d.ts.toMillis ? d.ts.toMillis() : Date.now();
+    if (Date.now() - t > 90000) { dropRemote(id); return; }
+    applyRemote(remotes.get(id) || addRemote(id, d), d);
+  }), () => {});
+}
+function startListeners() {
+  watchPeople();
+  // 한마디 · 센터 소식
+  let first = true;
+  onSnapshot(query(collection(db, 'gym_feed'), orderBy('ts', 'desc'), limit(60)), snap => {
+    const add = first ? snap.docs.slice().reverse() : snap.docChanges().filter(c => c.type === 'added').map(c => c.doc).reverse();
+    add.forEach(dd => { const d = dd.data(); showFeed(d.sys ? '' : d.nick, d.text, d.sys ? 'sys' : (d.uid === myUid ? 'me' : ''), d.belt, d.staff, tsTime(d.ts)); });
+    first = false;
+  }, () => {});
+  // 방명록
+  let bFirst = true;
+  onSnapshot(query(collection(db, 'gym_book'), orderBy('ts', 'desc'), limit(60)), snap => {
+    const old = new Map(book.map(b => [b.id, b.like]));
+    book.length = 0; snap.docs.slice().reverse().forEach(dd => { const d = dd.data(); book.push({ id: dd.id, uid: d.uid, n: d.nick, t: d.text, time: tsTime(d.ts), like: d.likes || 0, b: d.belt, cm: [] }); });
+    if (!bFirst) book.forEach(b => { if (b.uid === myUid && old.has(b.id) && b.like > old.get(b.id)) { myNew(); toast('내 방명록에 ♥가 왔어요 💙'); } });
+    bFirst = false; drawBoard(book); if ($('mBook').style.display === 'flex') renderBook();
+  }, () => {});
+  // 소원 + 댓글
+  let wFirst = true, cFirst = true, comments = [];
+  const attach = () => { wishes.forEach(w => w.cm = comments.filter(c => c.wishId === w.id).map(c => [c.nick, c.text, tsTime(c.ts), c.uid])); if ($('mWish').style.display === 'flex') renderWish(); if ($('mMy').style.display === 'flex') renderMy(); };
+  onSnapshot(query(collection(db, 'gym_wishes'), orderBy('ts', 'desc'), limit(80)), snap => {
+    const old = new Map(wishes.map(w => [w.id, w.cheer]));
+    wishes.length = 0; snap.docs.slice().reverse().forEach(dd => { const d = dd.data(); wishes.push({ id: dd.id, uid: d.uid, n: d.nick, t: d.text, time: tsTime(d.ts), cheer: d.cheer || 0, cm: [] }); });
+    while (WISH.tags.length < 8 + Math.min(60, wishes.length)) hangWish();
+    if (!wFirst) wishes.forEach(w => { if (w.uid === myUid && old.has(w.id) && w.cheer > old.get(w.id)) { myNew(); toast('내 소원에 응원이 왔어요 💙'); } });
+    wFirst = false; attach();
+  }, () => {});
+  onSnapshot(query(collection(db, 'gym_comments'), orderBy('ts', 'desc'), limit(300)), snap => {
+    if (!cFirst) snap.docChanges().forEach(ch => { const d = ch.doc.data(); if (ch.type === 'added' && d.owner === myUid && d.uid !== myUid) { myNew(); toast(`${d.nick}님이 내 소원에 댓글을 달았어요 💬`, 2600); } });
+    comments = snap.docs.map(dd => dd.data()); cFirst = false; attach();
+  }, () => {});
+  // 하이파이브: 받은 요청 · 내 요청 수락
+  onSnapshot(query(collection(db, 'gym_hi5'), where('to', '==', myUid), limit(20)), snap => snap.docChanges().forEach(ch => {
+    if (ch.type !== 'added') return; const d = ch.doc.data(), t = d.ts && d.ts.toMillis ? d.ts.toMillis() : Date.now();
+    if (d.st !== 'req' || Date.now() - t > 60000 || $('req')) return;
+    const r = remotes.get(d.from); const box = document.createElement('div'); box.id = 'req'; box.className = 'ui';
+    box.style.cssText = 'left:50%;transform:translateX(-50%);top:calc(176px + env(safe-area-inset-top));width:min(330px,calc(100% - 24px));background:#fff;border-radius:14px;padding:10px 12px;box-shadow:0 8px 20px rgba(0,0,0,.3);z-index:6';
+    box.innerHTML = `<div style="font-size:14px;font-weight:900">🙌 ${esc(d.fromNick)}님이 하이파이브를 요청했어요</div><div style="display:flex;gap:6px;margin-top:8px"><button class="btn p" style="flex:1;height:40px" id="rOk">하이파이브!</button><button class="btn g" style="flex:1;height:40px" id="rNo">나중에</button></div>`;
+    document.body.appendChild(box);
+    $('rOk').onclick = () => { box.remove(); updateDoc(ch.doc.ref, { st: 'ok' }).catch(() => {}); const rr = remotes.get(d.from); if (rr) hi5Anim(rr, true); };
+    $('rNo').onclick = () => { box.remove(); updateDoc(ch.doc.ref, { st: 'no' }).catch(() => {}); };
+    setTimeout(() => { if (box.isConnected) box.remove(); }, 15000);
+  }), () => {});
+  onSnapshot(query(collection(db, 'gym_hi5'), where('from', '==', myUid), limit(20)), snap => snap.docChanges().forEach(ch => {
+    if (ch.type !== 'modified') return; const d = ch.doc.data(), r = remotes.get(d.to);
+    if (d.st === 'ok' && r) hi5Anim(r, false); else if (d.st === 'no') toast('다음에 하이파이브해요 🙂');
+  }), () => {});
+}
+if (DEMO) { $('nick').style.display = 'block'; $('enter').disabled = false; $('enter').textContent = '입장하기'; $('startSmall').textContent = '체험판 · 다른 회원은 예시 캐릭터예요'; }
+else onAuthStateChanged(auth, async user => {
+  if (LIVE) return;
+  if (!user || !user.phoneNumber) { startGuest(); return; }
+  try {
+    const snap = await getDocs(query(collection(db, 'members'), where('phone', '==', user.phoneNumber), limit(1)));
+    if (snap.empty) { startGuest('회원 정보를 찾지 못했어요<br>센터에 문의해 주세요'); return; }
+    const m = snap.docs[0].data(), td = KSTd();
+    if (!((m.gymExp && m.gymExp >= td) || (m.holdEnd && m.holdEnd >= td))) { startGuest('회원권이 끝났어요<br>다시 등록하시면 바로 들어올 수 있어요'); return; }
+    myUid = user.uid; ME = { nick: m.nickname || m.name || '회원', total: Number(m.total) || 0, attendedToday: m.lastAttend === td, staff: !!m.staff };
+    MYBELT = beltKey(ME.total); LIVE = true; setName(ME.nick); startMember(); startListeners();
+  } catch (e) { startGuest('잠시 후 다시 들어와 주세요'); }
+});
 window.__d = { me, controls, camera, goTo, goEq, onTap };
 loop();
 </script>
