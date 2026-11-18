@@ -49,12 +49,16 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 .acts{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
 .acts button{border:0;border-radius:12px;background:#F1F4FA;color:#111827;height:74px;font-family:inherit;font-size:12.5px;font-weight:900;cursor:pointer}
 .acts button span{display:block;font-size:24px;margin-bottom:2px}
-#start{position:fixed;inset:0;z-index:30;display:flex;flex-direction:column;align-items:center;justify-content:center;background:linear-gradient(#6FB2F2,#BFE0FF 60%,#E9F4FF);color:#0B1B4D;text-align:center;padding:24px}
+#start{position:fixed;inset:0;z-index:30;display:block;background:#F4F7FB;color:#0B1B4D;text-align:center;padding:0;overflow-y:auto}
+#start .hero{background:var(--b);color:#fff;border-radius:0 0 34px 34px;padding:calc(env(safe-area-inset-top) + 76px) 24px 78px;position:relative;overflow:hidden}
+#start .hero:before,#start .hero:after{content:'';position:absolute;border-radius:50%;border:2px solid rgba(255,255,255,.08)}
+#start .hero:before{right:-70px;top:-50px;width:230px;height:230px}#start .hero:after{left:-90px;bottom:-110px;width:270px;height:270px}
+#start .body{position:relative;margin:-34px auto 0;padding:0 22px 32px;max-width:420px;display:flex;flex-direction:column;align-items:stretch}
 #start .lg{font-size:30px;font-weight:900;font-style:italic;color:#fff;background:var(--b);border-radius:999px;padding:6px 24px}
-#start p{color:#1E3A8A;font-size:14px;line-height:1.6;margin:14px 0 18px}
-#start input{width:240px;height:48px;border-radius:12px;border:2px solid #C7D3EE;padding:0 14px;font-size:16px;font-family:inherit;text-align:center;-webkit-user-select:text;user-select:text}
-#start .btn{width:240px;height:54px;margin-top:10px;font-size:17px}#start .btn.p{background:var(--b)}#start{overflow-y:auto}
-#start small{margin-top:14px;color:#3B5BA9;font-size:12px}
+#start p{color:#374151;font-size:13.5px;line-height:1.65;margin:18px 6px 4px}
+#start input{width:100%;box-sizing:border-box;margin-top:12px;height:48px;border-radius:12px;border:2px solid #C7D3EE;padding:0 14px;font-size:16px;font-family:inherit;text-align:center;-webkit-user-select:text;user-select:text}
+#start .btn{width:100%;height:54px;margin-top:14px;font-size:17px;border-radius:14px}#start .btn.p{background:var(--b);box-shadow:0 6px 16px rgba(9,54,146,.28)}
+#start small{margin-top:12px;color:#6B7280;font-size:12px}#start small:empty{display:none}
 #face{position:fixed;inset:0;z-index:25;display:none;align-items:center;justify-content:center;background:rgba(3,8,25,.45)}
 .dev{width:230px;padding:14px 12px 18px;border-radius:18px;background:#0B0D12;box-shadow:0 0 0 3px #CBD5E1,0 20px 40px rgba(0,0,0,.5)}
 .dev .scr{border-radius:8px;overflow:hidden;background:#0F1E4A;color:#fff}
@@ -66,7 +70,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 .dev .ok{display:flex;align-items:center;gap:10px;padding:10px;background:#1E3A8A;min-height:58px}
 .dev .ok i{width:38px;height:38px;border-radius:50%;background:#2563EB;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:20px;font-weight:900;flex:none}
 #skip{right:12px;top:calc(56px + env(safe-area-inset-top));display:none;background:rgba(255,255,255,.95);color:var(--b);border:0;border-radius:999px;padding:8px 14px;font-weight:900;font-family:inherit}
-#start .btn.g{width:240px;height:48px;margin-top:8px;font-size:15px}
+#start .btn.g{width:100%;height:48px;margin-top:10px;font-size:15px;box-shadow:none}
 .inrow{display:flex;gap:6px;margin-top:6px}
 #feed{left:10px;bottom:calc(106px + env(safe-area-inset-bottom));width:min(300px,72%);display:flex;flex-direction:column;align-items:flex-start;gap:4px;pointer-events:none}
 #feed div{max-width:100%;background:rgba(15,23,42,.42);color:#fff;font-size:12.5px;line-height:1.35;padding:4px 9px;border-radius:10px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:opacity 1.2s,transform .3s;text-shadow:0 1px 2px rgba(0,0,0,.4);animation:fin .3s ease-out}
@@ -97,7 +101,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="top" class="ui"><a class="chip logo" href="../" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;background:#093692">‹ <img src="logo-w.png" alt="RUN N FIT" style="height:14px;display:block"></a><span class="chip" id="clock">☀️ 08:00</span><span class="sp"></span><span class="chip" id="cnt">💙 함께 운동 중</span><button class="chip" id="bMy" style="border:0;font-family:inherit;background:#093692;color:#fff;position:relative">MY<i id="myDot" style="display:none;position:absolute;top:2px;right:2px;width:9px;height:9px;border-radius:50%;background:#EF4444;box-shadow:0 0 0 2px #fff"></i></button></div>
+<div id="top" class="ui"><a class="chip logo" href="../" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;background:#093692">‹ <img src="logo-white.png" alt="RUN N FIT" style="height:15px;display:block"></a><span class="chip" id="clock">☀️ 08:00</span><span class="sp"></span><span class="chip" id="cnt">💙 함께 운동 중</span><button class="chip" id="bMy" style="border:0;font-family:inherit;background:#093692;color:#fff;position:relative">MY<i id="myDot" style="display:none;position:absolute;top:2px;right:2px;width:9px;height:9px;border-radius:50%;background:#EF4444;box-shadow:0 0 0 2px #fff"></i></button></div>
 <div id="hint" class="ui">👆 톡 눌러 이동 · ☝️ 밀어서 방향 · 🤏 두 손가락 확대</div>
 <button id="skip" class="ui">건너뛰기 ›</button>
 <div id="toast" class="ui"></div>
@@ -130,24 +134,29 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 <div class="cam"><div class="scan" id="fScan"></div><svg width="80" height="98" viewBox="0 0 14 17" shape-rendering="crispEdges"><rect x="3" y="0" width="8" height="3" fill="#3B2A1A"/><rect x="3" y="3" width="8" height="6" fill="#F2C9A0"/><rect x="5" y="5" width="1" height="1" fill="#111827"/><rect x="8" y="5" width="1" height="1" fill="#111827"/><rect x="6" y="7" width="2" height="1" fill="#B45309"/><rect x="1" y="10" width="12" height="7" fill="#2563EB"/><rect x="4" y="12" width="6" height="1" fill="#fff"/></svg></div>
 <div class="ok" id="fOk"></div></div></div></div>
 <div id="start">
-  <img src="runnfit-logo.jpg" alt="RUN N FIT" style="width:min(250px,70vw);border-radius:16px;display:block;box-shadow:0 8px 24px rgba(9,54,146,.25)">
-  <p><b style="color:#0B1B4D;font-size:19px">미니런앤핏</b><br><b style="color:#093692">온라인에서도 함께하는 우리들의 런앤핏</b></p>
-  <p style="font-size:13.5px;line-height:1.65;max-width:300px;margin:0 0 14px;color:#1E3A8A">지금 이 앱에 접속한 회원님들과 실시간으로 소통하고, 서로 응원해 보세요!<br>따뜻한 한마디를 방명록에 남길 수도 있어요. 💙</p>
-  <div id="startMsg" style="font-size:14px;color:#1E3A8A;margin-bottom:10px;line-height:1.5;display:none;width:min(340px,100%)"></div>
+  <div class="hero">
+    <img src="logo-white.png" alt="RUN N FIT" style="width:min(220px,62vw);display:block;margin:0 auto;position:relative">
+    <div style="font-size:24px;font-weight:900;margin-top:22px;position:relative">미니런앤핏</div>
+    <div style="font-size:14px;font-weight:700;opacity:.9;margin-top:6px;position:relative">온라인에서도 함께하는 우리들의 런앤핏</div>
+  </div>
+  <div class="body">
+  <div id="startMsg" style="background:#fff;border-radius:14px;padding:14px;box-shadow:0 4px 14px rgba(9,54,146,.10);font-size:15px;color:#111827;line-height:1.55">회원 정보를 확인하고 있어요…</div>
+  <p>지금 이 앱에 접속한 회원님들과 실시간으로 소통하고, 서로 응원해 보세요! 따뜻한 한마디를 방명록에 남길 수도 있어요.&nbsp;💙</p>
   <input id="nick" maxlength="8" placeholder="닉네임" style="display:none">
   <button class="btn p" id="enter" disabled>확인하고 있어요…</button>
-  <a class="btn p" id="loginBtn" href="../" style="display:none;width:240px;height:54px;margin-top:10px;font-size:16px;line-height:54px;text-decoration:none;border-radius:12px">런앤핏 앱에서 로그인하기</a>
+  <a class="btn p" id="loginBtn" href="../" style="display:none;height:54px;font-size:16px;line-height:54px;text-decoration:none">런앤핏 앱에서 로그인하기</a>
   <button class="btn g" id="guestBtn" style="display:none">비회원 둘러보기</button>
   <small id="startSmall">회원 정보는 런앤핏 앱 로그인으로 확인해요</small>
-  <div id="helpCard" style="display:none;word-break:keep-all;width:min(340px,100%);margin-top:22px;background:var(--b);border-radius:12px;padding:10px 12px;color:#fff;text-align:left">
-    <button type="button" id="helpToggle" style="width:100%;height:auto;display:flex;align-items:center;gap:8px;background:none;border:0;color:#fff;padding:0;text-align:left;font-family:inherit;cursor:pointer">
-      <span style="width:28px;height:28px;border-radius:8px;background:rgba(255,255,255,.16);display:inline-flex;align-items:center;justify-content:center;flex:none"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.4 2.4 0 1 1 3.4 2.2c-.7.3-1 .8-1 1.5v.4"/><circle cx="12" cy="16.6" r=".6" fill="#fff"/></svg></span>
-      <span style="flex:1"><span style="display:block;font-size:15px;font-weight:900">도와줘요! 런앤핏!</span><span style="display:block;font-size:11px;font-weight:500;opacity:.85;margin-top:1px">비용이 따로 들지 않아요 · 언제든 편하게 신청해주세요!</span></span>
-      <span id="helpArrow" style="font-size:13px;display:inline-block">▾</span></button>
+  <div id="helpCard" style="display:none;word-break:keep-all;margin-top:12px;background:#fff;border-radius:12px;padding:10px 12px;color:#111827;box-shadow:inset 0 0 0 1.5px #D5DCE8;text-align:left">
+    <button type="button" id="helpToggle" style="width:100%;height:auto;display:flex;align-items:center;gap:8px;background:none;border:0;color:#111827;padding:0;text-align:left;font-family:inherit;cursor:pointer">
+      <span style="width:28px;height:28px;border-radius:8px;background:#E3E9FF;display:inline-flex;align-items:center;justify-content:center;flex:none"><svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="#093692" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.4 2.4 0 1 1 3.4 2.2c-.7.3-1 .8-1 1.5v.4"/><circle cx="12" cy="16.6" r=".6" fill="#093692"/></svg></span>
+      <span style="flex:1"><span style="display:block;font-size:15px;font-weight:900;color:#093692">도와줘요! 런앤핏!</span><span style="display:block;font-size:11px;font-weight:500;color:#4B5563;margin-top:1px">비용이 따로 들지 않아요 · 언제든 편하게 신청해주세요!</span></span>
+      <span id="helpArrow" style="font-size:13px;display:inline-block;color:#093692">▾</span></button>
     <div id="helpRows" style="display:none">
-      <a href="../#help-guide" style="display:flex;align-items:center;gap:9px;background:#fff;color:#0B1B4D;border-radius:10px;padding:9px 10px;margin-top:6px;text-decoration:none"><span style="width:30px;height:30px;border-radius:9px;background:#E3E9FF;display:inline-flex;align-items:center;justify-content:center;flex:none"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#093692" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="3.2"/><path d="M5.5 20c.6-3.8 3.2-6 6.5-6s5.9 2.2 6.5 6"/><path d="M3 11h3M18 11h3M4.5 9.5v3M19.5 9.5v3"/></svg></span><span style="flex:1"><b style="display:block;font-size:14px">1:1 운동가이드 받기</b><span style="display:block;font-size:11.5px;color:#4B5563">코치님이 기구 · 자세를 직접 봐드려요</span></span><b style="color:#093692">›</b></a>
-      <a href="../#help-pt" style="display:flex;align-items:center;gap:9px;background:#fff;color:#0B1B4D;border-radius:10px;padding:9px 10px;margin-top:6px;text-decoration:none"><span style="width:30px;height:30px;border-radius:9px;background:#E3E9FF;display:inline-flex;align-items:center;justify-content:center;flex:none"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#093692" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16v10H9l-4 3.5v-3.5H4z"/><path d="M8 10.5h8"/></svg></span><span style="flex:1"><b style="display:block;font-size:14px">PT 상담받기</b><span style="display:block;font-size:11.5px;color:#4B5563">목표에 맞는 PT를 안내해 드려요</span></span><b style="color:#093692">›</b></a>
+      <a href="../#help-guide" style="display:flex;align-items:center;gap:9px;background:#F4F7FB;color:#0B1B4D;border-radius:10px;padding:9px 10px;margin-top:6px;text-decoration:none"><span style="width:30px;height:30px;border-radius:9px;background:#E3E9FF;display:inline-flex;align-items:center;justify-content:center;flex:none"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#093692" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="7" r="3.2"/><path d="M5.5 20c.6-3.8 3.2-6 6.5-6s5.9 2.2 6.5 6"/><path d="M3 11h3M18 11h3M4.5 9.5v3M19.5 9.5v3"/></svg></span><span style="flex:1"><b style="display:block;font-size:14px">1:1 운동가이드 받기</b><span style="display:block;font-size:11.5px;color:#4B5563">코치님이 기구 · 자세를 직접 봐드려요</span></span><b style="color:#093692">›</b></a>
+      <a href="../#help-pt" style="display:flex;align-items:center;gap:9px;background:#F4F7FB;color:#0B1B4D;border-radius:10px;padding:9px 10px;margin-top:6px;text-decoration:none"><span style="width:30px;height:30px;border-radius:9px;background:#E3E9FF;display:inline-flex;align-items:center;justify-content:center;flex:none"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="#093692" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5h16v10H9l-4 3.5v-3.5H4z"/><path d="M8 10.5h8"/></svg></span><span style="flex:1"><b style="display:block;font-size:14px">PT 상담받기</b><span style="display:block;font-size:11.5px;color:#4B5563">목표에 맞는 PT를 안내해 드려요</span></span><b style="color:#093692">›</b></a>
     </div></div>
+  </div>
 </div>
 <div id="guestBar" class="ui" style="display:none;left:10px;right:10px;bottom:calc(12px + env(safe-area-inset-bottom));background:#fff;border-radius:16px;padding:12px;box-shadow:0 8px 24px rgba(0,0,0,.3)">
   <div style="font-size:14px;font-weight:900">유리문 너머로 구경 중이에요 👀</div><div style="font-size:12px;color:#4B5563;margin:2px 0 8px">런앤핏 회원이 되면 들어가서 함께 운동할 수 있어요</div>
@@ -1192,12 +1201,7 @@ let GUEST = false;
 const KSTd = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
 const tsTime = t => { const d = t && t.toDate ? t.toDate() : new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
 $('helpToggle').onclick = (e) => { e.stopPropagation(); const o = $('helpRows').style.display === 'none'; $('helpRows').style.display = o ? 'block' : 'none'; $('helpArrow').style.transform = o ? 'rotate(180deg)' : ''; };
-function attCard(done, total) {
-  return done
-    ? `<div style="display:flex;align-items:center;gap:12px;background:#093692;color:#fff;border-radius:16px;padding:12px 16px;text-align:left;box-shadow:0 6px 18px rgba(9,54,146,.25)"><span style="width:40px;height:40px;border-radius:50%;background:#FFD54A;display:flex;align-items:center;justify-content:center;flex:none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#093692" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span><b style="display:block;font-size:16px">오늘도 출석 완료!</b><span style="font-size:13px;opacity:.9">짱! 잘했어요 · 총 <b>${total}</b>번째 출석</span></span></div>`
-    : `<div style="display:flex;align-items:center;gap:12px;background:#fff;color:#0B1B4D;border-radius:16px;padding:12px 16px;text-align:left;box-shadow:inset 0 0 0 2px #C7D3EE"><span style="width:40px;height:40px;border-radius:50%;background:#E3E9FF;display:flex;align-items:center;justify-content:center;flex:none"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#093692" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span><span><b style="display:block;font-size:16px;color:#093692">아직 출석 전</b><span style="font-size:13px;color:#374151">런앤핏이 기다리고 있어요! · 총 ${total}번 출석</span></span></div>`;
-}
-function startMember() { $('startMsg').style.display = 'block'; $('startMsg').innerHTML = `<div style="margin-bottom:8px"><b>${esc(myName)}</b>님, 반가워요!</div>${attCard(ME.attendedToday, ME.total)}`; $('enter').disabled = false; $('enter').textContent = '입장하기'; $('startSmall').textContent = ''; $('helpCard').style.display = 'block'; }
+function startMember() { $('startMsg').innerHTML = `<b style="color:#093692">${esc(myName)}</b>님, 반가워요!`; $('enter').disabled = false; $('enter').textContent = '입장하기'; $('startSmall').textContent = ''; $('helpCard').style.display = 'block'; }
 function startGuest(msg) {
   $('startMsg').style.display = 'block'; $('startMsg').innerHTML = msg || '런앤핏 회원은 앱에서 로그인하면<br>바로 들어올 수 있어요';
   $('enter').style.display = 'none'; $('loginBtn').style.display = 'block'; $('guestBtn').style.display = 'block'; $('startSmall').textContent = '비회원은 유리문 너머로 구경할 수 있어요';
@@ -1322,7 +1326,7 @@ function startListeners() {
     if (d.st === 'ok' && r) hi5Anim(r, false); else if (d.st === 'no') toast('다음에 하이파이브해요 🙂');
   }), () => {});
 }
-if (DEMO) { $('nick').style.display = 'block'; $('enter').disabled = false; $('enter').textContent = '입장하기'; $('startSmall').textContent = '체험판 · 다른 회원은 예시 캐릭터예요'; $('startMsg').style.display = 'block'; $('startMsg').innerHTML = attCard(!/[?&]demo=0/.test(location.search), 23); }
+if (DEMO) { $('nick').style.display = 'block'; $('enter').disabled = false; $('enter').textContent = '입장하기'; $('startSmall').textContent = '체험판 · 다른 회원은 예시 캐릭터예요'; $('startMsg').innerHTML = '<b style="color:#093692">체험판</b>으로 둘러봐요! 닉네임을 정해 주세요'; $('helpCard').style.display = 'block'; }
 else onAuthStateChanged(auth, async user => {
   if (LIVE) return;
   if (!user || !user.phoneNumber) { startGuest(); return; }
