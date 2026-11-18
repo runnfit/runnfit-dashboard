@@ -95,7 +95,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="top" class="ui"><span class="chip logo">RUN N FIT</span><span class="chip" id="clock">☀️ 08:00</span><span class="sp"></span><span class="chip" id="cnt">지금 0명 / 30명</span></div>
+<div id="top" class="ui"><span class="chip logo">RUN N FIT</span><span class="chip" id="clock">☀️ 08:00</span><span class="sp"></span><span class="chip" id="cnt">💙 함께 운동 중</span></div>
 <div id="hint" class="ui">👆 톡 눌러 이동 · ☝️ 밀어서 방향 · 🤏 두 손가락 확대</div>
 <button id="skip" class="ui">건너뛰기 ›</button>
 <div id="toast" class="ui"></div>
@@ -1080,7 +1080,7 @@ function loop() {
   if (FOUNT.jet) { const k = 1 + Math.sin(clock.elapsedTime * 5) * .08; FOUNT.jet.scale.set(k, 1 + Math.sin(clock.elapsedTime * 3) * .15, k); }
   for (const f of POND.fish) { f.a += f.sp * dt; f.f.position.x = POND.x + Math.cos(f.a) * f.r * POND.rx / 2.4; f.f.position.z = POND.z + Math.sin(f.a) * f.r * POND.rz / 2.4; f.f.rotation.y = -f.a; }
   for (const t of WISH.tags) t.rotation.z = Math.sin(clock.elapsedTime * 1.5 + t.position.x) * .12;
-  $('cnt').textContent = `지금 ${NPCS.length + 1}명 / 30명`;
+  $('cnt').textContent = `💙 ${NPCS.length + 1}명 함께 운동 중`;
   controls.update(); renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
