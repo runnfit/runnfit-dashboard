@@ -154,7 +154,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 <div class="gsec">여럿이 · 연타</div><div class="gl">
 <button data-g="race"><span class="i">🏃</span><span><b>러닝머신 레이스</b><small>10초 동안 [달려!] 연타 · 혼자도 OK</small></span></button>
 <button data-g="sqt"><span class="i">🦵</span><span><b>스쿼트 많이 하기</b><small>10초 동안 [앉아!] 연타 · 혼자도 OK</small></span></button></div>
-<button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
+<button class="btn g" id="gHall" style="width:100%;margin-top:12px">🏆 명예의 전당 보기</button><button class="btn g" style="width:100%;margin-top:8px" data-close>닫기</button></div></div>
 <div id="mGame" class="modal"><div class="sheet"><h3 id="gT">미니게임</h3><div id="gB"></div><button class="btn g" style="width:100%;margin-top:12px" data-close id="gClose">닫기</button></div></div>
 <div id="mTalk" class="modal"><div class="sheet"><h3>접속한 회원에게 한마디</h3><div class="inrow"><input id="msg" maxlength="200" placeholder="예) 오늘도 파이팅!"><button class="btn p" id="send" style="width:76px">보내기</button></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
 <div id="mTerr" class="modal"><div class="sheet"><h3>🌿 테라스 어디로 갈까요?</h3><div id="terrList"></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
@@ -647,6 +647,37 @@ for (let i = 0; i < 14; i++) { const b = new THREE.Mesh(new THREE.SphereGeometry
   for (let r = 0; r < 4; r++) { box(top, -.36, .072, -.16 + r * .1, .3, .005, .015, 0x93C5FD); box(top, .05, .072, -.16 + r * .1, .3, .005, .015, 0x93C5FD); }
   rod(top, .22, .09, .12, .012, .28, 0x111827, 'z'); solid(lx + .05, lz + .05, .6, .4); }
 plant(BOOK.x + BOOK.w + .8, BOOK.z + .5, true);
+// 테라스 · 미니게임 명예의 전당 보드
+const HALL = { x: 4.4, z: -TD + .3, w: 4.4 };
+const hall = { race: [], sqt: [] };
+const hallCanvas = document.createElement('canvas'); hallCanvas.width = 1280; hallCanvas.height = 800;
+const hallTex = new THREE.CanvasTexture(hallCanvas); hallTex.colorSpace = THREE.SRGBColorSpace; hallTex.anisotropy = 8;
+box(scene, HALL.x - .15, 0, HALL.z - .05, HALL.w + .3, 3.35, .3, 0xF8FAFC); solid(HALL.x - .15, HALL.z - .05, HALL.w + .3, .35);
+{ const face = new THREE.Mesh(new THREE.PlaneGeometry(HALL.w, 2.75), new THREE.MeshBasicMaterial({ map: hallTex })); face.position.set(HALL.x + HALL.w / 2, .25 + 2.75 / 2 + .1, HALL.z + .26); scene.add(face); }
+box(scene, HALL.x - .3, 3.35, HALL.z - .1, HALL.w + .6, .14, .42, 0xFFD54A);
+for (let i = 0; i < 14; i++) { const b = new THREE.Mesh(new THREE.SphereGeometry(.06, 8, 6), new THREE.MeshBasicMaterial({ color: i % 2 ? 0xFFD54A : 0xFFFFFF })); b.position.set(HALL.x - .1 + i * (HALL.w + .2) / 13, 3.3 - Math.sin(i / 13 * Math.PI) * .18, HALL.z + .3); scene.add(b); }
+function drawHall() {
+  const g = hallCanvas.getContext('2d'), W = 1280, H = 800;
+  const grd = g.createLinearGradient(0, 0, 0, H); grd.addColorStop(0, '#0B3FA8'); grd.addColorStop(1, '#153189'); g.fillStyle = grd; g.fillRect(0, 0, W, H);
+  g.textAlign = 'center'; g.fillStyle = '#FFD54A'; g.font = "900 34px 'Noto Sans KR', sans-serif"; g.fillText('🏆 깨고 싶다면 도전!', W / 2, 60);
+  g.fillStyle = '#FFFFFF'; g.font = "900 66px 'Noto Sans KR', sans-serif"; g.fillText('미니게임 명예의 전당', W / 2, 138);
+  g.fillStyle = 'rgba(255,213,74,.7)'; g.fillRect(W / 2 - 60, 160, 120, 5);
+  [['race', '🏃 러닝머신 레이스', 'm'], ['sqt', '🦵 스쿼트 많이 하기', '개']].forEach(([k, t, u], c) => {
+    const x = 50 + c * 600, y = 195, w = 580;
+    g.fillStyle = 'rgba(255,255,255,.1)'; g.fillRect(x, y, w, 570);
+    g.textAlign = 'left'; g.fillStyle = '#FFFFFF'; g.font = "900 40px 'Noto Sans KR', sans-serif"; g.fillText(t, x + 28, y + 62);
+    const L = hall[k];
+    if (!L.length) { g.fillStyle = 'rgba(255,255,255,.6)'; g.font = "800 32px 'Noto Sans KR', sans-serif"; g.fillText('첫 기록의 주인공이 되어 보세요!', x + 28, y + 150); }
+    L.slice(0, 5).forEach((e, i) => { const yy = y + 100 + i * 92;
+      g.fillStyle = i === 0 ? '#FFD54A' : i === 1 ? '#E5E7EB' : i === 2 ? '#F0B27A' : 'rgba(255,255,255,.18)'; g.beginPath(); g.arc(x + 58, yy + 36, 30, 0, 7); g.fill();
+      g.fillStyle = i < 3 ? '#153189' : '#FFFFFF'; g.textAlign = 'center'; g.font = "900 34px 'Noto Sans KR', sans-serif"; g.fillText(String(i + 1), x + 58, yy + 48);
+      g.textAlign = 'left'; g.fillStyle = '#FFFFFF'; g.font = "900 40px 'Noto Sans KR', sans-serif"; let nm = e.n; while (g.measureText(nm).width > 300 && nm.length > 1) nm = nm.slice(0, -1); g.fillText(nm, x + 110, yy + 50);
+      g.textAlign = 'right'; g.fillStyle = i === 0 ? '#FFD54A' : '#FFFFFF'; g.font = "900 44px 'Noto Sans KR', sans-serif"; g.fillText(e.sc + u, x + w - 28, yy + 52); });
+  });
+  hallTex.needsUpdate = true;
+}
+drawHall(); if (document.fonts) document.fonts.ready.then(drawHall);
+function hallSet(k, rows) { const seen = new Set(), out = []; for (const r of rows.sort((a, b) => b.sc - a.sc)) { if (seen.has(r.u)) continue; seen.add(r.u); out.push(r); } hall[k] = out.slice(0, 20); drawHall(); }
 function drawBoard(entries) {
   const g = bookCanvas.getContext('2d'), W = bookCanvas.width, H = bookCanvas.height;
   const grd = g.createLinearGradient(0, 0, 0, H); grd.addColorStop(0, '#0B3FA8'); grd.addColorStop(1, '#153189'); g.fillStyle = grd; g.fillRect(0, 0, W, H);
@@ -927,6 +958,7 @@ document.querySelectorAll('.modal').forEach(m => m.addEventListener('pointerdown
 $('bFind').onclick = () => openM('mFind');
 $('bAct').onclick = () => openM('mAct');
 $('bGame').onclick = () => openM('mGames');
+$('gHall').onclick = () => { closeAll(); openHall(); };
 document.querySelectorAll('#mGames [data-g]').forEach(b => b.onclick = () => { closeAll(); if (entered) gameReq(b.dataset.g); });
 $('bTalk').onclick = () => { openM('mTalk'); setTimeout(() => $('msg').focus(), 50); };
 $('send').onclick = () => { const t = $('msg').value.trim(); if (t) { say(me, t, 5, true); $('msg').value = ''; } closeAll(); };
@@ -935,6 +967,7 @@ const TERR = [
   ['🌿', '테라스 쉼터', '파라솔 아래 앉아 바람 쐬며 쉬어요', () => goTo(12, -4.3, () => { me.position.set(12, .43, -5); me.rotation.y = 0; me.userData.act = 'sit'; say(me, '바람 좋다~', 2.5); })],
   ['📖', '방명록', '꿈과 사랑이 가득한 런앤핏에 한 줄 남겨요', () => { const q = places.find(p => p.nm === '방명록'); goTo(q.x, q.z, () => { me.rotation.y = q.rot; renderBook(); openM('mBook'); }); }],
   ['🌳', '소원나무', '꼭 이루고 싶은 꿈을 적어 매달아요', () => { const q = places.find(p => p.nm === '소원나무'); goTo(q.x, q.z, () => { me.rotation.y = q.rot; renderWish(); openM('mWish'); }); }],
+  ['🏆', '명예의 전당', '미니게임 최고 기록에 도전해요', () => { const q = places.find(p => p.nm === '명예의 전당'); goTo(q.x, q.z, () => { me.rotation.y = q.rot; openHall(); }); }],
   ['⛲', '분수 · 연못', '물고기 보면서 물멍해요', () => { const q = places.find(p => p.nm === '연못'); goTo(q.x, q.z, () => { me.rotation.y = q.rot; say(me, '물멍 중… 🐟', 3); }); }],
 ];
 TERR.forEach(([ic, nm, ds, fn]) => { const b = document.createElement('button'); b.className = 'tl'; b.innerHTML = `<span>${ic}</span><div><b>${nm}</b><i>${ds}</i></div>`; b.onclick = () => { closeAll(); toast(`${nm}(으)로 가는 중`); fn(); }; $('terrList').appendChild(b); });
@@ -946,6 +979,7 @@ const book = !DEMO ? [] : [
   { n: '꾸준이', t: '첫 달 12번 출석 성공! 노란 띠 받았어요', time: '08:30', like: 17 },
   { n: '하체러버', t: '엄마랑 같이 다니는 런앤핏 최고예요', time: '08:52', like: 11 },
 ];
+if (DEMO) { hallSet('race', [{ u: 'd1', n: '새벽러너', sc: 132 }, { u: 'd2', n: '걷기왕', sc: 118 }, { u: 'd3', n: '3대500', sc: 104 }]); hallSet('sqt', [{ u: 'd4', n: '스쿼트요정', sc: 71 }, { u: 'd5', n: '하체러버', sc: 64 }, { u: 'd6', n: '꾸준이', sc: 58 }, { u: 'd7', n: '출석요정', sc: 49 }]); }
 const CHIPS = ['오늘도 파이팅 💪', '런앤핏 최고 💙', '꾸준히 함께해요', '오운완 🔥', '코치님 감사해요'];
 CHIPS.forEach(c => { const b = document.createElement('button'); b.textContent = c; b.onclick = () => { $('bookMsg').value = c; $('bookMsg').focus(); }; $('bookChips').appendChild(b); });
 function renderBook() {
@@ -1289,10 +1323,25 @@ function tapEnd(g) {
   say(me, `${mine}${unit}! ${rank === 1 ? '🏆' : '💪'}`, 2.5, false, true);
   for (const p of list) if (p.npc) { p.npc.a.userData.act = p === list[0] ? 'hooray' : null; p.npc.busy = 2.5; }
   if (g.host) { feed.raw = true; feed('', list.length > 1 ? `${ic} ${nm} 결과 · ` + list.slice(0, 3).map((p, i) => `${i + 1}등 ${p.name} ${score(p)}${unit}`).join(' · ') : `${myName}님 ${ic} ${nm} ${mine}${unit}!`, 'sys'); feed.raw = false; }
-  gShow(`${ic} ${nm}`, `<div class="big">${mine}${unit}</div><div class="msg">${list.length > 1 ? (rank === 1 ? '🏆 1등이에요!' : rank + '등! 다음엔 1등 가봐요 💪') : '좋아요! 다음엔 기록 깨봐요 💪'}</div>`
-    + list.map((p, i) => `<div class="tr"><span class="nm" style="${p.me ? 'color:#153189' : ''}">${i + 1}. ${esc(p.name)}</span><span class="ct" style="width:auto;margin-left:auto">${score(p)}${unit}</span></div>`).join('')
+  const uidK = myUid || 'me', prevBest = (hall[g.k].find(r => r.u === uidK) || { sc: 0 }).sc;
+  if (mine > 0) { if (LIVE) addDoc(collection(db, 'gym_rec_' + g.k), { uid: myUid, nick: myName, belt: MYBELT, score: mine, ts: serverTimestamp() }).catch(() => {});
+    hallSet(g.k, [...hall[g.k], { u: uidK, n: myName, sc: mine }]); }
+  const hr = hall[g.k].findIndex(r => r.u === uidK) + 1, newRec = mine > prevBest && prevBest > 0, inHall = mine > 0 && hr && hr <= 5 && hall[g.k][hr - 1].sc === mine;
+  if (inHall && g.host !== undefined) { burst(me.position.x, 2.6, me.position.z, ['🏆', '✨', '⭐'], 12, '명예의 전당!'); if (mine > prevBest) { feed.raw = true; feed('', `🏆 ${myName}님 ${nm} 명예의 전당 ${hr}위 입성! (${mine}${unit})`, 'sys'); feed.raw = false; } }
+  gShow(`${ic} ${nm}`, `<div class="big">${mine}${unit}</div><div class="msg">${inHall && mine > prevBest ? `🏆 명예의 전당 ${hr}위 입성!` : newRec ? '🔥 개인 신기록!' : list.length > 1 ? (rank === 1 ? '🏆 이번 판 1등!' : rank + '등! 다음엔 1등 가봐요 💪') : '좋아요! 다음엔 기록 깨봐요 💪'}</div>`
+    + (list.length > 1 ? '<div class="gsec">이번 판</div>' + list.map((p, i) => `<div class="tr"><span class="nm" style="${p.me ? 'color:#153189' : ''}">${i + 1}. ${esc(p.name)}</span><span class="ct" style="width:auto;margin-left:auto">${score(p)}${unit}</span></div>`).join('') : '')
+    + hallHtml(g.k)
     + `<div class="row"><button id="gAgain" style="font-size:16px;height:48px">한 판 더</button></div>`);
   $('gAgain').onclick = () => { closeAll(); tapStart(g.k); };
+}
+function hallHtml(k) {
+  const u = TAPG[k][5], me2 = myUid || 'me', L = hall[k].slice(0, 5);
+  return '<div class="gsec">🏆 명예의 전당 TOP 5</div>' + (L.length ? L.map((r, i) => `<div class="tr" style="${r.u === me2 ? 'background:#EEF2FB;border-radius:8px;padding:2px 6px' : ''}"><span class="nm" style="width:auto">${['🥇', '🥈', '🥉', '4.', '5.'][i]} ${esc(r.n)}</span><span class="ct" style="width:auto;margin-left:auto">${r.sc}${u}</span></div>`).join('') : '<div class="msg" style="font-size:13px;color:#5B6478">첫 기록의 주인공이 되어 보세요!</div>');
+}
+function openHall() {
+  gShow('🏆 미니게임 명예의 전당', hallHtml('race').replace('🏆 명예의 전당 TOP 5', '🏃 러닝머신 레이스') + hallHtml('sqt').replace('🏆 명예의 전당 TOP 5', '🦵 스쿼트 많이 하기')
+    + '<div class="row"><button id="hR" style="font-size:15px;height:48px">🏃 레이스 도전</button><button id="hS" style="font-size:15px;height:48px">🦵 스쿼트 도전</button></div>');
+  $('hR').onclick = () => { closeAll(); tapStart('race'); }; $('hS').onclick = () => { closeAll(); tapStart('sqt'); };
 }
 function tapRemote(r, t) { if (!GT || !t || t.id !== GT.id) return; const p = GT.ppl.get(r.uid) || { name: r.a.userData.name, n: 0 }; p.n = t.n; GT.ppl.set(r.uid, p); if (!GT.done) r.a.userData.act = TAPG[GT.k][4]; }
 function hi5Anim(n, post) {
@@ -1382,6 +1431,7 @@ $('wishSend').onclick = () => { const t = $('wishMsg').value.trim(); if (!t) ret
 // 눌러서 바로 가는 장소 (방명록 · 소원나무 · 분수 · 연못)
 const places = [];
 function place(nm, x0, z0, w, d, h, tx, tz, rot) { const m = new THREE.Mesh(BX, new THREE.MeshBasicMaterial({ visible: false })); m.scale.set(w, h, d); m.position.set(x0 + w / 2, h / 2, z0 + d / 2); scene.add(m); places.push({ m, nm, x: tx, z: tz, rot }); }
+place('명예의 전당', HALL.x, HALL.z - .3, HALL.w, .9, 3.8, HALL.x + HALL.w / 2 + .9, HALL.z + 2.0, Math.PI);
 place('방명록', BOOK.x, BOOK.z - .3, BOOK.w, .9, 3.8, BOOK.x + BOOK.w / 2 + .9, BOOK.z + 2.0, Math.PI);
 place('소원나무', WISH.x - 3.2, WISH.z - 3.2, 6.4, 6.4, 10, WISH.x - 3.3, WISH.z + .6, Math.PI / 2);
 place('분수', FOUNT.x - 1.9, FOUNT.z - 1.9, 3.8, 3.8, 2.6, FOUNT.x, FOUNT.z + 2.6, Math.PI);
@@ -1399,12 +1449,13 @@ function updateCard() {
   if (curPerson) { if (Math.hypot(curPerson.a.position.x - me.position.x, curPerson.a.position.z - me.position.z) < 4.5) return; curPerson = null; nearKey = ''; card.style.display = 'none'; }
   let best = null, bd = 2.0;
   for (const [n, p] of Object.entries(eqPos)) { const d = Math.hypot(p.x - me.position.x, p.z - me.position.z); if (d < bd) { bd = d; best = +n; } }
-  const dBook = Math.hypot(BOOK.x + BOOK.w / 2 - me.position.x, BOOK.z + 1.2 - me.position.z), dWish = Math.hypot(WISH.x - me.position.x, WISH.z - me.position.z);
+  const dHall = Math.hypot(HALL.x + HALL.w / 2 - me.position.x, HALL.z + 1.2 - me.position.z), dBook = Math.hypot(BOOK.x + BOOK.w / 2 - me.position.x, BOOK.z + 1.2 - me.position.z), dWish = Math.hypot(WISH.x - me.position.x, WISH.z - me.position.z);
   let lift = null; for (const L of LIFTS) if (Math.hypot(L.x - me.position.x, L.z - me.position.z) < 2.3) lift = L;
-  const key = lift ? 'lift' + lift.k : best ? 'eq' + best : dBook < 3.2 ? 'book' : dWish < 4.8 ? 'wish' : '';
+  const key = lift ? 'lift' + lift.k : best ? 'eq' + best : dHall < 3.2 ? 'hall' : dBook < 3.2 ? 'book' : dWish < 4.8 ? 'wish' : '';
   if (key === nearKey) return; nearKey = key;
   if (!key) { card.style.display = 'none'; return; }
   if (lift) { card.innerHTML = `<div class="t">${lift.ic} ${lift.nm}</div><div class="s">${lift.s}</div><div class="row"><button class="btn p" id="cLift">${lift.nm} 들기</button></div>`; $('cLift').onclick = () => doLift(lift); addX(); return; }
+  if (key === 'hall') { card.innerHTML = `<div class="t">🏆 미니게임 명예의 전당</div><div class="s">러닝머신 레이스 · 스쿼트 많이 하기 TOP 5</div><div class="row"><button class="btn p" id="cHall">기록 보기 · 도전</button></div>`; $('cHall').onclick = openHall; addX(); return; }
   if (key === 'book') { card.innerHTML = `<div class="t">📖 방명록</div><div class="s">꿈과 사랑이 가득한 행복한 런앤핏 방명록</div><div class="row"><button class="btn p" id="cBook">방명록 보기</button></div>`; $('cBook').onclick = () => { renderBook(); openM('mBook'); }; addX(); }
   else if (key === 'wish') { card.innerHTML = `<div class="t">🌳 소원나무</div><div class="s">꼭 이뤄졌으면 하는 목표나 꿈을 적어 매달아요 · 서로 응원해요</div><div class="row"><button class="btn g" id="cWl">소원 구경하기</button><button class="btn p" id="cWa">소원 매달기</button></div>`; $('cWl').onclick = () => { renderWish(); openM('mWish'); }; $('cWa').onclick = () => { renderWish(); openM('mWish'); setTimeout(() => $('wishMsg').focus(), 50); }; addX(); }
   else showEq(best);
@@ -1684,6 +1735,7 @@ function startListeners() {
     if (!cFirst) snap.docChanges().forEach(ch => { const d = ch.doc.data(); if (ch.type === 'added' && d.owner === myUid && d.uid !== myUid) { myNew(); toast(`${d.nick}님이 내 소원에 댓글을 달았어요 💬`, 2600); } });
     comments = snap.docs.map(dd => dd.data()); cFirst = false; attach();
   }, () => {});
+  ['race', 'sqt'].forEach(k => onSnapshot(query(collection(db, 'gym_rec_' + k), orderBy('score', 'desc'), limit(60)), snap => hallSet(k, snap.docs.map(dd => { const d = dd.data(); return { u: d.uid, n: d.nick || '회원', sc: d.score || 0 }; })), () => {}));
   // 하이파이브: 받은 요청 · 내 요청 수락
   onSnapshot(query(collection(db, 'gym_hi5'), where('to', '==', myUid), limit(20)), snap => snap.docChanges().forEach(ch => {
     if (ch.type !== 'added') return; const d = ch.doc.data(), t = d.ts && d.ts.toMillis ? d.ts.toMillis() : Date.now();
