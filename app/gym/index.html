@@ -77,8 +77,9 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 #feed div b{color:#fff;margin-right:6px;border-bottom:3px solid #F3F4F6;padding-bottom:1px}
 #feed div b.st,#feedAll .r b.st{background:#153189;border:0;border-radius:5px;padding:0 5px;color:#fff}
 #feed div b.co,#feedAll .r b.co{background:#fff;border:1.5px solid #153189;border-radius:5px;padding:0 5px;color:#153189}
-#feed div.sys{background:rgba(37,99,235,.45)}
-#feed div.sys{color:#DDE3FF}
+#feed div.sys{background:rgba(15,23,42,.28);color:#AEB8CC;font-size:11.5px}
+#feedAll .r.sys>div{color:#8A96AD;font-size:11.5px}
+#peopleList button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:#F6F8FC;border-radius:10px;padding:10px 12px;margin-top:6px;font-family:inherit;font-size:14px;text-align:left;cursor:pointer;color:#111827}
 #feed div.old{opacity:.45}
 #feedBtn{left:10px;bottom:calc(72px + env(safe-area-inset-bottom));z-index:6;border:0;border-radius:999px;background:rgba(15,23,42,.55);color:#fff;font-family:inherit;font-size:12px;font-weight:900;padding:6px 11px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
 #feedAll{left:10px;right:10px;bottom:calc(108px + env(safe-area-inset-bottom));max-height:42vh;overflow-y:auto;background:rgba(15,23,42,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:14px;padding:8px 10px;display:none;z-index:6;-webkit-overflow-scrolling:touch}
@@ -102,7 +103,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="top" class="ui"><a class="chip logo" href="../" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;background:#153189">‹ <img src="logo-white.png" alt="RUN N FIT" style="height:15px;display:block"></a><span class="chip" id="clock">☀️ 08:00</span><span class="sp"></span><span class="chip" id="cnt">💙 함께 운동 중</span><button class="chip" id="bMy" style="border:0;font-family:inherit;background:#153189;color:#fff;position:relative">MY<i id="myDot" style="display:none;position:absolute;top:2px;right:2px;width:9px;height:9px;border-radius:50%;background:#EF4444;box-shadow:0 0 0 2px #fff"></i></button></div>
+<div id="top" class="ui"><a class="chip logo" href="../" style="text-decoration:none;display:inline-flex;align-items:center;gap:6px;background:#153189">‹ <img src="logo-white.png" alt="RUN N FIT" style="height:15px;display:block"></a><span class="chip" id="clock">☀️ 08:00</span><span class="sp"></span><button type="button" class="chip" id="cnt" style="border:0;font-family:inherit;cursor:pointer">💙 함께 운동 중</button><button class="chip" id="bMy" style="border:0;font-family:inherit;background:#153189;color:#fff;position:relative">MY<i id="myDot" style="display:none;position:absolute;top:2px;right:2px;width:9px;height:9px;border-radius:50%;background:#EF4444;box-shadow:0 0 0 2px #fff"></i></button></div>
 <div id="hint" class="ui">👆 톡 눌러 이동 · ☝️ 밀어서 방향 · 🤏 두 손가락 확대</div>
 <button id="skip" class="ui">건너뛰기 ›</button>
 <div id="toast" class="ui"></div>
@@ -118,6 +119,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
   <button id="bTerr">🌿 테라스</button>
 </div>
 <div id="mFind" class="modal"><div class="sheet"><h3>어떤 기구로 갈까요?</h3><div class="grid" id="eqGrid"></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
+<div id="mPeople" class="modal"><div class="sheet"><h3>지금 함께 운동 중</h3><div style="font-size:12.5px;color:#4B5563;margin:-4px 0 6px">이름을 누르면 그 회원에게 가요</div><div id="peopleList" style="max-height:52vh;overflow-y:auto"></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
 <div id="mAct" class="modal"><div class="sheet"><h3>동작</h3><div class="acts" id="actGrid"></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
 <div id="mTalk" class="modal"><div class="sheet"><h3>접속한 회원에게 한마디</h3><div class="inrow"><input id="msg" maxlength="200" placeholder="예) 오늘도 파이팅!"><button class="btn p" id="send" style="width:76px">보내기</button></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
 <div id="mTerr" class="modal"><div class="sheet"><h3>🌿 테라스 어디로 갈까요?</h3><div id="terrList"></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
@@ -633,7 +635,7 @@ const wishTree = new THREE.Group(); wishTree.position.set(WISH.x, 0, WISH.z); sc
   for (const [dx, dy, dz, r] of [[0, 4.4, 0, 2.2], [1.4, 3.7, .6, 1.5], [-1.4, 3.8, -.4, 1.6], [.3, 3.6, -1.4, 1.5], [-.5, 3.5, 1.4, 1.4], [0, 5.4, 0, 1.4]]) { const l = new THREE.Mesh(new THREE.SphereGeometry(r, 12, 10), M(0x2FA84F)); l.position.set(dx, dy, dz); wishTree.add(l); }
   cyl(wishTree, 0, 0, 0, 1.6, .45, 0x9A7750); wishTree.scale.setScalar(1.6); solid(WISH.x - 2.5, WISH.z - 2.5, 5, 5);
   label(scene, '🌳 소원나무', WISH.x, 10.6, WISH.z, { bg: 'rgba(22,101,52,.95)', size: 40, scale: .015 }); }
-function hangWish() { const i = WISH.tags.length, t = i * 2.399, r = 1.25 + (i % 4) * .3, y = 2.25 + (i % 3) * .18; const g = new THREE.Group(); g.position.set(Math.cos(t) * r, y, Math.sin(t) * r); g.rotation.y = -t;
+function hangWish() { const i = WISH.tags.length, t = i * 2.399, r = .9 + (i % 6) * .26, y = 1.95 + (i % 5) * .2 + (i % 2) * .08; const g = new THREE.Group(); g.position.set(Math.cos(t) * r, y, Math.sin(t) * r); g.rotation.y = -t;
   box(g, -.005, -.3, -.005, .01, .3, .01, 0xE5E7EB); box(g, -.13, -.72, -.02, .26, .42, .03, [0xFFFFFF, 0xFDE68A, 0xBFDBFE, 0xFBCFE8, 0xFFFFFF][i % 5], { basic: 1 }); box(g, -.08, -.42, -.025, .16, .03, .04, 0xDC2626); wishTree.add(g); WISH.tags.push(g); }
 floorText('테라스', s(9), -1.7, 3.2, '#FFFFFF', .55);
 floorText('러닝존', s(10), 3.95, 3.0, '#86EFAC', .55);
@@ -744,7 +746,7 @@ function pose(av, mode, dt) {
 // 다른 회원 (예시)
 const NPCS = [];
 function npc(name, shirt, hair, path, speed, lines, act, rotY, staff) {
-  const a = avatar(name, shirt, hair, false, staff); a.position.set(path[0][0], act === 'tmrun' || act === 'tmwalk' ? .27 : 0, path[0][1]); a.userData.act = act || null; if (rotY !== undefined) a.rotation.y = rotY;
+  const a = avatar(name, shirt, hair, false, staff); a.userData.staff = staff || false; a.position.set(path[0][0], act === 'tmrun' || act === 'tmwalk' ? .27 : 0, path[0][1]); a.userData.act = act || null; if (rotY !== undefined) a.rotation.y = rotY;
   const rec = { a, path, i: 1, speed, lines, wait: Math.random() * 3, talkT: 4 + Math.random() * 8, busy: 0 }; a.userData.npc = rec; NPCS.push(rec); return a;
 }
 if (DEMO) {
@@ -854,6 +856,17 @@ function goEq(n) {
 }
 for (let n = 1; n <= 24; n++) { const b = document.createElement('button'); b.innerHTML = `<b>${String(n).padStart(2, '0')}</b><br>${EQ[n][0]}<span class="z">${EQ[n][1].split(' · ')[0]}</span>`; b.onclick = () => { closeAll(); goEq(n); }; $('eqGrid').appendChild(b); }
 function openM(id) { $(id).style.display = 'flex'; }
+function openPeople() {
+  const tag = (n) => { const st = n.a.userData.staff; return st === 'coach' ? `<b class="co" style="background:#fff;border:1.5px solid #153189;color:#153189;border-radius:5px;padding:0 6px">${esc(n.a.userData.name)}</b>` : st ? `<b style="background:#153189;color:#fff;border-radius:5px;padding:0 6px">${esc(n.a.userData.name)}</b>` : `<b style="border-bottom:3px solid ${BELTHEX[n.a.userData.belt || (typeof BELTOF !== 'undefined' && BELTOF[n.a.userData.name])] || '#E5E7EB'};padding-bottom:1px">${esc(n.a.userData.name)}</b>`; };
+  const list = NPCS.slice().sort((a, b) => (b.a.userData.staff ? 1 : 0) - (a.a.userData.staff ? 1 : 0) || Math.hypot(a.a.position.x - me.position.x, a.a.position.z - me.position.z) - Math.hypot(b.a.position.x - me.position.x, b.a.position.z - me.position.z));
+  $('peopleList').innerHTML = (GUEST ? '' : `<button type="button" disabled style="opacity:.75">${tag({ a: { userData: { name: myName + ' (나)', staff: ME && ME.staff, belt: MYBELT } } })}<span style="margin-left:auto;font-size:12px;color:#6B7280">여기 있어요</span></button>`) +
+    list.map((n, i) => `<button type="button" data-pi="${i}">${tag(n)}<span style="margin-left:auto;font-size:12px;color:#153189;font-weight:700">가기 ›</span></button>`).join('') || '<div style="color:#6B7280;padding:10px 0">지금은 나 혼자예요</div>';
+  $('peopleList').querySelectorAll('[data-pi]').forEach(b => b.onclick = () => { const n = list[Number(b.dataset.pi)]; $('mPeople').style.display = 'none'; if (GUEST) { toast('회원으로 입장하면 다른 회원에게 갈 수 있어요'); return; }
+    const p = n.a.position, ang = Math.atan2(me.position.x - p.x, me.position.z - p.z), tx = p.x + Math.sin(ang) * .9, tz = p.z + Math.cos(ang) * .9;
+    goTo(tx, tz, () => { me.lookAt(p.x, 0, p.z); showPerson(n); }); toast(n.a.userData.name + '님에게 가는 중'); });
+  openM('mPeople');
+}
+$('cnt').onclick = openPeople;
 function closeAll() { document.querySelectorAll('.modal').forEach(m => m.style.display = 'none'); }
 document.querySelectorAll('[data-close]').forEach(b => b.onclick = closeAll);
 document.querySelectorAll('.modal').forEach(m => m.addEventListener('pointerdown', e => { if (e.target === m) closeAll(); }));
@@ -1011,7 +1024,7 @@ const wishes = !DEMO ? [] : [
   { n: '꾸준이', t: '첫 30일 동안 12번 출석해서 노란 띠 받기', cheer: 15, cm: [] },
   { n: '하체러버', t: '엄마랑 같이 건강하게 등산 가기', cheer: 6, cm: [['응원단장', '너무 멋진 소원이에요 💙']] },
 ];
-for (let i = 0; i < (DEMO ? 24 : 8); i++) hangWish();   // 미리 매달린 소원 종이 (장식)
+for (let i = 0; i < (DEMO ? 44 : 30); i++) hangWish();   // 미리 매달린 소원 종이 (장식, 풍성하게)
 let openWish = -1;
 function renderWish() {
   $('wishList').innerHTML = wishes.slice().reverse().map((w, ri) => { const i = wishes.length - 1 - ri; return `<div class="wish"><div class="w0">${esc(w.n)}님의 소원</div><div class="w1">${esc(w.t)}</div>
@@ -1182,7 +1195,7 @@ const feedLog = [];
 function esc(t) { return String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
 function hhmm() { const d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
 function nameHtml(n, belt, staff) { if (staff === 'coach') return `<b class="co">${esc(n)}</b>`; if (staff || (staff === undefined && STAFF.has(n))) return `<b class="st">${esc(n)}</b>`; const b = belt !== undefined ? belt : n === myName ? MYBELT : BELTOF[n]; const c = BELTHEX[b] || '#F3F4F6'; return `<b style="border-bottom-color:${c}${b === '검' ? ';box-shadow:0 2px 0 #F5B301' : ''}">${esc(n)}</b>`; }
-function renderFeedAll() { const el = $('feedAll'); el.innerHTML = feedLog.map(f => `<div class="r"><i>${f.t}</i><div>${f.n ? nameHtml(f.n, f.b, f.s) : ''}${esc(f.x)}</div></div>`).join('') || '<div class="r">아직 이야기가 없어요</div>'; el.scrollTop = el.scrollHeight; }
+function renderFeedAll() { const el = $('feedAll'); el.innerHTML = feedLog.map(f => `<div class="r${f.n ? '' : ' sys'}"><i>${f.t}</i><div>${f.n ? nameHtml(f.n, f.b, f.s) : ''}${esc(f.x)}</div></div>`).join('') || '<div class="r">아직 이야기가 없어요</div>'; el.scrollTop = el.scrollHeight; }
 $('feedBtn').onclick = () => { const el = $('feedAll'), open = el.style.display !== 'block'; el.style.display = open ? 'block' : 'none'; $('feed').style.display = open ? 'none' : 'flex'; $('feedBtn').textContent = open ? '💬 접기 ▾' : '💬 지난 이야기 ▴'; if (open) renderFeedAll(); };
 function feed(name, txt, cls = '') {
   if (LIVE) { addDoc(collection(db, 'gym_feed'), { uid: myUid, nick: name || '', text: String(txt).slice(0, 200), sys: !name, belt: MYBELT, staff: ME.staff || false, ts: serverTimestamp() }).catch(() => {}); return; }
@@ -1227,6 +1240,7 @@ const remotes = new Map(), PAL = [0x15803D, 0xF59E0B, 0xB91C32, 0x374151, 0x7C3A
 const hashc = t => { let h = 0; for (const c of t) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h); };
 function addRemote(uid, d) {
   const a = avatar(d.nick || '회원', d.staff ? 0x0B0D12 : PAL[hashc(uid) % PAL.length], 0x3B2A1A, false, d.staff || false, d.belt || '');
+  a.userData.staff = d.staff || false; a.userData.belt = d.belt || '';
   a.position.set(d.x ?? GX + 1.3, d.y || 0, d.z ?? GZ - 1.5);
   const r = { a, path: [[0, 0]], i: 0, speed: 0, lines: [], wait: 0, talkT: 1e9, busy: 0, remote: true, uid, route: null, final: null, seen: Date.now() };
   a.userData.npc = r; NPCS.push(r); remotes.set(uid, r); return r;
@@ -1307,7 +1321,7 @@ function startListeners() {
   onSnapshot(query(collection(db, 'gym_wishes'), orderBy('ts', 'desc'), limit(80)), snap => {
     const old = new Map(wishes.map(w => [w.id, w.cheer]));
     wishes.length = 0; snap.docs.slice().reverse().forEach(dd => { const d = dd.data(); wishes.push({ id: dd.id, uid: d.uid, n: d.nick, t: d.text, time: tsTime(d.ts), cheer: d.cheer || 0, cm: [] }); });
-    while (WISH.tags.length < 8 + Math.min(60, wishes.length)) hangWish();
+    while (WISH.tags.length < 30 + Math.min(70, wishes.length)) hangWish();
     if (!wFirst) wishes.forEach(w => { if (w.uid === myUid && old.has(w.id) && w.cheer > old.get(w.id)) { myNew(); toast('내 소원에 응원이 왔어요 💙'); } });
     wFirst = false; attach();
   }, () => {});
