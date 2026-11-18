@@ -203,7 +203,7 @@ function askNickname(){
 // ---------- 화면 전환 ----------
 function go(t){
   tab = t;
-  if(t === 'pixel'){ location.href = './gym/'; return; }
+  if(t === 'pixel'){ location.href = './gym/?t=' + Date.now(); return; }
   $tabs.classList.remove('hidden'); $app.classList.remove('nonav');
   const active = { master: 'home', wod: 'home', session: 'home', done: 'home', help: 'home', home: 'home', challenge: 'challenge', workout: 'challenge', voice: 'voice', me: 'me' }[t];
   $tabs.querySelectorAll('button').forEach((b)=> b.classList.toggle('on', b.dataset.tab === active));
