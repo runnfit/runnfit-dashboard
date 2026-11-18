@@ -450,18 +450,47 @@
     }
     return { total, days };
   }
+  // 시트는 '제한됨'으로 잠그고, 5분마다 Apps Script가 Firebase(kpi_sheets)에 복사해 둔 내용을 직원 로그인으로만 읽음
+  const KFB = { key: 'AIzaSyBbE0ktG6f5t-1xvVEg56f18DE_QdtIrts', docs: 'https://firestore.googleapis.com/v1/projects/runnfit-member/databases/(default)/documents' };
+  let kTok = null, kExp = 0, kNoLogin = false;
+  async function kToken(){
+    if(kTok && Date.now() < kExp) return kTok;
+    let a = null; try{ a = JSON.parse(localStorage.getItem('rfApp.auth.v1') || 'null'); }catch(e){}
+    if(!a || !a.refreshToken){ try{ a = JSON.parse(top.opener.localStorage.getItem('rfApp.auth.v1') || 'null'); }catch(e){} }
+    if(!a || !a.refreshToken) throw new Error('nologin');
+    const r = await fetch('https://securetoken.googleapis.com/v1/token?key=' + KFB.key, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'grant_type=refresh_token&refresh_token=' + encodeURIComponent(a.refreshToken) });
+    const j = await r.json().catch(()=> ({})); if(!r.ok) throw new Error('nologin');
+    kTok = j.id_token; kExp = Date.now() + (Number(j.expires_in || 3600) - 120) * 1e3; return kTok;
+  }
+  function kLoginNote(){
+    if(kNoLogin) return; kNoLogin = true;
+    const d = document.createElement('div');
+    d.style.cssText = 'position:fixed;left:50%;top:70px;transform:translateX(-50%);z-index:99;background:#b4232f;color:#fff;font-weight:800;font-size:14px;padding:10px 18px;border-radius:12px;box-shadow:0 6px 18px rgba(0,0,0,.2)';
+    d.textContent = '🔒 KPI를 보려면 출석 대시보드에서 [회원앱 연결하기]로 직원 로그인을 먼저 해주세요';
+    document.body.appendChild(d);
+  }
+  async function sheetFetch(id, gid){
+    const no = { ok: false, text: async ()=> '' };
+    try{
+      const r = await fetch(KFB.docs + '/kpi_sheets/' + id + '_' + gid, { headers: { Authorization: 'Bearer ' + await kToken() }, cache: 'no-store' });
+      if(r.status === 403){ kLoginNote(); return no; }
+      if(!r.ok) return no;
+      const j = await r.json(); const csv = (j.fields && j.fields.csv && j.fields.csv.stringValue) || '';
+      return { ok: true, text: async ()=> csv };
+    }catch(e){ if(String(e.message) === 'nologin') kLoginNote(); return no; }
+  }
   async function loadSheet(url){
     const id = (url.match(/\/d\/([\w-]{20,})/) || [])[1]; if(!id) throw new Error('주소에서 시트를 찾지 못했어요.');
     const g = (url.match(/gid=(\d+)/) || [])[1];
     for(const gid of [...new Set([g, KPI_GID].filter(Boolean))]){
       try{
-        const r = await fetch('https://docs.google.com/spreadsheets/d/' + id + '/export?format=csv&gid=' + gid, { cache: 'no-store' });
+        const r = await sheetFetch(id, gid);
         if(!r.ok) continue;
         const data = extract(parseCsv(await r.text()));
         if(data && data.days.length) return data;
       }catch(e){}
     }
-    throw new Error("'마케팅 KPI' 탭을 찾지 못했어요. 시트 공유가 '링크가 있는 모든 사용자'인지, 그 탭에서 주소를 복사했는지 확인해 주세요.");
+    throw new Error("'마케팅 KPI' 탭을 찾지 못했어요. 직원 로그인(회원앱 연결)이 되어 있는지, 시트 동기화(5분마다)가 켜져 있는지 확인해 주세요.");
   }
 
   function setupView(err){
@@ -506,7 +535,7 @@
   const INQ_GID = '386083793', OUT_GID = '138775789';   // '문의_DB' · 'OutPut_지표' 탭
   async function loadMkExtra(url){
     const id = (url.match(/\/d\/([\w-]{20,})/) || [])[1]; if(!id) return {};
-    const get = async (gid)=>{ try{ const x = await fetch('https://docs.google.com/spreadsheets/d/' + id + '/export?format=csv&gid=' + gid, { cache: 'no-store' }); return x.ok ? parseCsv(await x.text()) : null; }catch(e){ return null; } };
+    const get = async (gid)=>{ try{ const x = await sheetFetch(id, gid); return x.ok ? parseCsv(await x.text()) : null; }catch(e){ return null; } };
     const [iq, out] = await Promise.all([get(INQ_GID), get(OUT_GID)]);
     const X = {};
     if(iq){ const h = iq.findIndex((r)=> r.some((c)=> norm(c) === '문의채널') && r.some((c)=> norm(c) === '대상'));
@@ -873,7 +902,7 @@
   const colL = (c)=>{ let s = ''; c++; while(c){ const m = (c - 1) % 26; s = String.fromCharCode(65 + m) + s; c = Math.floor((c - 1) / 26); } return s; };
   async function loadWbs(url){
     const id = (url.match(/\/d\/([\w-]{20,})/) || [])[1]; if(!id) throw new Error('no id'); WBS_ID = id;
-    const r = await fetch('https://docs.google.com/spreadsheets/d/' + id + '/export?format=csv&gid=' + WBS_GID, { cache: 'no-store' });
+    const r = await sheetFetch(id, WBS_GID);
     if(!r.ok) throw new Error('WBS 탭을 불러오지 못했어요');
     const rows = parseCsv(await r.text());
     const h = rows.findIndex((row)=> row.some((c)=> norm(c) === 'DAY') && row.some((c)=> norm(c) === 'MONTH'));
@@ -1017,12 +1046,12 @@
   }
   async function loadSales(url){
     const id = (url.match(/\/d\/([\w-]{20,})/) || [])[1]; if(!id) throw new Error('주소에서 시트를 찾지 못했어요.');
-    const r = await fetch('https://docs.google.com/spreadsheets/d/' + id + '/export?format=csv&gid=' + SALES_GID, { cache: 'no-store' });
+    const r = await sheetFetch(id, SALES_GID);
     if(!r.ok) throw new Error("시트에서 '매출' 탭을 찾지 못했어요.");
     const s = extractSales(parseCsv(await r.text()));
     if(!s) throw new Error("'매출' 탭에서 목표나 일별 매출을 찾지 못했어요.");
     s.tx = {};   // 날짜별 결제 내역 (Team_결제 · PT_결제 탭, 없으면 달력 누르기만 안 됨)
-    const get = async (gid)=>{ try{ const x = await fetch('https://docs.google.com/spreadsheets/d/' + id + '/export?format=csv&gid=' + gid, { cache: 'no-store' }); return x.ok ? parseCsv(await x.text()) : null; }catch(e){ return null; } };
+    const get = async (gid)=>{ try{ const x = await sheetFetch(id, gid); return x.ok ? parseCsv(await x.text()) : null; }catch(e){ return null; } };
     const [team, pt] = await Promise.all([get(TEAM_GID), get(PT_GID)]);
     const add = (d, o)=>{ (s.tx[d] = s.tx[d] || []).push(o); };
     const head = (rows, need)=>{ const h = rows.findIndex((r)=> need.every((n)=> r.some((c)=> norm(c) === n))); return h < 0 ? null : { h, ci: (n)=> rows[h].findIndex((c)=> norm(c) === n) }; };
@@ -1298,7 +1327,7 @@
   async function loadAnnual(url){
     const id = (url.match(/\/d\/([\w-]{20,})/) || [])[1]; if(!id) throw new Error('주소에서 시트를 찾지 못했어요.');
     const ugid = (url.match(/gid=(\d+)/) || [])[1];
-    const get = async (gid, yr)=>{ try{ const r = await fetch('https://docs.google.com/spreadsheets/d/' + id + '/export?format=csv&gid=' + gid, { cache: 'no-store' }); return r.ok ? extractAnnual(parseCsv(await r.text()), yr) : null; }catch(e){ return null; } };
+    const get = async (gid, yr)=>{ try{ const r = await sheetFetch(id, gid); return r.ok ? extractAnnual(parseCsv(await r.text()), yr) : null; }catch(e){ return null; } };
     const out = {};
     const cur = await get(ugid || YEAR_GIDS[YEAR] || '0', YEAR) || (YEAR_GIDS[YEAR] ? await get(YEAR_GIDS[YEAR], YEAR) : null);
     if(!cur) throw new Error("연간 표('" + YEAR + "년 · 1월~12월', 매출액·BEP·영업이익)를 찾지 못했어요. 시트 공유와 " + YEAR + "_ 탭 주소인지 확인해 주세요.");
