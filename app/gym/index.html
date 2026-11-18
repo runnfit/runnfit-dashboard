@@ -136,7 +136,7 @@ function resize() { renderer.setSize(innerWidth, innerHeight, false); camera.asp
 addEventListener('resize', resize); resize();
 const controls = new OrbitControls(camera, renderer.domElement);
 controls.enablePan = false; controls.minDistance = 4; controls.maxDistance = 34;
-controls.maxPolarAngle = 1.3; controls.minPolarAngle = .3; controls.enableDamping = true; controls.rotateSpeed = .7;
+controls.maxPolarAngle = 1.2; controls.minPolarAngle = .3; controls.enableDamping = true; controls.rotateSpeed = .7;
 
 // ── 도형 도우미
 const mats = {};
@@ -145,7 +145,8 @@ const BX = new THREE.BoxGeometry(1, 1, 1), CY = new THREE.CylinderGeometry(1, 1,
 function box(p, x, y, z, w, h, d, c, o) { const m = new THREE.Mesh(BX, M(c, o)); m.scale.set(w, h, d); m.position.set(x + w / 2, y + h / 2, z + d / 2); p.add(m); return m; }
 function cyl(p, x, y, z, r, h, c, o, geo = CY) { const m = new THREE.Mesh(geo, M(c, o)); m.scale.set(r, h, r); m.position.set(x, y + h / 2, z); p.add(m); return m; }
 function rod(p, x, y, z, r, len, c, axis = 'x', geo = CY) { const m = new THREE.Mesh(geo, M(c)); m.scale.set(r, len, r); m.position.set(x, y, z); if (axis === 'x') m.rotation.z = Math.PI / 2; if (axis === 'z') m.rotation.x = Math.PI / 2; p.add(m); return m; }
-const colliders = [];
+const colliders = [], fadeables = [];
+function fadeable(m) { m.material = m.material.clone(); m.material.transparent = true; m.userData.fo = 1; fadeables.push(m); return m; }
 function solid(x, z, w, d) { colliders.push([x, z, x + w, z + d]); }
 
 function textSprite(txt, { bg = '#2563EB', fg = '#fff', size = 44, pad = 16, scale = .011, radius = 10, border } = {}) {
@@ -276,15 +277,15 @@ label(scene, 'RUN FOR YOUR DREAM!', .1, 3.7, DG / 2, { bg: null, fg: '#3D5AFE', 
 // ── 오른쪽: 운동복·수건함 → 남자 탈의실 → 여자 탈의실 → 게시판 → 개인 샤워장 8칸
 function room(z0, z1, name, col, door = true, doorCol) {
   const g = new THREE.Group(); scene.add(g);
-  box(g, WW, 0, z0, .2, 2.6, z1 - z0, 0x15171C); box(g, WW + .2, .001, z0, RW - .2, .02, z1 - z0, col, { op: .35 }); box(g, WW, 0, z0, RW, 2.6, .1, 0x15171C);
-  box(g, WW, 2.6, z0, .2, .06, z1 - z0, NEON, { basic: 1 });
-  if (door) { const dz = (z0 + z1) / 2 - .45; box(g, WW - .02, 0, dz, .05, 2.1, .9, doorCol ?? col); if (doorCol) box(g, WW - .05, 1.0, dz + .7, .03, .12, .05, 0xC0C4CC); }
+  fadeable(box(g, WW, 0, z0, .2, 2.6, z1 - z0, 0x15171C)); box(g, WW + .2, .001, z0, RW - .2, .02, z1 - z0, col, { op: .35 }); fadeable(box(g, WW, 0, z0, RW, 2.6, .1, 0x15171C));
+  fadeable(box(g, WW, 2.6, z0, .2, .06, z1 - z0, NEON, { basic: 1 }));
+  if (door) { const dz = (z0 + z1) / 2 - .45; fadeable(box(g, WW - .02, 0, dz, .05, 2.1, .9, doorCol ?? col)); if (doorCol) fadeable(box(g, WW - .05, 1.0, dz + .7, .03, .12, .05, 0xC0C4CC)); }
   if (name) label(g, name, WW - .3, 3.0, (z0 + z1) / 2, DARK); solid(WW, z0, RW, z1 - z0);
 }
 const Z = v => s(v);
 room(Z(14.0), DG, '', 0x0EA5E9, false);
 { const tw = new THREE.Group(); scene.add(tw);
-  box(tw, WW - 1.0, 0, Z(14.2), .9, 1.9, 2.2, 0x111827); solid(WW - 1.0, Z(14.2), .9, 2.2);
+  fadeable(box(tw, WW - 1.0, 0, Z(14.2), .9, 1.9, 2.2, 0x111827)); solid(WW - 1.0, Z(14.2), .9, 2.2);
   for (let r = 0; r < 3; r++) for (let c = 0; c < 2; c++) rod(tw, WW - 1.02, .45 + r * .55, Z(14.2) + .55 + c * 1.1, .18, .02, 0x2A2F3B);
   for (let k = 0; k < 5; k++) { cyl(tw, WW - .55, 1.9, Z(14.2) + .3 + k * .4, .06, .25, 0xF5B301); cyl(tw, WW - .55, 2.15, Z(14.2) + .3 + k * .4, .12, .14, 0xFCD34D); }
   box(tw, WW - .25, 2.2, Z(14.2) - .1, .08, .9, 1.6, 0x0B1020); box(tw, WW - .3, 2.27, Z(14.2), .05, .76, 1.4, 0x1D4ED8, { basic: 1 });
@@ -407,7 +408,7 @@ function cable(x, z, n) {
   solid(x, z, 2.9, .55); numBadge(g, n, 1.45, 3.1, .3); register(n, g, x + 1.45, z + 1.5);
   eqInfo[n] = { kind: 'mach', type: 'row', stand: 1, x: x + 1.45, y: 0, z: z + 1.3, rot: Math.PI };
 }
-function column(x, z) { const g = G(x, z); box(g, 0, 0, 0, .9, 3.4, .9, 0x6B7280); box(g, .91, .3, .25, .03, 2.8, .06, NEON, { basic: 1 }); box(g, .25, .3, .91, .06, 2.8, .03, NEON, { basic: 1 }); solid(x, z, .9, .9); }
+function column(x, z) { const g = G(x, z); fadeable(box(g, 0, 0, 0, .9, 3.4, .9, 0x6B7280)); box(g, .91, .3, .25, .03, 2.8, .06, NEON, { basic: 1 }); box(g, .25, .3, .91, .06, 2.8, .03, NEON, { basic: 1 }); solid(x, z, .9, .9); }
 function adjBench(x, z, rot = 0) { const g = G(x, z); g.rotation.y = rot; box(g, 0, 0, 0, .35, .35, 1.3, 0x374151); box(g, -.05, .35, 0, .45, .1, 1.3, 0x111827); const b = box(g, -.05, .45, .9, .45, .08, .6, 0x111827); b.rotation.x = -.5; solid(x - .2, z - .2, .9, 1.5); }
 
 // 러닝존
@@ -939,6 +940,7 @@ function faceOk() {
 }
 
 // ── 루프
+const fadeRay = new THREE.Raycaster();
 const clock = new THREE.Clock(), fwd = new THREE.Vector3(), right = new THREE.Vector3(), up = new THREE.Vector3(0, 1, 0);
 function loop() {
   const dt = Math.min(clock.getDelta(), .05);
@@ -971,6 +973,14 @@ function loop() {
     n.talkT -= dt; if (n.talkT < 0) { n.talkT = 8 + Math.random() * 12; if (n.lines.length) say(a, n.lines[Math.floor(Math.random() * n.lines.length)]); }
   }
   for (let i = fx.length - 1; i >= 0; i--) { const f = fx[i]; f.t += dt; f.sp.position.addScaledVector(f.v, dt); f.v.y -= dt * .6; f.sp.material.opacity = Math.max(0, 1 - f.t / f.life); const sc = f.s * (1 + f.t * .4); f.sp.scale.set(sc * f.ar, sc, 1); if (f.t > f.life) { scene.remove(f.sp); fx.splice(i, 1); } }
+  // 카메라와 내 캐릭터 사이를 가리는 벽은 투명하게
+  { const head = new THREE.Vector3(me.position.x, me.position.y + 1.2, me.position.z), dir = head.clone().sub(camera.position), len = dir.length();
+    fadeRay.set(camera.position, dir.normalize()); fadeRay.far = len; const hit = new Set(fadeRay.intersectObjects(fadeables, false).map(h => h.object));
+    const cx = camera.position.x, cz = camera.position.z, ax = head.x - cx, az = head.z - cz, L2 = ax * ax + az * az || 1;
+    for (const m of fadeables) { if (!m.userData.c) { m.userData.c = new THREE.Vector3(); m.getWorldPosition(m.userData.c); m.userData.r = Math.max(m.scale.x, m.scale.z) / 2; }
+      const c = m.userData.c, t = ((c.x - cx) * ax + (c.z - cz) * az) / L2;
+      if (t > 0 && t < 1.02) { const px = cx + ax * t - c.x, pz = cz + az * t - c.z; if (Math.hypot(px, pz) < 1.6 + m.userData.r) hit.add(m); } }
+    for (const m of fadeables) { const tgt = hit.has(m) ? .12 : 1; m.userData.fo += (tgt - m.userData.fo) * Math.min(1, dt * 10); m.material.opacity = m.userData.fo; m.material.depthWrite = m.userData.fo > .9; } }
   if (beacon.visible) beacon.userData.ar.position.y = 4.2 + Math.sin(clock.elapsedTime * 4) * .25;
   sky.position.copy(camera.position); stars.position.copy(camera.position);
   for (const c of clouds) { c.position.x += c.userData.v * dt; if (c.position.x > 140) c.position.x = -110; }
