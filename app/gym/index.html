@@ -671,8 +671,8 @@ function avatar(name, shirt, hair, me, staff, belt) {
   g.userData = { name, me, body, torso, legL, legR, armL, armR, tag: tg, phase: Math.random() * 6, bubble: null, bubbleT: 0, act: null };
   scene.add(g); return g;
 }
-function say(av, txt, sec = 3.5) {
-  if (av === me) { feed(myName, txt, 'me'); if (LIVE) pubMe({ say: String(txt).slice(0, 40), sayT: Date.now() }); } else if (DEMO) showFeed(av.userData.name, txt);
+function say(av, txt, sec = 3.5, chat = false) {
+  if (av === me) { if (chat) feed(myName, txt, 'me'); else feed('', `${myName} · ${txt}`, 'sys');   // 직접 쓴 한마디만 대화로, 동작에서 나온 말은 회색 안내로 if (LIVE) pubMe({ say: String(txt).slice(0, 40), sayT: Date.now() }); } else if (DEMO) showFeed(av.userData.name, txt);
   if (av.userData.bubble) av.remove(av.userData.bubble);
   const bt = String(txt).length > 22 ? String(txt).slice(0, 21) + '…' : String(txt);   // 말풍선은 짧게, 전체 글은 아래 이야기 창에
   const b = textSprite(bt, { bg: '#fff', fg: '#111827', size: 32, scale: .011, border: '#111827' });
@@ -873,7 +873,7 @@ document.querySelectorAll('.modal').forEach(m => m.addEventListener('pointerdown
 $('bFind').onclick = () => openM('mFind');
 $('bAct').onclick = () => openM('mAct');
 $('bTalk').onclick = () => { openM('mTalk'); setTimeout(() => $('msg').focus(), 50); };
-$('send').onclick = () => { const t = $('msg').value.trim(); if (t) { say(me, t, 5); $('msg').value = ''; } closeAll(); };
+$('send').onclick = () => { const t = $('msg').value.trim(); if (t) { say(me, t, 5, true); $('msg').value = ''; } closeAll(); };
 $('msg').addEventListener('keydown', e => { if (e.key === 'Enter') $('send').click(); });
 const TERR = [
   ['🌿', '테라스 쉼터', '파라솔 아래 앉아 바람 쐬며 쉬어요', () => goTo(12, -4.3, () => { me.position.set(12, .43, -5); me.rotation.y = 0; me.userData.act = 'sit'; say(me, '바람 좋다~', 2.5); })],
