@@ -26,7 +26,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 #toast{left:50%;top:calc(176px + env(safe-area-inset-top));transform:translateX(-50%);background:#fff;border-radius:12px;padding:9px 14px;font-size:13px;font-weight:900;box-shadow:0 6px 16px rgba(0,0,0,.25);display:none;white-space:nowrap;pointer-events:none}
 #bar{left:0;right:0;bottom:0;padding:10px 10px calc(10px + env(safe-area-inset-bottom));display:flex;gap:6px;background:linear-gradient(transparent,rgba(7,17,46,.5))}
 #bar button,.btn{border:0;border-radius:12px;height:48px;font-family:inherit;font-weight:900;font-size:13.5px;cursor:pointer;color:var(--b)}
-#bar button{flex:1;background:rgba(255,255,255,.96)}
+#bar button{flex:1;background:rgba(255,255,255,.96);white-space:nowrap;font-size:13px;padding:0 4px}
 #bar button.pri{background:var(--b2);color:#fff}
 .btn.p{background:var(--b2);color:#fff}.btn.g{background:#E3E9FF;color:var(--b)}
 .modal{position:fixed;inset:0;z-index:20;display:none;align-items:flex-end;justify-content:center;background:rgba(3,8,25,.45)}
@@ -96,7 +96,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 </head>
 <body>
 <canvas id="c"></canvas>
-<div id="top" class="ui"><span class="chip logo">RUN N FIT</span><span class="chip" id="clock">☀️ 08:00</span><span class="sp"></span><span class="chip" id="cnt">💙 함께 운동 중</span></div>
+<div id="top" class="ui"><span class="chip logo">RUN N FIT</span><span class="chip" id="clock">☀️ 08:00</span><span class="sp"></span><span class="chip" id="cnt">💙 함께 운동 중</span><button class="chip" id="bMy" style="border:0;font-family:inherit;background:#093692;color:#fff;position:relative">MY<i id="myDot" style="display:none;position:absolute;top:2px;right:2px;width:9px;height:9px;border-radius:50%;background:#EF4444;box-shadow:0 0 0 2px #fff"></i></button></div>
 <div id="hint" class="ui">👆 톡 눌러 이동 · ☝️ 밀어서 방향 · 🤏 두 손가락 확대</div>
 <button id="skip" class="ui">건너뛰기 ›</button>
 <div id="toast" class="ui"></div>
@@ -115,6 +115,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 <div id="mAct" class="modal"><div class="sheet"><h3>동작</h3><div class="acts" id="actGrid"></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
 <div id="mTalk" class="modal"><div class="sheet"><h3>접속한 회원에게 한마디</h3><div class="inrow"><input id="msg" maxlength="20" placeholder="예) 오늘도 파이팅!"><button class="btn p" id="send" style="width:76px">보내기</button></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
 <div id="mTerr" class="modal"><div class="sheet"><h3>🌿 테라스 어디로 갈까요?</h3><div id="terrList"></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
+<div id="mMy" class="modal"><div class="sheet"><h3>MY · 내가 남긴 이야기</h3><div style="display:flex;gap:6px;margin-bottom:10px"><button class="btn p" id="myT1" style="flex:1;height:40px">내 글</button><button class="btn g" id="myT2" style="flex:1;height:40px">내 댓글</button></div><div id="myList"></div><button class="btn g" style="width:100%;margin-top:6px" data-close>닫기</button></div></div>
 <div id="mWish" class="modal"><div class="sheet"><h3>🌳 소원나무</h3><div style="font-size:12.5px;color:#4B5563;margin:-4px 0 10px">꼭 이뤄졌으면 하는 목표나 꿈을 적어 매달아요. 다른 회원의 소원에 응원과 댓글을 남겨 주세요.</div><div class="inrow" style="margin-bottom:10px"><input id="wishMsg" maxlength="40" placeholder="예) 올해 10km 완주하기"><button class="btn p" id="wishSend" style="width:76px">매달기</button></div><div id="wishList"></div><button class="btn g" style="width:100%;margin-top:6px" data-close>닫기</button></div></div>
 <div id="mBook" class="modal"><div class="sheet" style="padding:0;overflow:hidden">
   <div style="background:linear-gradient(135deg,#093692,#2563EB);color:#fff;padding:18px 16px 16px;position:relative"><div style="font-size:12px;opacity:.85;font-weight:700">RUN N FIT GUESTBOOK</div><div style="font-size:20px;font-weight:900;line-height:1.35;margin-top:4px">💙 꿈과 사랑이 가득한<br>행복한 런앤핏 방명록</div><div id="bookCnt" style="font-size:12px;opacity:.85;margin-top:6px"></div></div>
@@ -317,7 +318,7 @@ room(Z(11.2), Z(14.0), '남자 탈의실', 0x1D4ED8); room(Z(8.4), Z(11.2), '여
   let k = 0; for (let z = z0; z < z1; z += .085, k++) { const c = RB[k % RB.length], len = .42 + (k * 37 % 5) * .05, xo = WW - .06 - (k % 3) * .012;
     const a = box(g, xo, 2.55 - len, z - .012, .01, len, .025, c); a.rotation.x = .08; const b = box(g, xo, 2.55 - len, z + .02, .01, len, .025, c); b.rotation.x = -.08;
     const d = rod(g, xo - .02, 2.5 - len, z + .004, .045 + (k % 4) * .006, .015, [0xF5B301, 0xD1D5DB, 0xB45309, 0xF5B301][k % 4], 'x'); }
-  label(scene, '🏅 마라톤 완주 메달', WW - .4, 3.25, (z0 + z1) / 2, { bg: 'rgba(245,179,1,.95)', fg: '#111827', size: 28, scale: .011 }); }
+ }
 // 입구 수건함 위에도 메달 (실제 입구처럼)
 { const g = new THREE.Group(); scene.add(g); const RB = [0xEF4444, 0xF97316, 0xFACC15, 0x22C55E, 0x06B6D4, 0x3B82F6, 0x8B5CF6, 0xEC4899, 0xFFFFFF];
   const z0 = Z(14.2) - .1, z1 = Z(14.2) + 2.3, bx = WW - .55; box(g, bx - .02, 2.9, z0, .04, .04, z1 - z0, 0x9CA3AF); box(g, bx - .02, 1.9, z0, .04, 1.0, .04, 0x111827); box(g, bx - .02, 1.9, z1 - .04, .04, 1.0, .04, 0x111827);
@@ -675,6 +676,9 @@ function pose(av, mode, dt) {
   if (act === 'hi5') { u.armR.rotation.x = -2.6; u.armR.rotation.z = -.2; tor.rotation.x = -.08; }
   if (act === 'best') { u.armR.rotation.x = -1.4; u.armL.rotation.x = -1.4; body.position.y = Math.abs(Math.sin(u.phase * 2)) * .08; }
   if (act === 'jjang') { u.armL.rotation.z = -2.6 - Math.sin(u.phase * 4) * .3; u.armR.rotation.z = 2.6 + Math.sin(u.phase * 4) * .3; body.position.y = Math.abs(Math.sin(u.phase * 3)) * .25; }
+  if (act === 'rope') { const k = Math.sin(u.phase * 3.2); body.position.y = Math.abs(k) * .22; u.armL.rotation.x = u.armR.rotation.x = -.5; u.armL.rotation.z = -.5; u.armR.rotation.z = .5; if (!u.ropeM) { u.ropeM = new THREE.Mesh(new THREE.TorusGeometry(.62, .015, 4, 24), M(0xF97316)); u.ropeM.position.set(0, .75, 0); u.ropeM.rotation.y = Math.PI / 2; body.add(u.ropeM); } u.ropeM.rotation.x = u.phase * 3.2; }
+  else if (u.ropeM) { body.remove(u.ropeM); u.ropeM = null; }
+  if (act === 'hooray') { const k = Math.abs(Math.sin(u.phase * 2.4)); u.armL.rotation.z = -2.8; u.armR.rotation.z = 2.8; body.position.y = k * .3; body.rotation.y = Math.sin(u.phase * 1.2) * .3; }
   if (act === 'heart') { u.armL.rotation.z = -2.5; u.armR.rotation.z = 2.5; u.armL.rotation.x = u.armR.rotation.x = -.35; body.position.y = Math.abs(Math.sin(u.phase)) * .05; }
   if (act === 'situp') { body.rotation.x = -Math.PI / 2; body.position.set(0, .2, -.55); const k = (Math.sin(u.phase * 1.6) + 1) / 2; tor.rotation.x = k * 1.1; u.legL.rotation.x = u.legR.rotation.x = 1.0; u.armL.rotation.x = u.armR.rotation.x = -2.6; u.tag.position.y = 1.2; }
   if (act === 'backext') { body.rotation.x = Math.PI / 2 - .3; body.position.set(0, .4, .3); const k = (Math.sin(u.phase * 1.4) + 1) / 2; tor.rotation.x = -k * .9; u.armL.rotation.x = u.armR.rotation.x = -.4; u.tag.position.y = 1.4; }
@@ -841,7 +845,7 @@ function renderBook() {
   $('bookList').querySelectorAll('[data-l]').forEach(b => b.onclick = () => { book[+b.dataset.l].like++; renderBook(); drawBoard(book); });
 }
 drawBoard(book); if (document.fonts) document.fonts.ready.then(() => drawBoard(book));
-$('bookSend').onclick = () => { const t = $('bookMsg').value.trim(); if (!t) return; book.push({ n: myName, t, time: hhmm(), like: 0 }); renderBook(); drawBoard(book); $('bookMsg').value = ''; $('bookList').scrollTop = 0;
+$('bookSend').onclick = () => { const t = $('bookMsg').value.trim(); if (!t) return; const nb = { n: myName, t, time: hhmm(), like: 0, cm: [] }; book.push(nb); react(nb, 'book'); renderBook(); drawBoard(book); $('bookMsg').value = ''; $('bookList').scrollTop = 0;
   burst(BOOK.x + BOOK.w / 2, 3.2, BOOK.z + .6, ['💙', '✨', '🤍'], 10, '고마워요!'); feed('', `${myName}님이 방명록에 마음을 남겼어요 💙`, 'sys'); toast('방명록에 남겼어요! 보드에 붙었어요 💙'); };
 
 // 동작: 인사 · 달리기 · 걷기 · 스트레칭 · 눕기 · 앉기 · 스쿼트 · 파이팅
@@ -864,6 +868,8 @@ const ACTS = [
   ['🙇', '푸시업', () => { me.userData.act = 'pushup'; say(me, '푸시업 10개!', 2); }],
   ['🧱', '플랭크', () => { me.userData.act = 'plank'; say(me, '30초 버티기…', 2.5); }],
   ['🤸', '팔벌려뛰기', () => { me.userData.act = 'jack'; say(me, '하나 둘 셋 넷!', 2); }],
+  ['🪢', '줄넘기', () => { me.userData.act = 'rope'; say(me, '쌩쌩~ 줄넘기!', 2); }],
+  ['🙌', '만세', () => { me.userData.act = 'hooray'; say(me, '오운완 만세!! 🎉', 2.5); burst(me.position.x, 2.4, me.position.z, ['🎉', '✨', '💙'], 10, '만세!'); feed('', `${myName}님 오운완 만세! 🎉`, 'sys'); }],
   ['🕺', '춤추기', () => { me.userData.act = 'dance'; say(me, '🎵 신난다~', 2.5); feed('', `${myName}님이 춤추는 중 🕺`, 'sys'); }],
   ['👏', '박수', () => emote('clap')],
   ['👍', '최고', () => emote('best')],
@@ -965,9 +971,36 @@ function renderWish() {
     ${openWish === i ? `<div class="cm">${w.cm.map(c => `<b>${esc(c[0])}</b> ${esc(c[1])}`).join('<br>') || '첫 댓글을 남겨 주세요'}</div><div class="inrow"><input id="cmIn" maxlength="30" placeholder="응원 댓글 달기"><button class="btn p" id="cmSend" style="width:64px;height:40px">달기</button></div>` : ''}</div>`; }).join('');
   $('wishList').querySelectorAll('[data-c]').forEach(b => b.onclick = () => { const w = wishes[+b.dataset.c]; w.cheer++; renderWish(); burst(WISH.x, 4, WISH.z, ['💙', '✨'], 6); });
   $('wishList').querySelectorAll('[data-o]').forEach(b => b.onclick = () => { openWish = openWish === +b.dataset.o ? -1 : +b.dataset.o; renderWish(); });
-  if ($('cmSend')) $('cmSend').onclick = () => { const t = $('cmIn').value.trim(); if (!t) return; const w = wishes[openWish]; w.cm.push([myName, t]); feed('', `${myName}님이 ${w.n}님의 소원에 응원 댓글을 남겼어요 🌳`, 'sys'); renderWish(); };
+  if ($('cmSend')) $('cmSend').onclick = () => { const t = $('cmIn').value.trim(); if (!t) return; const w = wishes[openWish]; w.cm.push([myName, t, hhmm()]); myNew(); feed('', `${myName}님이 ${w.n}님의 소원에 응원 댓글을 남겼어요 🌳`, 'sys'); renderWish(); };
 }
-$('wishSend').onclick = () => { const t = $('wishMsg').value.trim(); if (!t) return; wishes.push({ n: myName, t, cheer: 0, cm: [] }); hangWish(); $('wishMsg').value = ''; renderWish(); closeAll();
+// ── MY: 내가 남긴 글(방명록 · 소원) + 반응 · 내 댓글
+let myTab = 1;
+function myNew() { if ($('mMy').style.display !== 'flex') $('myDot').style.display = 'block'; else renderMy(); }
+function react(item, kind) {   // 체험판: 다른 회원 반응 예시
+  const who = ['새벽러너', '꾸준이', '런관장', '스쿼트요정', '응원단장'];
+  setTimeout(() => { if (kind === 'wish') item.cheer += 3; else item.like += 2; const n = who[Math.floor(Math.random() * who.length)];
+    feed('', `${n}님이 ${myName}님의 ${kind === 'wish' ? '소원을 응원했어요 💙' : '방명록에 ♥를 눌렀어요'}`, 'sys'); myNew(); if (kind === 'book') drawBoard(book); }, 5000);
+  setTimeout(() => { const n = who[Math.floor(Math.random() * who.length)]; item.cm = item.cm || [];
+    item.cm.push([n, kind === 'wish' ? '꼭 이뤄질 거예요! 같이 해요 💪' : '오늘도 함께해서 좋아요 💙', hhmm()]);
+    feed('', `${n}님이 ${myName}님의 ${kind === 'wish' ? '소원' : '방명록'}에 댓글을 달았어요 💬`, 'sys'); myNew(); toast('MY에 새 반응이 있어요 🔔'); }, 11000);
+}
+function renderMy() {
+  $('myT1').className = 'btn ' + (myTab === 1 ? 'p' : 'g'); $('myT2').className = 'btn ' + (myTab === 2 ? 'p' : 'g');
+  let html = '';
+  if (myTab === 1) {
+    const mine = [...book.filter(b => b.n === myName).map(b => ({ k: '📖 방명록', t: b.t, time: b.time, r: `♥ ${b.like}`, cm: b.cm || [] })), ...wishes.filter(w => w.n === myName).map(w => ({ k: '🌳 소원나무', t: w.t, time: w.time || '', r: `💙 응원 ${w.cheer}`, cm: w.cm }))];
+    html = mine.reverse().map(m => `<div class="wish"><div class="w0">${m.k} · ${m.time}</div><div class="w1">${esc(m.t)}</div><div class="wb"><button>${m.r}</button><button>💬 댓글 ${m.cm.length}</button></div>${m.cm.length ? `<div class="cm">${m.cm.map(c => `<b>${esc(c[0])}</b> ${esc(c[1])}`).join('<br>')}</div>` : ''}</div>`).join('');
+    if (!html) html = '<div style="text-align:center;color:#6B7280;font-size:13px;padding:24px 0">아직 남긴 글이 없어요<br>방명록이나 소원나무에 남겨 보세요 🌿</div>';
+  } else {
+    const mc = []; wishes.forEach(w => w.cm.forEach(c => { if (c[0] === myName) mc.push({ to: w.n, about: w.t, t: c[1], time: c[2] || '' }); }));
+    html = mc.reverse().map(m => `<div class="wish"><div class="w0">🌳 ${esc(m.to)}님의 소원 · ${m.time}</div><div style="font-size:12.5px;color:#6B7280;margin-bottom:4px">“${esc(m.about)}”</div><div class="w1">💬 ${esc(m.t)}</div></div>`).join('');
+    if (!html) html = '<div style="text-align:center;color:#6B7280;font-size:13px;padding:24px 0">아직 단 댓글이 없어요<br>다른 회원의 소원에 응원 댓글을 남겨 보세요 💙</div>';
+  }
+  $('myList').innerHTML = html;
+}
+$('bMy').onclick = () => { if (!entered) return; $('myDot').style.display = 'none'; renderMy(); openM('mMy'); };
+$('myT1').onclick = () => { myTab = 1; renderMy(); }; $('myT2').onclick = () => { myTab = 2; renderMy(); };
+$('wishSend').onclick = () => { const t = $('wishMsg').value.trim(); if (!t) return; const nw = { n: myName, t, cheer: 0, cm: [], time: hhmm() }; wishes.push(nw); hangWish(); react(nw, 'wish'); $('wishMsg').value = ''; renderWish(); closeAll();
   burst(WISH.x, 3.5, WISH.z, ['🌟', '💛', '✨', '🍀'], 12, '소원 매달기!'); feed('', `${myName}님이 소원나무에 소원을 매달았어요 🌳`, 'sys'); toast('소원을 매달았어요! 꼭 이뤄질 거예요 🌟', 2600); };
 // 눌러서 바로 가는 장소 (방명록 · 소원나무 · 분수 · 연못 · 포토존)
 const places = [];
