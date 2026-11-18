@@ -89,7 +89,7 @@ function renderLogin(err){
       '<div class="field"><label for="fName">이름</label><input id="fName" autocomplete="name" placeholder="홍길동"></div>' +
       '<div class="field"><label for="fPhone">휴대폰 번호</label><div style="display:flex;gap:8px"><input id="fPhone" type="tel" inputmode="numeric" autocomplete="tel" placeholder="010-0000-0000" style="flex:1;min-width:0"><button class="btn" type="button" id="sendBtn" style="white-space:nowrap;font-size:14px">인증번호 받기</button></div></div>' +
       '<div class="field" id="codeWrap"><label for="fCode">인증번호</label><div style="display:flex;gap:8px;align-items:center"><input id="fCode" inputmode="numeric" autocomplete="one-time-code" placeholder="6자리 숫자" style="flex:1;min-width:0"><span class="pxf" id="timer" style="font-size:10px;color:#B91C32;min-width:52px;text-align:right"></span></div></div>' +
-      '<div class="field"><label for="fNick">닉네임</label><input id="fNick" placeholder="예: 달리는민수" maxlength="12"><div class="help">픽셀 헬스장과 방명록에서 이 이름으로 보여요 · 처음 한 번만 입력하면 돼요</div></div>' +
+      '<div class="field"><label for="fNick">닉네임</label><input id="fNick" placeholder="예: 달리는민수" maxlength="12"><div class="help">미니런앤핏과 방명록에서 이 이름으로 보여요 · 처음 한 번만 입력하면 돼요</div></div>' +
       '<div class="msg ' + (err ? 'err' : '') + '" id="lMsg">' + esc(err || '') + '</div>' +
     '</form>' +
     '<div style="padding:16px 26px 0"><button class="btn pxbtn" type="button" id="enterBtn" style="width:100%;height:54px;font-size:17px">런앤핏 입장하기</button>' +
@@ -160,7 +160,7 @@ async function loadMe(user){
   go('home');
 }
 function askNickname(){
-  const bg = sheet('<div class="ttl">닉네임을 정해 주세요</div><div class="muted" style="font-size:14px;margin-top:4px">픽셀 헬스장과 방명록에서 이 이름으로 보여요</div>' +
+  const bg = sheet('<div class="ttl">닉네임을 정해 주세요</div><div class="muted" style="font-size:14px;margin-top:4px">미니런앤핏과 방명록에서 이 이름으로 보여요</div>' +
     '<div class="field" style="margin-top:14px"><label for="nk">닉네임</label><input id="nk" maxlength="12" placeholder="예: 달리는민수"></div><button class="btn" type="button" id="nkSave" style="width:100%;margin-top:12px">저장</button>');
   bg.querySelector('#nkSave').onclick = async ()=>{
     const v = bg.querySelector('#nk').value.trim(); if(!v) return;

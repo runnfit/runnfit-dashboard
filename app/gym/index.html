@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
-<title>런앤핏 픽셀 헬스장 3D 체험판</title>
+<title>미니런앤핏</title>
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 :root{--b:#093692;--b2:#2563EB}
@@ -131,7 +131,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 <div class="ok" id="fOk"></div></div></div></div>
 <div id="start">
   <div class="lg">RUN N FIT</div>
-  <p><b style="color:#0B1B4D;font-size:18px">런앤핏 픽셀 헬스장</b><br>실제 정릉 런앤핏 배치 그대로<br>턴게이트에서 얼굴인식하고 들어가요</p>
+  <p><b style="color:#0B1B4D;font-size:18px">미니런앤핏</b><br>실제 정릉 런앤핏 배치 그대로<br>턴게이트에서 얼굴인식하고 들어가요</p>
   <div id="startMsg" style="font-size:14px;color:#1E3A8A;margin-bottom:10px;line-height:1.5;display:none"></div>
   <input id="nick" maxlength="8" placeholder="닉네임" style="display:none">
   <button class="btn p" id="enter" disabled>확인하고 있어요…</button>
@@ -1045,7 +1045,7 @@ const card = $('card'); let nearKey = '', curPerson = null;
 function addX() { card.style.display = 'block'; if (!card.querySelector('.cx')) { const x = document.createElement('button'); x.className = 'cx'; x.textContent = '✕'; x.onclick = () => { card.style.display = 'none'; curPerson = null; }; card.appendChild(x); } }
 function showEq(n) {
   const [nm, loc] = EQ[n]; nearKey = 'eq' + n;
-  card.innerHTML = `<div class="t"><span class="n">${String(n).padStart(2, '0')}</span>${nm}${WOD.has(n) ? ' <span style="font-size:11px;background:#FFD54A;border-radius:5px;padding:1px 6px">이번 주 WOD</span>' : ''}</div><div class="s">${loc} · 실제 센터에서도 이 자리에 있어요</div><div class="row"><button class="btn p" id="cHow">사용법 보기</button><button class="btn g" id="cDo">운동하기</button></div><div style="font-size:11px;color:#6B7280;margin-top:6px">💡 실제 운동 기록은 픽셀 헬스장을 나가서 앱에서 남길 수 있어요</div>`;
+  card.innerHTML = `<div class="t"><span class="n">${String(n).padStart(2, '0')}</span>${nm}${WOD.has(n) ? ' <span style="font-size:11px;background:#FFD54A;border-radius:5px;padding:1px 6px">이번 주 WOD</span>' : ''}</div><div class="s">${loc} · 실제 센터에서도 이 자리에 있어요</div><div class="row"><button class="btn p" id="cHow">사용법 보기</button><button class="btn g" id="cDo">운동하기</button></div><div style="font-size:11px;color:#6B7280;margin-top:6px">💡 실제 운동 기록은 미니런앤핏을 나가서 앱에서 남길 수 있어요</div>`;
   $('cHow').onclick = () => toast('실제 앱에서는 런관장 사용법 영상이 열려요');
   $('cDo').onclick = () => doEq(n);
   addX();
