@@ -614,7 +614,7 @@ function sunbed(x, z) { box(scene, x, 0, z, .8, .3, 2.0, 0xF8FAFC); const b = bo
 bench(1.0, -TD + .6); bench(1.0, -4.5); bench(18.3, -TD + .6, 3);
 for (let i = 0; i < 4; i++) sunbed(18.6 + i * 1.1, -9.6);
 [[.5, -1.2], [4.6, -1.2], [s(8), -1.4], [s(11), -1.4], [s(14), -1.4], [WW + 3.6, -1.4, 1], [WW + 3.6, -6]].forEach(p => plant(...p));
-[[2.2, -12.5], [5.2, -13.6], [33.6, -15.2], [9.2, -12.2], [27.8, -6.2]].forEach(p => tree(...p));
+[[2.2, -12.5], [1.6, -8.6], [33.6, -15.2], [19.4, -8.6], [27.8, -6.2]].forEach(p => tree(...p));
 flowers(1.2, -11.2, 2.6, 1.0); flowers(26.2, -8.2, 3, 1); flowers(13.6, -8.4, 1.4, .8); flowers(18.4, -12.6, 1.2, 1.4);
 for (let i = 0; i < 3; i++) box(scene, s(1.2) + i * 2.4, 0, -8.6, 1.9, .03, 2.6, 0x2563EB);
 floorText('야외 스트레칭', s(1.2) + 3.3, -7.3, 3.2, '#ffffff', .6);
@@ -1277,7 +1277,7 @@ function gCheck() {
 const TAPG = { race: ['🏃', '러닝머신 레이스', '참가!', '달려!', 'sprint', 'm'], sqt: ['🦵', '스쿼트 많이 하기', '참가!', '앉아!', 'squat', '개'] };
 let GT = null;
 function tapStart(k) {
-  const t0 = Date.now() + 5000, id = myUid + ':' + t0, [ic, nm] = TAPG[k];
+  const t0 = Date.now() + (k === 'race' ? 8000 : 5000), id = myUid + ':' + t0, [ic, nm] = TAPG[k];
   const ppl = NPCS.filter(n => Math.hypot(n.a.position.x - me.position.x, n.a.position.z - me.position.z) < 10);
   tapJoin(k, id, t0, true);
   let idx = 0;
@@ -1294,9 +1294,9 @@ function tapJoin(k, id, t0, host) {
   if (Date.now() > t0 + 3000) { toast('이미 시작했어요. 다음에 함께해요 🙂'); return; }
   const [ic, nm, , btn, act] = TAPG[k];
   GT = { k, id, t0, host, ppl: new Map([['me', { name: myName, n: 0, me: true }]]), last: -1, done: false };
-  if (k === 'race') { const free = treadmills.filter(t => !NPCS.some(n => Math.hypot(n.a.position.x - t.x, n.a.position.z - t.z) < .3)), t = nearest(free, 12);
+  if (k === 'race') { const free = treadmills.filter(t => !NPCS.some(n => Math.hypot(n.a.position.x - t.x, n.a.position.z - t.z) < .3)), t = nearest(free);
     if (t) goTo(t.x, t.z + 1.4, () => { me.position.set(t.x, .27, t.z); me.rotation.y = Math.PI; }); }
-  gShow(`${ic} ${nm}`, `<div class="big" id="gCd">5</div><button id="gTap">곧 시작해요</button><div id="gTr" style="margin-top:10px"></div>`);
+  gShow(`${ic} ${nm}`, `<div class="big" id="gCd">${Math.ceil((t0 - Date.now()) / 1000)}</div><button id="gTap">${k === 'race' ? '러닝머신으로 가는 중…' : '곧 시작해요'}</button><div id="gTr" style="margin-top:10px"></div>`);
   const g = GT;
   $('gTap').onclick = () => { if (GT !== g || g.done) return; const el = Date.now() - g.t0; if (el < 0 || el > 10000) return; const m = g.ppl.get('me'); m.n++;
     me.userData.act = act; };
