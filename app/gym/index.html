@@ -336,6 +336,7 @@ box(scene, WW + RW, 0, 0, .2, 1.0, DG + .2, 0x1A1D24); solid(WW + RW, 0, 3, DG);
 label(scene, 'RUN FOR YOUR DREAM!', .1, 3.7, DG / 2, { bg: null, fg: '#153189', size: 40, scale: .016 });
 
 // ── 오른쪽: 운동복·수건함 → 남자 탈의실 → 여자 탈의실 → 게시판 → 개인 샤워장 8칸
+// 개인 샤워장 8칸: 이름표는 시야를 가려서 뺌 (대표님)
 function room(z0, z1, name, col, door = true, doorCol) {
   const g = new THREE.Group(); scene.add(g);
   fadeable(box(g, WW, 0, z0, .2, 2.6, z1 - z0, 0x15171C)); box(g, WW + .2, .001, z0, RW - .2, .02, z1 - z0, col, { op: .35 }); fadeable(box(g, WW, 0, z0, RW, 2.6, .1, 0x15171C));
@@ -365,7 +366,7 @@ room(Z(11.2), Z(14.0), '남자 탈의실', 0x1D4ED8); room(Z(8.4), Z(11.2), '여
   let k = 0; for (let z = z0 + .05; z < z1 - .05; z += .075, k++) { const c = RB[k % RB.length], len = .45 + (k * 31 % 4) * .05;
     box(g, bx - .01, 2.9 - len, z, .02, len, .03, c); rod(g, bx - .025, 2.86 - len, z + .015, .045, .015, [0xF5B301, 0xD1D5DB, 0xB45309][k % 3], 'x'); } }
 room(Z(7.3), Z(8.4), '게시판', 0x6B7280, false); box(scene, WW - .05, .9, Z(7.4), .05, 1.2, 1.4, 0xF3F4F6);
-for (let k = 0; k < 8; k++) room(Z(k * .91), Z((k + 1) * .91), `샤워 ${8 - k}`, 0x6B7280, true, k % 2 ? 0x2B2F36 : 0x374151);
+for (let k = 0; k < 8; k++) room(Z(k * .91), Z((k + 1) * .91), "", 0x6B7280, true, k % 2 ? 0x2B2F36 : 0x374151);
 
 // ── 기구 (실제 모양에 가깝게)
 function G(x, z) { const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g); return g; }
