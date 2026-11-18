@@ -73,7 +73,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 #start .btn.g{width:100%;height:48px;margin-top:10px;font-size:15px;box-shadow:none}
 .inrow{display:flex;gap:6px;margin-top:6px}
 #feed{left:10px;bottom:calc(106px + env(safe-area-inset-bottom));width:min(300px,72%);display:flex;flex-direction:column;align-items:flex-start;gap:4px;pointer-events:none}
-#feed div{max-width:100%;background:rgba(15,23,42,.42);color:#fff;font-size:12.5px;line-height:1.35;padding:4px 9px;border-radius:10px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:opacity 1.2s,transform .3s;text-shadow:0 1px 2px rgba(0,0,0,.4);animation:fin .3s ease-out}
+#feed div{max-width:100%;word-break:keep-all;overflow-wrap:anywhere;background:rgba(15,23,42,.42);color:#fff;font-size:12.5px;line-height:1.35;padding:4px 9px;border-radius:10px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:opacity 1.2s,transform .3s;text-shadow:0 1px 2px rgba(0,0,0,.4);animation:fin .3s ease-out}
 #feed div b{color:#fff;margin-right:6px;border-bottom:3px solid #F3F4F6;padding-bottom:1px}
 #feed div b.st,#feedAll .r b.st{background:#153189;border:0;border-radius:5px;padding:0 5px;color:#fff}
 #feed div.sys{background:rgba(37,99,235,.45)}
@@ -118,7 +118,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 </div>
 <div id="mFind" class="modal"><div class="sheet"><h3>어떤 기구로 갈까요?</h3><div class="grid" id="eqGrid"></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
 <div id="mAct" class="modal"><div class="sheet"><h3>동작</h3><div class="acts" id="actGrid"></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
-<div id="mTalk" class="modal"><div class="sheet"><h3>접속한 회원에게 한마디</h3><div class="inrow"><input id="msg" maxlength="20" placeholder="예) 오늘도 파이팅!"><button class="btn p" id="send" style="width:76px">보내기</button></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
+<div id="mTalk" class="modal"><div class="sheet"><h3>접속한 회원에게 한마디</h3><div class="inrow"><input id="msg" maxlength="80" placeholder="예) 오늘도 파이팅!"><button class="btn p" id="send" style="width:76px">보내기</button></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
 <div id="mTerr" class="modal"><div class="sheet"><h3>🌿 테라스 어디로 갈까요?</h3><div id="terrList"></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
 <div id="mMy" class="modal"><div class="sheet"><h3>MY · 내가 남긴 이야기</h3><div style="display:flex;gap:6px;margin-bottom:10px"><button class="btn p" id="myT1" style="flex:1;height:40px">내 글</button><button class="btn g" id="myT2" style="flex:1;height:40px">내 댓글</button></div><div id="myList"></div><button class="btn g" style="width:100%;margin-top:6px" data-close>닫기</button></div></div>
 <div id="mWish" class="modal"><div class="sheet"><h3>🌳 소원나무</h3><div style="font-size:12.5px;color:#4B5563;margin:-4px 0 10px">꼭 이뤄졌으면 하는 목표나 꿈을 적어 매달아요. 다른 회원의 소원에 응원과 댓글을 남겨 주세요.</div><div class="inrow" style="margin-bottom:10px"><input id="wishMsg" maxlength="40" placeholder="예) 올해 10km 완주하기"><button class="btn p" id="wishSend" style="width:76px">매달기</button></div><div id="wishList"></div><button class="btn g" style="width:100%;margin-top:6px" data-close>닫기</button></div></div>
@@ -127,7 +127,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
   <div id="bookList" style="padding:12px 14px 4px;max-height:38vh;overflow-y:auto;background:#F5F8FF"></div>
   <div style="padding:10px 14px calc(14px + env(safe-area-inset-bottom));background:#fff;border-top:1px solid #E5EAF5">
     <div id="bookChips" style="display:flex;gap:6px;overflow-x:auto;padding-bottom:8px"></div>
-    <div class="inrow" style="margin-top:0"><input id="bookMsg" maxlength="40" placeholder="런앤핏에 따뜻한 한 줄을 남겨 주세요"><button class="btn p" id="bookSend" style="width:76px">남기기</button></div>
+    <div class="inrow" style="margin-top:0"><input id="bookMsg" maxlength="60" placeholder="런앤핏에 따뜻한 한 줄을 남겨 주세요"><button class="btn p" id="bookSend" style="width:76px">남기기</button></div>
     <button class="btn g" style="width:100%;margin-top:8px" data-close>닫기</button></div></div></div>
 <div id="face"><div class="dev"><div style="display:flex;justify-content:center;gap:28px;margin-bottom:8px"><span style="width:8px;height:8px;border-radius:50%;background:#F43F5E"></span><span style="width:8px;height:8px;border-radius:50%;background:#334155"></span><span style="width:8px;height:8px;border-radius:50%;background:#334155"></span><span style="width:8px;height:8px;border-radius:50%;background:#F43F5E"></span></div>
 <div class="scr"><div class="tm"><b id="fTime">07:17</b><span id="fDate" style="font-size:10px;opacity:.8"></span></div>
@@ -671,7 +671,8 @@ function avatar(name, shirt, hair, me, staff, belt) {
 function say(av, txt, sec = 3.5) {
   if (av === me) { feed(myName, txt, 'me'); if (LIVE) pubMe({ say: String(txt).slice(0, 40), sayT: Date.now() }); } else if (DEMO) showFeed(av.userData.name, txt);
   if (av.userData.bubble) av.remove(av.userData.bubble);
-  const b = textSprite(txt, { bg: '#fff', fg: '#111827', size: 32, scale: .011, border: '#111827' });
+  const bt = String(txt).length > 22 ? String(txt).slice(0, 21) + '…' : String(txt);   // 말풍선은 짧게, 전체 글은 아래 이야기 창에
+  const b = textSprite(bt, { bg: '#fff', fg: '#111827', size: 32, scale: .011, border: '#111827' });
   b.position.y = av.userData.act === 'lie' ? 1.0 : 2.35; av.add(b); av.userData.bubble = b; av.userData.bubbleT = sec;
 }
 function pose(av, mode, dt) {
@@ -1013,7 +1014,7 @@ let openWish = -1;
 function renderWish() {
   $('wishList').innerHTML = wishes.slice().reverse().map((w, ri) => { const i = wishes.length - 1 - ri; return `<div class="wish"><div class="w0">${esc(w.n)}님의 소원</div><div class="w1">${esc(w.t)}</div>
     <div class="wb"><button data-c="${i}">💙 응원 ${w.cheer}</button><button data-o="${i}">💬 댓글 ${w.cm.length}</button></div>
-    ${openWish === i ? `<div class="cm">${w.cm.map(c => `<b>${esc(c[0])}</b> ${esc(c[1])}`).join('<br>') || '첫 댓글을 남겨 주세요'}</div><div class="inrow"><input id="cmIn" maxlength="30" placeholder="응원 댓글 달기"><button class="btn p" id="cmSend" style="width:64px;height:40px">달기</button></div>` : ''}</div>`; }).join('');
+    ${openWish === i ? `<div class="cm">${w.cm.map(c => `<b>${esc(c[0])}</b> ${esc(c[1])}`).join('<br>') || '첫 댓글을 남겨 주세요'}</div><div class="inrow"><input id="cmIn" maxlength="60" placeholder="응원 댓글 달기"><button class="btn p" id="cmSend" style="width:64px;height:40px">달기</button></div>` : ''}</div>`; }).join('');
   $('wishList').querySelectorAll('[data-c]').forEach(b => b.onclick = () => { const w = wishes[+b.dataset.c]; if (LIVE) { if (!likedOnce('w' + w.id)) updateDoc(doc(db, 'gym_wishes', w.id), { cheer: increment(1) }).catch(() => {}); } else { w.cheer++; renderWish(); } burst(WISH.x, 4, WISH.z, ['💙', '✨'], 6); });
   $('wishList').querySelectorAll('[data-o]').forEach(b => b.onclick = () => { openWish = openWish === +b.dataset.o ? -1 : +b.dataset.o; renderWish(); });
   if ($('cmSend')) $('cmSend').onclick = () => { const t = $('cmIn').value.trim(); if (!t) return; const w = wishes[openWish]; if (LIVE) addDoc(collection(db, 'gym_comments'), { wishId: w.id, owner: w.uid, wishText: w.t.slice(0, 60), wishNick: w.n, uid: myUid, nick: myName, belt: MYBELT, text: t.slice(0, 60), ts: serverTimestamp() }).catch(() => toast('저장하지 못했어요')); else { w.cm.push([myName, t, hhmm()]); myNew(); } feed('', `${myName}님이 ${w.n}님의 소원에 응원 댓글을 남겼어요 🌳`, 'sys'); renderWish(); };
