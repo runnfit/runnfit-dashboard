@@ -28,6 +28,21 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 #bar button,.btn{border:0;border-radius:12px;height:48px;font-family:inherit;font-weight:900;font-size:13.5px;cursor:pointer;color:var(--b)}
 #bar button{flex:1;background:rgba(255,255,255,.96);white-space:nowrap;font-size:13px;padding:0 4px}
 #bar button.pri{background:var(--b2);color:#fff}
+.gsec{font-size:12px;font-weight:800;color:#8A96AD;margin:12px 2px 6px}
+.gl{display:flex;flex-direction:column;gap:8px}
+.gl button{display:flex;align-items:center;gap:12px;text-align:left;border:0;border-radius:14px;background:#F1F4FB;padding:11px 14px;font-family:inherit;cursor:pointer}
+.gl button b{display:block;font-size:15px;color:#153189}
+.gl button small{font-size:12px;color:#5B6478}
+.gl button .i{font-size:26px}
+.gl button[disabled]{opacity:.45;cursor:default}
+#gB .big{font-size:52px;text-align:center;font-weight:900;color:#153189;margin:8px 0}
+#gB .msg{text-align:center;font-size:15px;font-weight:800;color:#111827;margin:8px 0;line-height:1.5}
+#gB .row{display:flex;gap:8px;margin-top:10px}
+#gB .row button{flex:1;height:64px;border:0;border-radius:14px;background:#EEF2FB;font-size:28px;font-family:inherit;font-weight:900;color:#153189;cursor:pointer}
+#gB .row button.on{background:#153189;color:#fff}
+#gB .row button:disabled:not(.on){opacity:.4}
+#gTap{width:100%;height:170px;border:0;border-radius:18px;font-size:30px;font-weight:900;font-family:inherit;background:#E5E7EB;color:#6B7280;margin-top:6px}
+#gTap.go{background:#153189;color:#fff}
 .btn.p{background:var(--b2);color:#fff}.btn.g{background:#E3E9FF;color:var(--b)}
 .modal{position:fixed;inset:0;z-index:20;display:none;align-items:flex-end;justify-content:center;background:rgba(3,8,25,.45)}
 .sheet{width:min(420px,100%);background:#fff;border-radius:18px 18px 0 0;padding:16px 14px calc(14px + env(safe-area-inset-bottom));max-height:78vh;overflow:auto}
@@ -116,14 +131,25 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 <div id="guide"><div class="gs"><div style="font-size:18px;font-weight:900;margin-bottom:6px">이렇게 움직여요</div><div class="gr"><span>👆</span><div><b>가고 싶은 곳을 톡</b><br>누르면 그곳까지 걸어가요</div></div><div class="gr"><span>☝️</span><div><b>한 손가락으로 밀기</b><br>보는 방향이 바뀌어요</div></div><div class="gr"><span>🤏</span><div><b>두 손가락으로 벌리기 · 오므리기</b><br>확대 · 축소해요</div></div><div class="gr"><span>🙂</span><div><b>다른 회원을 톡</b><br>하이파이브 · 박수 · 하트를 보내요</div></div><button class="btn p" id="guideOk" style="width:100%;margin-top:10px">알겠어요!</button></div></div>
 <div id="card" class="ui"></div>
 <div id="bar" class="ui">
-  <button id="bFind" class="pri">📍 기구 찾기</button>
-  <button id="bAct">🙆 동작</button>
-  <button id="bTalk">💬 한마디</button>
-  <button id="bTerr">🌿 테라스</button>
+  <button id="bFind">기구 찾기</button>
+  <button id="bAct">동작</button>
+  <button id="bGame" class="pri">미니게임</button>
+  <button id="bTalk">한마디</button>
+  <button id="bTerr">테라스</button>
 </div>
 <div id="mFind" class="modal"><div class="sheet"><h3>어떤 기구로 갈까요?</h3><div class="grid" id="eqGrid"></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
 <div id="mPeople" class="modal"><div class="sheet"><h3>지금 함께 운동 중</h3><div style="font-size:12.5px;color:#4B5563;margin:-4px 0 6px">이름을 누르면 그 회원에게 가요</div><div id="peopleList" style="max-height:52vh;overflow-y:auto"></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
 <div id="mAct" class="modal"><div class="sheet"><h3>동작</h3><div class="acts" id="actGrid"></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
+<div id="mGames" class="modal"><div class="sheet"><h3>미니게임</h3><div style="font-size:12.5px;color:#4B5563;margin:-4px 0 4px">가까이 있는 회원과 함께해요</div>
+<div class="gsec">1:1</div><div class="gl">
+<button data-g="rps"><span class="i">✊</span><span><b>가위바위보</b><small>3초 승부! 진 사람은 스쿼트 5개</small></span></button>
+<button data-g="react"><span class="i">⚡</span><span><b>반응속도 대결</b><small>"지금!" 뜨면 먼저 누르기</small></span></button>
+<button data-g="num"><span class="i">🎯</span><span><b>숫자 맞히기</b><small>같은 숫자 고르면 통했다 💙</small></span></button></div>
+<div class="gsec">여럿이 · 연타</div><div class="gl">
+<button disabled><span class="i">🏃</span><span><b>러닝머신 레이스</b><small>곧 열려요</small></span></button>
+<button disabled><span class="i">🦵</span><span><b>스쿼트 많이 하기</b><small>곧 열려요</small></span></button></div>
+<button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
+<div id="mGame" class="modal"><div class="sheet"><h3 id="gT">미니게임</h3><div id="gB"></div><button class="btn g" style="width:100%;margin-top:12px" data-close id="gClose">닫기</button></div></div>
 <div id="mTalk" class="modal"><div class="sheet"><h3>접속한 회원에게 한마디</h3><div class="inrow"><input id="msg" maxlength="200" placeholder="예) 오늘도 파이팅!"><button class="btn p" id="send" style="width:76px">보내기</button></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
 <div id="mTerr" class="modal"><div class="sheet"><h3>🌿 테라스 어디로 갈까요?</h3><div id="terrList"></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
 <div id="mMy" class="modal"><div class="sheet"><h3>MY · 내가 남긴 이야기</h3><div style="display:flex;gap:6px;margin-bottom:10px"><button class="btn p" id="myT1" style="flex:1;height:40px">내 글</button><button class="btn g" id="myT2" style="flex:1;height:40px">내 댓글</button></div><div id="myList"></div><button class="btn g" style="width:100%;margin-top:6px" data-close>닫기</button></div></div>
@@ -894,6 +920,8 @@ document.querySelectorAll('[data-close]').forEach(b => b.onclick = closeAll);
 document.querySelectorAll('.modal').forEach(m => m.addEventListener('pointerdown', e => { if (e.target === m) closeAll(); }));
 $('bFind').onclick = () => openM('mFind');
 $('bAct').onclick = () => openM('mAct');
+$('bGame').onclick = () => openM('mGames');
+document.querySelectorAll('#mGames [data-g]').forEach(b => b.onclick = () => { closeAll(); if (entered) gameReq(b.dataset.g); });
 $('bTalk').onclick = () => { openM('mTalk'); setTimeout(() => $('msg').focus(), 50); };
 $('send').onclick = () => { const t = $('msg').value.trim(); if (t) { say(me, t, 5, true); $('msg').value = ''; } closeAll(); };
 $('msg').addEventListener('keydown', e => { if (e.key === 'Enter') $('send').click(); });
@@ -1122,6 +1150,88 @@ setInterval(() => {
   el.style.display = 'block'; el.textContent = `👏 ${b.a.userData.name}님 ${CHEER_ACTS[b.a.userData.act]} 응원하기`;
   el.onclick = () => { cheered.set(b, Date.now()); el.style.display = 'none'; const keep = { act: b.a.userData.act, rot: b.a.rotation.y }; emote('clap', b); if (!b.remote) { b.restore = keep; } };
 }, 500);
+// ── 미니게임 (1:1): 요청 → 수락 → 각자 고른 값을 gym_people.game 으로 주고받음
+const GAMES = { rps: ['✊', '가위바위보', '하자!'], react: ['⚡', '반응속도 대결', '도전!'], num: ['🎯', '숫자 맞히기', '해보자!'] };
+const HAND = ['✌️', '✊', '🖐'];
+let GM = null;
+function gShow(t, html) { $('gT').textContent = t; $('gB').innerHTML = html; openM('mGame'); }
+function gameReq(k) {
+  const n = nearestNpc(6), [ic, nm] = GAMES[k];
+  if (!n) { toast('가까이 있는 회원에게 다가가서 눌러 주세요'); return; }
+  faceEach(n);
+  if (n.remote) {
+    gShow(`${ic} ${nm}`, `<div class="msg">${esc(n.a.userData.name)}님의 수락을 기다리는 중…</div>`);
+    addDoc(collection(db, 'gym_hi5'), { from: myUid, fromNick: myName, to: n.uid, st: 'req', k, ts: serverTimestamp() })
+      .then(ref => { GM = { wait: ref.id }; setTimeout(() => { if (GM && GM.wait === ref.id) { GM = null; gShow(`${ic} ${nm}`, '<div class="msg">응답이 없어요. 다음에 같이 해요 🙂</div>'); } }, 20000); })
+      .catch(() => { closeAll(); toast('잠시 후 다시 해주세요'); });
+    return;
+  }
+  n.busy = 99; say(n.a, '좋아요! ' + ic, 1.3);
+  startGame(k, 'npc' + Date.now(), n, true);
+}
+function startGame(k, id, n, isReq) { GM = { k, id, n, isReq, round: 1 }; gRound(); }
+function gRound() {
+  const g = GM; g.key = g.id + ':' + g.round; g.mine = null; g.their = null; g.done = false;
+  if (g.pend && g.pend.id === g.key) g.their = g.pend.p;
+  const [ic, nm] = GAMES[g.k], who = esc(g.n.a.userData.name);
+  if (g.k === 'rps') {
+    gShow(`${ic} 가위바위보`, `<div class="msg">${who}님과 대결! ${g.round > 1 ? '(한 판 더)' : ''}</div><div class="big" id="gCd">3</div><div class="row">${HAND.map((h, i) => `<button data-p="${i}">${h}</button>`).join('')}</div>`);
+    let c = 3; const tk = g.key;
+    const iv = setInterval(() => { if (!GM || GM.key !== tk) { clearInterval(iv); return; } c--; if ($('gCd')) $('gCd').textContent = c > 0 ? c : '보!'; if (c <= 0) { clearInterval(iv); if (GM.mine === null) gPick(Math.floor(Math.random() * 3)); } }, 800);
+    $('gB').querySelectorAll('[data-p]').forEach(b => b.onclick = () => gPick(+b.dataset.p));
+  } else if (g.k === 'num') {
+    gShow(`${ic} 숫자 맞히기`, `<div class="msg">${who}님과 같은 숫자를 골라 보세요!</div><div class="row">${[1, 2, 3, 4, 5].map(i => `<button data-p="${i}">${i}</button>`).join('')}</div>`);
+    $('gB').querySelectorAll('[data-p]').forEach(b => b.onclick = () => gPick(+b.dataset.p));
+  } else {
+    gShow(`${ic} 반응속도 대결`, `<div class="msg">${who}님과 대결! 화면이 파랗게 바뀌면 바로 누르세요</div><button id="gTap">준비…</button>`);
+    const tk = g.key; let goT = 0;
+    const to = setTimeout(() => { if (!GM || GM.key !== tk) return; goT = performance.now(); const b = $('gTap'); if (b) { b.classList.add('go'); b.textContent = '지금!'; }
+      setTimeout(() => { if (GM && GM.key === tk && GM.mine === null) gPick(3000); }, 3000); }, 1200 + Math.random() * 2500);
+    $('gTap').onclick = () => { if (!GM || GM.key !== tk || GM.mine !== null) return; if (!goT) { clearTimeout(to); $('gTap').textContent = '부정출발! 😅'; gPick(-1); } else { const ms = Math.round(performance.now() - goT); $('gTap').textContent = (ms / 1000).toFixed(2) + '초!'; gPick(ms); } };
+  }
+}
+function gPick(v) {
+  const g = GM; if (!g || g.mine !== null) return; g.mine = v;
+  $('gB').querySelectorAll('[data-p]').forEach(b => { b.disabled = true; if (+b.dataset.p === v) b.classList.add('on'); });
+  if (g.n.remote) pubMe({ game: { id: g.key, p: v } });
+  else { const nv = g.k === 'rps' ? Math.floor(Math.random() * 3) : g.k === 'num' ? (Math.random() < .35 ? v : 1 + Math.floor(Math.random() * 5)) : 230 + Math.floor(Math.random() * 260); const tk = g.key; setTimeout(() => { if (GM && GM.key === tk) gTheir(nv); }, 500 + Math.random() * 600); }
+  const tk = g.key; setTimeout(() => { if (GM && GM.key === tk && GM.their === null) { GM = null; gShow('미니게임', '<div class="msg">상대가 응답하지 않았어요 🙂</div>'); } }, 12000);
+  gCheck();
+}
+function gTheir(v) { if (!GM) return; GM.their = v; gCheck(); }
+function gRemote(r, gm) { if (!GM || GM.n !== r || !gm || !gm.id) return; if (gm.id === GM.key) gTheir(gm.p); else GM.pend = gm; }
+function gCheck() {
+  const g = GM; if (!g || g.mine === null || g.their === null || g.done) return; g.done = true;
+  const other = g.n.a.userData.name, oa = g.n.a, local = !g.n.remote, [ic, nm] = GAMES[g.k];
+  let res, line, big, msg;
+  if (g.k === 'rps') {
+    res = [0, 1, -1][(g.mine - g.their + 3) % 3];
+    say(me, HAND[g.mine], 2, false, true); if (local) say(oa, HAND[g.their], 2);
+    if (!res) { gShow(`${ic} 가위바위보`, `<div class="big">${HAND[g.mine]} : ${HAND[g.their]}</div><div class="msg">비겼어요! 한 판 더!</div>`); setTimeout(() => { if (GM === g) { g.round++; gRound(); } }, 1600); return; }
+    big = `${HAND[g.mine]} : ${HAND[g.their]}`;
+    line = `${myName}님 ${HAND[g.mine]} vs ${other}님 ${HAND[g.their]} → ${res > 0 ? myName : other}님 승리!`;
+  } else if (g.k === 'react') {
+    const f = v => v < 0 ? '부정출발' : v >= 3000 ? '시간 초과' : (v / 1000).toFixed(2) + '초';
+    const ok = v => v >= 0 && v < 3000;
+    res = ok(g.mine) && (!ok(g.their) || g.mine < g.their) ? 1 : ok(g.their) && (!ok(g.mine) || g.their < g.mine) ? -1 : 0;
+    big = `${f(g.mine)} : ${f(g.their)}`;
+    if (!res) { gShow(`${ic} 반응속도 대결`, `<div class="big" style="font-size:30px">${big}</div><div class="msg">무승부! 한 판 더!</div>`); setTimeout(() => { if (GM === g) { g.round++; gRound(); } }, 1600); return; }
+    line = `${myName}님 ${f(g.mine)} vs ${other}님 ${f(g.their)} ⚡ → ${res > 0 ? myName : other}님 승리!`;
+  } else {
+    res = g.mine === g.their ? 2 : 3; big = `${g.mine} : ${g.their}`;
+    line = `${myName}님과 ${other}님 숫자 맞히기 🎯 ${g.mine}·${g.their} → ${res === 2 ? '통했다! 💙' : '아깝다~'}`;
+  }
+  const act = (a, x, t, sec) => { a.userData.act = x; say(a, t, sec, false, a === me); setTimeout(() => { if (a.userData.act === x) a.userData.act = null; }, sec * 1000); };
+  if (res === 1) { act(me, 'hooray', '이겼다! 🎉', 2.5); burst(me.position.x, 2.3, me.position.z, ['🎉', '✨', '💙'], 12, '승리!'); if (local) act(oa, 'squat', '벌칙 스쿼트 5개! 🦵', 3); msg = '이겼어요! 🎉<br><span style="color:#5B6478;font-size:13px">' + esc(other) + '님은 벌칙 스쿼트 5개 🦵</span>'; }
+  else if (res === -1) { act(me, 'squat', '벌칙 스쿼트 5개! 🦵', 3); if (local) { act(oa, 'hooray', '이겼다! 🎉', 2.5); burst(oa.position.x, 2.3, oa.position.z, ['🎉', '✨'], 10, '승리!'); } msg = '졌어요… 벌칙 스쿼트 5개! 🦵'; }
+  else if (res === 2) { act(me, 'heart', '통했다! 💙', 2.5); burst((me.position.x + oa.position.x) / 2, 2.3, (me.position.z + oa.position.z) / 2, ['💙', '❤️', '✨'], 14, '통했다!'); if (local) act(oa, 'heart', '통했다! 💙', 2.5); msg = '통했다! 💙'; }
+  else { act(me, 'clap', '아깝다~', 2); if (local) say(oa, '아깝다~ ㅎㅎ', 2); msg = '아깝다~ 다음엔 통할 거예요'; }
+  if (g.isReq) { feed.raw = true; feed('', line, 'sys'); feed.raw = false; }
+  gShow(`${ic} ${nm}`, `<div class="big" style="${g.k === 'react' ? 'font-size:30px' : ''}">${big}</div><div class="msg">${msg}</div><div class="row"><button id="gAgain" style="font-size:16px;height:48px">한 판 더</button></div>`);
+  $('gAgain').onclick = () => { closeAll(); if (local) { g.n.busy = 99; startGame(g.k, 'npc' + Date.now(), g.n, true); } else gameReq(g.k); };
+  if (local) setTimeout(() => { if (GM !== g || GM.done) g.n.busy = .3; }, 3500);
+  GM = null;
+}
 function hi5Anim(n, post) {
   toast(`${n.a.userData.name}님과 하이파이브! 🙌`);
   n.busy = 99; if (!n.restore) n.restore = { act: n.a.userData.act, rot: n.a.rotation.y };
@@ -1423,6 +1533,7 @@ function dropRemote(uid) { const r = remotes.get(uid); if (!r) return; scene.rem
 function setFinal(r, f) { r.a.position.set(f.x, f.y, f.z); r.a.rotation.y = f.rot; const u = r.a.userData; u.act = f.act; u.mtype = f.mt; u.mstand = f.ms; }
 function applyRemote(r, d) {
   r.seen = Date.now();
+  if (d.game && d.game.id && d.game.id !== r.gameSeen) { r.gameSeen = d.game.id; gRemote(r, d.game); }
   if (d.cir && d.cir.t0 && (!r.cir || r.cir.t0 !== d.cir.t0) && Date.now() - d.cir.t0 < 12000) { r.cir = { cx: d.cir.cx, cz: d.cir.cz, t0: d.cir.t0, a0: d.cir.a0 }; r.route = null; r.final = null; }
   if (r.cir && r.init) { if (d.sayT && d.sayT !== r.sayT) { say(r.a, d.say || ''); r.sayT = d.sayT; } return; }
   if (d.mv) { if (!r.route || r.tx !== d.tx || r.tz !== d.tz) { r.tx = d.tx; r.tz = d.tz; r.a.userData.act = null; r.a.position.y = 0; r.route = findPath(r.a.position.x, r.a.position.z, d.tx, d.tz) || [[d.tx, d.tz]]; } r.final = null; }
@@ -1515,15 +1626,16 @@ function startListeners() {
     if (d.st !== 'req' || Date.now() - t > 60000 || $('req')) return;
     const r = remotes.get(d.from); const box = document.createElement('div'); box.id = 'req'; box.className = 'ui';
     box.style.cssText = 'left:50%;transform:translateX(-50%);top:calc(176px + env(safe-area-inset-top));width:min(330px,calc(100% - 24px));background:#fff;border-radius:14px;padding:10px 12px;box-shadow:0 8px 20px rgba(0,0,0,.3);z-index:6';
-    const P = d.k && PAIR[d.k], q = P ? `${P[0]} ${esc(d.fromNick)}님이 ${P[1]}${d.k === 'circle' ? '에 초대했어요' : '를 요청했어요'}` : `🙌 ${esc(d.fromNick)}님이 하이파이브를 요청했어요`;
+    const P = d.k && (PAIR[d.k] || GAMES[d.k]), q = P ? `${P[0]} ${esc(d.fromNick)}님이 ${P[1]}${d.k === 'circle' ? '에 초대했어요' : GAMES[d.k] ? '을 신청했어요' : '를 요청했어요'}` : `🙌 ${esc(d.fromNick)}님이 하이파이브를 요청했어요`;
     box.innerHTML = `<div style="font-size:14px;font-weight:900">${q}</div><div style="display:flex;gap:6px;margin-top:8px"><button class="btn p" style="flex:1;height:40px" id="rOk">${P ? P[2] : '하이파이브!'}</button><button class="btn g" style="flex:1;height:40px" id="rNo">나중에</button></div>`;
     document.body.appendChild(box);
-    $('rOk').onclick = () => { box.remove(); updateDoc(ch.doc.ref, { st: 'ok' }).catch(() => {}); const rr = remotes.get(d.from); if (d.k === 'circle') joinCircle(d); else if (rr) { if (d.k && PAIR[d.k]) pairAnim(rr, d.k, false, true); else hi5Anim(rr, true); } };
+    $('rOk').onclick = () => { box.remove(); updateDoc(ch.doc.ref, { st: 'ok' }).catch(() => {}); const rr = remotes.get(d.from); if (d.k === 'circle') joinCircle(d); else if (GAMES[d.k]) { if (rr) { faceEach(rr); startGame(d.k, ch.doc.id, rr, false); } } else if (rr) { if (d.k && PAIR[d.k]) pairAnim(rr, d.k, false, true); else hi5Anim(rr, true); } };
     $('rNo').onclick = () => { box.remove(); updateDoc(ch.doc.ref, { st: 'no' }).catch(() => {}); };
     setTimeout(() => { if (box.isConnected) box.remove(); }, 15000);
   }), () => {});
   onSnapshot(query(collection(db, 'gym_hi5'), where('from', '==', myUid), limit(20)), snap => snap.docChanges().forEach(ch => {
     if (ch.type !== 'modified') return; const d = ch.doc.data(), r = remotes.get(d.to);
+    if (GAMES[d.k]) { if (!GM || GM.wait !== ch.doc.id) return; if (d.st === 'ok' && r) startGame(d.k, ch.doc.id, r, true); else if (d.st === 'no') { GM = null; closeAll(); toast('다음에 같이 해요 🙂'); } return; }
     if (d.k === 'circle') { if (d.st === 'ok' && r) toast(`${r.a.userData.name}님이 함께 돌아요! 💃`); return; }
     if (d.st === 'ok' && r) { if (d.k && PAIR[d.k]) pairAnim(r, d.k, true, false); else hi5Anim(r, false); } else if (d.st === 'no') toast(d.k ? '다음에 함께해요 🙂' : '다음에 하이파이브해요 🙂');
   }), () => {});
