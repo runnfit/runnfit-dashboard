@@ -72,6 +72,35 @@ function topbar(title){
 let me = null;          // { id, ...members 문서 }
 let tab = 'home';
 let notices = [];
+let helpOpen = false;
+let helpKind = 'guide';   // guide | pt
+let helpDone = null;
+// 코치 목록 (Firestore config/coaches 문서가 있으면 그걸 씀)
+let COACHES = [{ name: '런관장', desc: '대표 코치 · 재활 · 체형' }, { name: '김코치', desc: '다이어트 · 근력' }, { name: '박코치', desc: '러닝 · 체력' }];
+const HELP_TIMES = ['평일 오전', '평일 점심', '평일 저녁', '주말', '아무 때나'];
+const HELP_KINDS = {
+  guide: { title: '1:1 운동가이드 받기', sub: '코치님이 기구 · 자세를 직접 봐드려요', icon: 'coach' },
+  pt: { title: 'PT 상담받기', sub: '목표에 맞는 PT를 안내해 드려요', icon: 'chat' },
+};
+function hIco(kind, fg, bg, size){
+  fg = fg || B; bg = bg || '#E3E9FF'; size = size || 30;
+  const P = {
+    coach: '<circle cx="12" cy="7" r="3.2"/><path d="M5.5 20c.6-3.8 3.2-6 6.5-6s5.9 2.2 6.5 6"/><path d="M3 11h3M18 11h3M4.5 9.5v3M19.5 9.5v3"/>',
+    chat: '<path d="M4 5.5h16v10H9l-4 3.5v-3.5H4z"/><path d="M8 10.5h8"/>',
+    help: '<circle cx="12" cy="12" r="8.5"/><path d="M9.6 9.6a2.4 2.4 0 1 1 3.4 2.2c-.7.3-1 .8-1 1.5v.4"/><circle cx="12" cy="16.6" r=".6" fill="' + fg + '"/>',
+  }[kind];
+  const k = Math.round(size * .6);
+  return '<span style="width:' + size + 'px;height:' + size + 'px;border-radius:' + Math.round(size * .3) + 'px;background:' + bg + ';display:inline-flex;align-items:center;justify-content:center;flex:none"><svg viewBox="0 0 24 24" width="' + k + '" height="' + k + '" fill="none" stroke="' + fg + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + P + '</svg></span>';
+}
+function helpCard(){
+  const rows = helpOpen ? Object.keys(HELP_KINDS).map((k)=>{ const h = HELP_KINDS[k];
+    return '<button type="button" data-help="' + k + '" style="width:100%;display:flex;align-items:center;gap:9px;background:#fff;color:#0B1B4D;border:0;border-radius:10px;padding:9px 10px;margin-top:6px;text-align:left;cursor:pointer;font-family:inherit">' + hIco(h.icon) +
+      '<span style="flex:1"><span style="display:block;font-size:14px;font-weight:900">' + h.title + '</span><span style="display:block;font-size:11.5px;color:#4B5563">' + h.sub + '</span></span><span style="color:' + B + ';font-weight:900">›</span></button>'; }).join('') : '';
+  return '<div class="m" style="background:' + B + ';border-radius:12px;padding:10px 12px;color:#fff">' +
+    '<button type="button" id="helpToggle" aria-expanded="' + helpOpen + '" style="width:100%;display:flex;align-items:center;gap:8px;background:none;border:0;color:#fff;padding:0;text-align:left;cursor:pointer;font-family:inherit">' + hIco('help', '#fff', 'rgba(255,255,255,.16)', 28) +
+      '<span style="flex:1"><span style="display:block;font-size:15px;font-weight:900">도와줘요! 런앤핏!</span><span style="display:block;font-size:11px;opacity:.85;margin-top:1px">비용이 따로 들지 않아요 · 언제든 편하게 신청해주세요!</span></span>' +
+      '<span style="font-size:13px;display:inline-block;transform:rotate(' + (helpOpen ? 180 : 0) + 'deg)">▾</span></button>' + rows + '</div>';
+}
 
 // ---------- 입장 (문자 인증) ----------
 let confirmation = null, verifier = null, timer = null;
@@ -156,8 +185,10 @@ async function loadMe(user){
     const ns = await getDocs(query(collection(db, 'notices'), orderBy('createdAt', 'desc'), limit(5)));
     notices = ns.docs.map((x)=> Object.assign({ id: x.id }, x.data()));
   }catch(e){ notices = []; }
+  loadCoaches();
   if(!me.nickname){ askNickname(); }
-  go('home');
+  const hm = /^#help-(guide|pt)$/.exec(location.hash);
+  if(hm){ helpKind = hm[1]; history.replaceState(null, '', location.pathname); go('help'); } else go('home');
 }
 function askNickname(){
   const bg = sheet('<div class="ttl">닉네임을 정해 주세요</div><div class="muted" style="font-size:14px;margin-top:4px">미니런앤핏과 방명록에서 이 이름으로 보여요</div>' +
@@ -173,9 +204,9 @@ function go(t){
   tab = t;
   if(t === 'pixel'){ location.href = './gym/'; return; }
   $tabs.classList.remove('hidden'); $app.classList.remove('nonav');
-  const active = { home: 'home', challenge: 'challenge', workout: 'challenge', voice: 'voice', me: 'me' }[t];
+  const active = { help: 'home', home: 'home', challenge: 'challenge', workout: 'challenge', voice: 'voice', me: 'me' }[t];
   $tabs.querySelectorAll('button').forEach((b)=> b.classList.toggle('on', b.dataset.tab === active));
-  ({ home: renderHome, challenge: renderChallenge, workout: renderWorkout, voice: renderVoice, me: renderMe })[t]();
+  ({ help: renderHelp, home: renderHome, challenge: renderChallenge, workout: renderWorkout, voice: renderVoice, me: renderMe })[t]();
   window.scrollTo(0, 0);
 }
 $tabs.addEventListener('click', (e)=>{ const b = e.target.closest('button[data-tab]'); if(b) go(b.dataset.tab); });
@@ -234,6 +265,7 @@ function renderHome(){
     (attendedToday
       ? '<div class="m" style="background:#E3E9FF;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px"><div style="width:26px;height:26px;background:' + B + ';display:flex;align-items:center;justify-content:center;flex-shrink:0">' + CHECK('#fff') + '</div><div style="font-size:14px"><b style="color:' + B + '">오늘 출석 완료</b> · 오늘도 와주셨네요!</div></div>'
       : '<div class="m" style="background:#fff;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:inset 0 0 0 2px var(--line)"><div style="width:26px;height:26px;box-shadow:inset 0 0 0 2px #9CA3AF;flex-shrink:0"></div><div style="font-size:14px;color:#374151"><b>오늘은 아직 출석 전</b> · 센터에서 출석하면 바로 표시돼요</div></div>') +
+    helpCard() +
     '<div class="hero m" style="padding:14px 16px">' +
       '<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:700;color:var(--muted)">출석 띠</div><div style="font-size:13px;color:var(--muted)">총 <b style="color:var(--ink)">' + total + '회</b> 출석</div></div>' +
       '<div style="display:flex;align-items:center;gap:12px;margin-top:8px">' + beltSvg(cur.bg, 56, cur.name) +
@@ -253,6 +285,8 @@ function renderHome(){
       '</div></div>' +
     '<div style="height:18px"></div>';
   document.getElementById('bellBtn').onclick = showNotices;
+  document.getElementById('helpToggle').onclick = ()=>{ helpOpen = !helpOpen; const y = window.scrollY; renderHome(); window.scrollTo(0, y); };
+  $app.querySelectorAll('[data-help]').forEach((b)=> b.onclick = ()=>{ helpKind = b.dataset.help; go('help'); });
   const db1 = document.getElementById('doneBtn'); if(db1) db1.onclick = ()=>{ localStorage.setItem(workoutDoneKey(), '1'); toast('멋져요! 오늘의 운동 완료 💪 런앤핏이 응원할게요!'); renderHome(); };
   document.getElementById('coachBtn').onclick = coach;
   const gb = document.getElementById('goalBtn'); if(gb) gb.onclick = (e)=>{ e.preventDefault(); changeGoal(); };
@@ -393,6 +427,82 @@ async function loadMyVoices(){
         (v.reply ? '<div style="margin:8px 0 0 54px;font-size:13px;background:var(--bg);padding:8px 10px;line-height:1.5"><b style="color:' + B + '">런앤핏</b> ' + esc(v.reply) + '</div>' : '') + '</div>';
     }).join('') : '<div class="muted" style="font-size:13px;padding:6px 0 10px">아직 보낸 이야기가 없어요.</div>';
   }catch(e){ box.innerHTML = '<div class="muted" style="font-size:13px;padding:6px 0 10px">불러오지 못했어요.</div>'; }
+}
+
+// ---------- 도와줘요! 런앤핏! ----------
+let hPick = 'want', hCoach = null, hTimes = [];
+async function loadCoaches(){
+  try{ const c = await getDoc(doc(db, 'config', 'coaches')); const l = c.exists() && c.data().list; if(Array.isArray(l) && l.length) COACHES = l; }catch(e){}
+}
+function renderHelp(){
+  if(helpDone){ return renderHelpDone(); }
+  const h = HELP_KINDS[helpKind], guide = helpKind === 'guide';
+  const coachRows = COACHES.map((c, i)=>{ const on = hCoach === c.name;
+    return '<button type="button" data-coach="' + esc(c.name) + '" style="width:100%;display:flex;align-items:center;gap:10px;padding:10px 12px;border:0;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 ' + (on ? '2.5px ' + B : '1.5px #D5DCE8') + ';margin-top:6px;text-align:left;cursor:pointer;font-family:inherit">' + AVATAR(34) +
+      '<span style="flex:1"><span style="display:block;font-size:14.5px;font-weight:900;color:#111827">' + esc(c.name) + '</span><span style="display:block;font-size:12px;color:#4B5563">' + esc(c.desc || '') + '</span></span>' +
+      '<span style="width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 ' + (on ? '7px ' + B : '2px #9CA3AF') + '"></span></button>'; }).join('');
+  const seg = (v, t)=> '<button type="button" data-pick="' + v + '" style="flex:1;height:40px;border:0;border-radius:10px;font-family:inherit;font-size:13.5px;cursor:pointer;' + (hPick === v ? 'background:' + B + ';color:#fff;font-weight:900' : 'background:#fff;color:#111827;font-weight:700;box-shadow:inset 0 0 0 1.5px #D5DCE8') + '">' + t + '</button>';
+  const chips = HELP_TIMES.map((t)=>{ const on = hTimes.includes(t);
+    return '<button type="button" data-time="' + t + '" style="height:36px;padding:0 13px;border:0;border-radius:999px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;' + (on ? 'background:' + B + ';color:#fff' : 'background:#fff;color:#111827;box-shadow:inset 0 0 0 1.5px #D5DCE8') + '">' + (on ? '✓ ' : '') + t + '</button>'; }).join('');
+  const typed = (document.getElementById('hText') || {}).value || '';
+  $app.innerHTML = topbar(h.title) +
+    '<div style="margin:2px 24px 0;font-size:13px;color:#4B5563">' + (guide ? '코치님이 기구 사용법과 자세를 1:1로 봐드려요 · 비용 없음' : '목표를 듣고 맞는 PT를 안내해 드려요 · 비용 없음') + '</div>' +
+    '<div style="margin:16px 24px 0;font-size:14px;font-weight:900">어떤 코치님께 받을까요?</div>' +
+    '<div style="margin:8px 24px 0;display:flex;gap:6px">' + seg('want', '원하는 선생님이 있어요') + seg('rec', '런관장님이 추천해주세요') + '</div>' +
+    (hPick === 'want' ? '<div style="margin:2px 24px 0">' + coachRows + '</div>' : '<div style="margin:8px 24px 0;font-size:13px;color:#374151;background:#E3E9FF;border-radius:10px;padding:10px 12px">런관장님이 하고 싶은 말을 보고 딱 맞는 코치님을 연결해 드려요</div>') +
+    '<div style="margin:16px 24px 0;font-size:14px;font-weight:900">편한 시간 <span style="font-weight:500;color:#6B7280;font-size:12px">(여러 개 선택 가능)</span></div>' +
+    '<div style="margin:8px 24px 0;display:flex;gap:6px;flex-wrap:wrap">' + chips + '</div>' +
+    '<div style="margin:16px 24px 0;font-size:14px;font-weight:900">하고 싶은 말 <span style="font-weight:500;color:#6B7280;font-size:12px">(선택)</span></div>' +
+    '<div style="margin:8px 24px 0"><textarea id="hText" maxlength="300" placeholder="' + (guide ? '예: 스쿼트할 때 무릎이 아파요. 하체 기구 사용법도 알려주세요!' : '예: 3개월 안에 5kg 빼고 싶어요. 허리가 조금 안 좋아요.') + '" style="width:100%;min-height:84px;border:0;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 2px #C7D3EE;padding:12px;font-size:15px;line-height:1.5;font-family:inherit;resize:vertical;box-sizing:border-box">' + esc(typed) + '</textarea></div>' +
+    '<div style="margin:16px 24px 0"><button class="btn" type="button" id="hSend" style="width:100%;height:54px;font-size:16px">보내기</button><div class="msg" id="hMsg"></div></div>' +
+    '<div style="margin:6px 24px 0;text-align:center;font-size:12px;color:#6B7280">보내면 런앤핏에서 확인하고 연락드려요</div>' +
+    '<div style="height:18px"></div>';
+  $app.querySelectorAll('[data-pick]').forEach((b)=> b.onclick = ()=>{ hPick = b.dataset.pick; renderHelp(); });
+  $app.querySelectorAll('[data-coach]').forEach((b)=> b.onclick = ()=>{ hCoach = b.dataset.coach; renderHelp(); });
+  $app.querySelectorAll('[data-time]').forEach((b)=> b.onclick = ()=>{ const t = b.dataset.time; hTimes = hTimes.includes(t) ? hTimes.filter((x)=> x !== t) : hTimes.concat(t); renderHelp(); });
+  document.getElementById('hSend').onclick = sendHelp;
+}
+async function sendHelp(){
+  const msg = document.getElementById('hMsg'), btn = document.getElementById('hSend');
+  const text = document.getElementById('hText').value.trim();
+  if(hPick === 'want' && !hCoach){ msg.className = 'msg err'; msg.textContent = '원하는 코치님을 골라 주세요.'; return; }
+  if(!hTimes.length){ msg.className = 'msg err'; msg.textContent = '편한 시간을 하나 이상 골라 주세요.'; return; }
+  btn.disabled = true;
+  try{
+    const coach = hPick === 'want' ? hCoach : null;
+    await setDoc(doc(collection(db, 'help_requests')), {
+      uid: auth.currentUser.uid, memberId: me.id, name: me.name || '', nickname: me.nickname || '', phone: auth.currentUser.phoneNumber || '',
+      kind: helpKind, pick: hPick, coach, times: hTimes, text, status: 'new', createdAt: serverTimestamp(),
+    });
+    helpDone = { coach };
+    hCoach = null; hTimes = []; hPick = 'want';
+    renderHelp();
+  }catch(e){ console.warn(e); msg.className = 'msg err'; msg.textContent = '보내지 못했어요. 잠시 후 다시 해주세요.'; btn.disabled = false; }
+}
+function renderHelpDone(){
+  const c = helpDone.coach;
+  $app.innerHTML = topbar('도움 요청') +
+    '<div class="card m" style="padding:22px 16px;text-align:center">' +
+      '<span style="width:56px;height:56px;border-radius:18px;background:' + B + ';display:inline-flex;align-items:center;justify-content:center"><svg viewBox="0 0 24 24" width="32" height="32" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>' +
+      '<div style="font-size:19px;font-weight:900;margin-top:10px">신청이 잘 도착했어요!</div>' +
+      '<div style="font-size:14px;color:#4B5563;margin-top:6px;line-height:1.6">' + (c ? esc(c) + '님께 전달했어요' : '런관장님이 딱 맞는 코치님을 연결해 드릴게요') + '<br>런앤핏이 하루 안에 연락드릴게요</div></div>' +
+    '<div class="m" style="font-size:14px;font-weight:900">내 신청</div><div id="hList"><div class="m muted" style="font-size:13px">불러오는 중…</div></div>' +
+    '<div class="m"><button class="btn" type="button" id="hHome" style="width:100%;height:50px">홈으로</button></div><div style="height:18px"></div>';
+  document.getElementById('hHome').onclick = ()=>{ helpDone = null; helpOpen = false; go('home'); };
+  loadMyHelp();
+}
+async function loadMyHelp(){
+  const box = document.getElementById('hList'); if(!box) return;
+  try{
+    const ps = await getDocs(query(collection(db, 'help_requests'), where('uid', '==', auth.currentUser.uid), limit(20)));
+    const rows = ps.docs.map((x)=> x.data()).sort((a, b)=> ((b.createdAt && b.createdAt.seconds) || 9e9) - ((a.createdAt && a.createdAt.seconds) || 9e9));
+    box.innerHTML = rows.length ? rows.map((r)=>{ const h = HELP_KINDS[r.kind] || HELP_KINDS.guide, doneH = r.status === 'done';
+      const when = r.createdAt && r.createdAt.seconds ? kstDate(r.createdAt.seconds * 1000).slice(5).replace('-', '.') : '방금';
+      return '<div class="card m" style="padding:12px 14px;display:flex;align-items:center;gap:10px;margin-top:8px">' + hIco(h.icon, B, '#E3E9FF', 34) +
+        '<div style="flex:1;min-width:0"><div style="font-size:14px;font-weight:900">' + h.title + '</div><div style="font-size:12px;color:#6B7280;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(r.coach || '런관장 추천') + ' · ' + esc((r.times || []).join(', ')) + ' · ' + when + '</div></div>' +
+        '<span style="font-size:12px;font-weight:900;border-radius:6px;padding:3px 8px;' + (doneH ? 'background:' + B + ';color:#fff' : 'background:#E3E9FF;color:' + B) + '">' + (doneH ? '연락 완료' : '확인 중') + '</span></div>'; }).join('')
+      : '<div class="m muted" style="font-size:13px">아직 신청한 내역이 없어요.</div>';
+  }catch(e){ box.innerHTML = '<div class="m muted" style="font-size:13px">불러오지 못했어요.</div>'; }
 }
 
 // ---------- 내 정보 ----------
