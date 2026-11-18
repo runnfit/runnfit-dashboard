@@ -56,12 +56,27 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 .dev .ok i{width:38px;height:38px;border-radius:50%;background:#2563EB;display:flex;align-items:center;justify-content:center;font-style:normal;font-size:20px;font-weight:900;flex:none}
 #skip{right:12px;top:calc(56px + env(safe-area-inset-top));display:none;background:rgba(255,255,255,.95);color:var(--b);border:0;border-radius:999px;padding:8px 14px;font-weight:900;font-family:inherit}
 .inrow{display:flex;gap:6px;margin-top:6px}
-#feed{left:10px;bottom:calc(72px + env(safe-area-inset-bottom));width:min(300px,72%);display:flex;flex-direction:column;align-items:flex-start;gap:4px;pointer-events:none}
+#feed{left:10px;bottom:calc(106px + env(safe-area-inset-bottom));width:min(300px,72%);display:flex;flex-direction:column;align-items:flex-start;gap:4px;pointer-events:none}
 #feed div{max-width:100%;background:rgba(15,23,42,.42);color:#fff;font-size:12.5px;line-height:1.35;padding:4px 9px;border-radius:10px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:opacity 1.2s,transform .3s;text-shadow:0 1px 2px rgba(0,0,0,.4);animation:fin .3s ease-out}
 #feed div b{color:#FFD54A;margin-right:5px}
 #feed div.sys{background:rgba(37,99,235,.45)}
 #feed div.me b{color:#7DD3FC}
 #feed div.old{opacity:.45}
+#feedBtn{left:10px;bottom:calc(72px + env(safe-area-inset-bottom));z-index:6;border:0;border-radius:999px;background:rgba(15,23,42,.55);color:#fff;font-family:inherit;font-size:12px;font-weight:900;padding:6px 11px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
+#feedAll{left:10px;right:10px;bottom:calc(108px + env(safe-area-inset-bottom));max-height:42vh;overflow-y:auto;background:rgba(15,23,42,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:14px;padding:8px 10px;display:none;z-index:6;-webkit-overflow-scrolling:touch}
+#feedAll .r{display:flex;gap:8px;color:#fff;font-size:12.5px;line-height:1.45;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.08)}
+#feedAll .r i{font-style:normal;color:#94A3B8;font-size:11px;flex:none;width:36px}
+#feedAll .r b{color:#FFD54A;margin-right:4px}
+.wish{background:#F8FAFC;border-radius:12px;padding:10px;margin-bottom:8px}
+.wish .w1{font-size:14px;font-weight:900;line-height:1.45}
+.wish .w0{font-size:11px;color:#6B7280;margin-bottom:3px}
+.wish .wb{display:flex;gap:6px;margin-top:6px}
+.wish .wb button{border:0;border-radius:999px;background:#E3E9FF;color:#093692;font-family:inherit;font-weight:900;font-size:12px;padding:5px 10px}
+.wish .cm{margin-top:6px;font-size:12px;color:#374151;line-height:1.6}
+#guide{position:fixed;inset:0;z-index:28;display:none;align-items:center;justify-content:center;background:rgba(3,8,25,.55)}
+#guide .gs{width:min(330px,calc(100% - 32px));background:#fff;border-radius:18px;padding:18px 16px}
+#guide .gr{display:flex;align-items:center;gap:12px;padding:9px 0;font-size:14px;line-height:1.4}
+#guide .gr span{font-size:30px;width:44px;text-align:center;flex:none}
 @keyframes fin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 .inrow input{flex:1;height:44px;border:2px solid #D5DCE8;border-radius:10px;padding:0 10px;font-size:16px;font-family:inherit;-webkit-user-select:text;user-select:text}
 </style>
@@ -70,10 +85,13 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 <body>
 <canvas id="c"></canvas>
 <div id="top" class="ui"><span class="chip logo">RUN N FIT</span><span class="chip" id="clock">☀️ 08:00</span><span class="sp"></span><span class="chip" id="cnt">지금 0명 / 30명</span></div>
-<div id="hint" class="ui">가고 싶은 곳을 톡 누르면 걸어가요 · 밀어서 둘러보기</div>
+<div id="hint" class="ui">👆 톡 눌러 이동 · ☝️ 밀어서 방향 · 🤏 두 손가락 확대</div>
 <button id="skip" class="ui">건너뛰기 ›</button>
 <div id="toast" class="ui"></div>
 <div id="feed" class="ui"></div>
+<button id="feedBtn" class="ui">💬 지난 이야기 ▴</button>
+<div id="feedAll" class="ui"></div>
+<div id="guide"><div class="gs"><div style="font-size:18px;font-weight:900;margin-bottom:6px">이렇게 움직여요</div><div class="gr"><span>👆</span><div><b>가고 싶은 곳을 톡</b><br>누르면 그곳까지 걸어가요</div></div><div class="gr"><span>☝️</span><div><b>한 손가락으로 밀기</b><br>보는 방향이 바뀌어요</div></div><div class="gr"><span>🤏</span><div><b>두 손가락으로 벌리기 · 오므리기</b><br>확대 · 축소해요</div></div><div class="gr"><span>🙂</span><div><b>다른 회원을 톡</b><br>하이파이브 · 박수 · 하트를 보내요</div></div><button class="btn p" id="guideOk" style="width:100%;margin-top:10px">알겠어요!</button></div></div>
 <div id="card" class="ui"></div>
 <div id="bar" class="ui">
   <button id="bFind" class="pri">📍 기구 찾기</button>
@@ -84,7 +102,8 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 <div id="mFind" class="modal"><div class="sheet"><h3>어떤 기구로 갈까요?</h3><div class="grid" id="eqGrid"></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
 <div id="mAct" class="modal"><div class="sheet"><h3>동작</h3><div class="acts" id="actGrid"></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
 <div id="mTalk" class="modal"><div class="sheet"><h3>접속한 회원에게 한마디</h3><div class="inrow"><input id="msg" maxlength="20" placeholder="예) 오늘도 파이팅!"><button class="btn p" id="send" style="width:76px">보내기</button></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
-<div id="mBook" class="modal"><div class="sheet"><h3>응원 방명록</h3><div id="bookList" style="font-size:13px;line-height:1.7;color:#374151;margin-bottom:8px"></div><div class="inrow"><input id="bookMsg" maxlength="30" placeholder="응원 한 줄 남기기"><button class="btn p" id="bookSend" style="width:76px">남기기</button></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
+<div id="mWish" class="modal"><div class="sheet"><h3>🌳 소원나무</h3><div style="font-size:12.5px;color:#4B5563;margin:-4px 0 10px">꼭 이뤄졌으면 하는 목표나 꿈을 적어 매달아요. 다른 회원의 소원에 응원과 댓글을 남겨 주세요.</div><div class="inrow" style="margin-bottom:10px"><input id="wishMsg" maxlength="40" placeholder="예) 올해 10km 완주하기"><button class="btn p" id="wishSend" style="width:76px">매달기</button></div><div id="wishList"></div><button class="btn g" style="width:100%;margin-top:6px" data-close>닫기</button></div></div>
+<div id="mBook" class="modal"><div class="sheet"><h3 style="line-height:1.4">💙 꿈과 사랑이 가득한<br>행복한 런앤핏 방명록</h3><div id="bookList" style="font-size:13px;line-height:1.7;color:#374151;margin-bottom:8px"></div><div class="inrow"><input id="bookMsg" maxlength="30" placeholder="한 줄 남기기"><button class="btn p" id="bookSend" style="width:76px">남기기</button></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
 <div id="face"><div class="dev"><div style="display:flex;justify-content:center;gap:28px;margin-bottom:8px"><span style="width:8px;height:8px;border-radius:50%;background:#F43F5E"></span><span style="width:8px;height:8px;border-radius:50%;background:#334155"></span><span style="width:8px;height:8px;border-radius:50%;background:#334155"></span><span style="width:8px;height:8px;border-radius:50%;background:#F43F5E"></span></div>
 <div class="scr"><div class="tm"><b id="fTime">07:17</b><span id="fDate" style="font-size:10px;opacity:.8"></span></div>
 <div class="cam"><div class="scan" id="fScan"></div><svg width="80" height="98" viewBox="0 0 14 17" shape-rendering="crispEdges"><rect x="3" y="0" width="8" height="3" fill="#3B2A1A"/><rect x="3" y="3" width="8" height="6" fill="#F2C9A0"/><rect x="5" y="5" width="1" height="1" fill="#111827"/><rect x="8" y="5" width="1" height="1" fill="#111827"/><rect x="6" y="7" width="2" height="1" fill="#B45309"/><rect x="1" y="10" width="12" height="7" fill="#2563EB"/><rect x="4" y="12" width="6" height="1" fill="#fff"/></svg></div>
@@ -103,7 +122,7 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 const K = 1.7;                       // 배치도 → 3D 넓힘 배율 (여유 공간)
 const s = v => v * K;
-const WW = s(18), DG = s(16), RW = 4.2, TD = 11;    // 운동 공간 · 탈의실 줄 · 테라스 깊이(넓게)
+const WW = s(18), DG = s(16), RW = 4.2, TD = 16;    // 운동 공간 · 탈의실 줄 · 테라스 깊이(넓게)
 const NEON = 0x3D5AFE;
 const $ = id => document.getElementById(id);
 
@@ -216,7 +235,8 @@ floor(s(6.3), s(12.75), s(13.8) - s(6.3), DG - s(12.75), 0x34405C);
 floor(s(13.8), s(12.75), WW - s(13.8), DG - s(12.75), 0x4A4F5C);
 floor(WW, 0, RW, DG, 0x454A56);
 // ── 테라스 (넓게) : 데크 + 유리 난간
-for (let i = 0; i < WW + RW; i += .5) floor(i, -TD, .48, TD, (i * 2) % 2 ? 0xA9845A : 0x9A7750);
+for (let i = 0; i < WW + RW; i += .5) floor(i, -3, .48, 3, (i * 2) % 2 ? 0xA9845A : 0x9A7750);   // 창가 데크
+for (let i = 0; i < WW + RW; i += 1) for (let j = -TD; j < -3; j += 1) floor(i, j, Math.min(1, WW + RW - i), Math.min(1, -3 - j), (Math.floor(i) + Math.floor(j)) % 2 ? 0x6CC24A : 0x63B843);   // 잔디
 box(scene, -.1, 0, -TD - .1, WW + RW + .2, 1.0, .1, 0xCBD5E1, { op: .55 }); box(scene, -.1, 1.0, -TD - .12, WW + RW + .2, .06, .14, 0x94A3B8);
 box(scene, -.12, 0, -TD, .1, 1.0, TD, 0xCBD5E1, { op: .55 }); box(scene, WW + RW + .02, 0, -TD, .1, 1.0, TD, 0xCBD5E1, { op: .55 });
 solid(-5, -TD - 3, WW + RW + 10, 3); solid(-3, -TD, 3, TD); solid(WW + RW, -TD, 3, TD);
@@ -236,8 +256,9 @@ updateSky();
 for (let i = 0; i < 26; i++) { const a = Math.random() * Math.PI * 2, r = 35 + Math.random() * 45; cloud(15 + Math.cos(a) * r, -9 - Math.random() * 6, 10 + Math.sin(a) * r, 2.2 + Math.random() * 1.5); }   // 발 아래 구름 바다
 
 // ── 벽 · 폴딩도어 (창가 어디로든 테라스로)
-box(scene, -.3, 0, 0, .3, 3.4, DG, 0x1A1D24); solid(-3, 0, 3, DG);
-for (let z = 1; z < DG - 2; z += 3.2) box(scene, -.02, .3, z, .03, 2.5, 2.8, 0x8FA3C2);
+box(scene, -.12, 0, 0, .1, 3.2, DG, 0xBFDBFE, { op: .22 }); solid(-3, 0, 3, DG);   // 거울벽 → 투명 유리
+for (let z = 0; z <= DG; z += 3.2) box(scene, -.16, 0, z, .08, 3.2, .08, 0x64748B);
+box(scene, -.16, 3.1, 0, .1, .1, DG, 0x64748B);
 box(scene, .01, 3.05, 0, .05, .14, DG, NEON, { basic: 1 });
 box(scene, 0, 2.95, -.12, WW + RW, .15, .16, 0x64748B);
 for (let x = 0; x < WW + RW - 1; x += 4.6) {
@@ -258,16 +279,16 @@ function room(z0, z1, name, col, door = true, doorCol) {
   box(g, WW, 0, z0, .2, 2.6, z1 - z0, 0x15171C); box(g, WW + .2, .001, z0, RW - .2, .02, z1 - z0, col, { op: .35 }); box(g, WW, 0, z0, RW, 2.6, .1, 0x15171C);
   box(g, WW, 2.6, z0, .2, .06, z1 - z0, NEON, { basic: 1 });
   if (door) { const dz = (z0 + z1) / 2 - .45; box(g, WW - .02, 0, dz, .05, 2.1, .9, doorCol ?? col); if (doorCol) box(g, WW - .05, 1.0, dz + .7, .03, .12, .05, 0xC0C4CC); }
-  label(g, name, WW - .3, 3.0, (z0 + z1) / 2, DARK); solid(WW, z0, RW, z1 - z0);
+  if (name) label(g, name, WW - .3, 3.0, (z0 + z1) / 2, DARK); solid(WW, z0, RW, z1 - z0);
 }
 const Z = v => s(v);
-room(Z(14.0), DG, '운동복·수건함', 0x0EA5E9, false);
+room(Z(14.0), DG, '', 0x0EA5E9, false);
 { const tw = new THREE.Group(); scene.add(tw);
   box(tw, WW - 1.0, 0, Z(14.2), .9, 1.9, 2.2, 0x111827); solid(WW - 1.0, Z(14.2), .9, 2.2);
   for (let r = 0; r < 3; r++) for (let c = 0; c < 2; c++) rod(tw, WW - 1.02, .45 + r * .55, Z(14.2) + .55 + c * 1.1, .18, .02, 0x2A2F3B);
   for (let k = 0; k < 5; k++) { cyl(tw, WW - .55, 1.9, Z(14.2) + .3 + k * .4, .06, .25, 0xF5B301); cyl(tw, WW - .55, 2.15, Z(14.2) + .3 + k * .4, .12, .14, 0xFCD34D); }
   box(tw, WW - .25, 2.2, Z(14.2) - .1, .08, .9, 1.6, 0x0B1020); box(tw, WW - .3, 2.27, Z(14.2), .05, .76, 1.4, 0x1D4ED8, { basic: 1 });
-  label(tw, '이번 주 WOD 모니터', WW - .4, 3.4, Z(14.2) + .7, { bg: 'rgba(29,78,216,.95)', size: 26, scale: .011 }); }
+ }
 room(Z(11.2), Z(14.0), '남자 탈의실', 0x1D4ED8); room(Z(8.4), Z(11.2), '여자 탈의실', 0xDB2777);
 room(Z(7.3), Z(8.4), '게시판', 0x6B7280, false); box(scene, WW - .05, .9, Z(7.4), .05, 1.2, 1.4, 0xF3F4F6);
 for (let k = 0; k < 8; k++) room(Z(k * .91), Z((k + 1) * .91), `샤워 ${8 - k}`, 0x6B7280, true, k % 2 ? 0x2B2F36 : 0x374151);
@@ -448,7 +469,7 @@ adjBench(s(4.9), s(9.2)); adjBench(s(5.0), s(11.3), .3);
 // 스트레칭존 · 인포 · 카페
 for (let i = 0; i < 4; i++) box(scene, s(6.8) + i * 2.9, 0, s(13.2), 2.2, .04, 3.4, 0x1A1D24);
 const mats4 = [0, 1, 2, 3].map(i => ({ x: s(6.8) + i * 2.9 + 1.1, z: s(13.2) + 1.7 }));
-floorText('스트레칭존', s(10), s(14.6), 7, '#93C5FD', .5);
+floorText('스트레칭존', s(10), s(14.6), 3.4, '#93C5FD', .5);
 { const g = G(s(14.05), s(13.3)); box(g, 0, 0, 0, 2.6, 1.1, .9, 0x111827); box(g, .9, 1.1, .3, .8, .5, .05, 0x1E40AF, { basic: 1 }); solid(s(14.05), s(13.3), 2.6, .9); label(g, '인포 (프런트)', 1.3, 2.1, .4, DARK); }
 const seats = [];
 for (let t = 0; t < 2; t++) { const tx = s(14.3) + t * 1.6, tz = s(14.9) + t * .5; box(scene, tx, 0, tz, .7, .75, .7, 0x111827); box(scene, tx + .9, 0, tz + .15, .35, .45, .35, 0x1F2937); solid(tx, tz, .7, .7); seats.push({ x: tx + 1.07, z: tz + .32, y: .45 }); }
@@ -470,28 +491,54 @@ box(scene, EN.x0 + .6, 0, DG + .02, WW - EN.x0 - 1.2, 2.3, .06, 0xBFDBFE, { op: 
 box(scene, EN.x0 + .55, 2.3, DG, WW - EN.x0 - 1.1, .12, .2, 0x64748B);
 label(scene, 'RUN N FIT 입구', (EN.x0 + WW) / 2, 2.9, DG, { bg: '#093692', size: 28, scale: .01 });
 
-// ── 테라스 쉼터 (넓게: 파라솔 · 벤치 · 선베드 · 화분 · 포토존 · 방명록 · 야외 매트)
+// ── 테라스: 잔디 · 분수 · 연못 · 소원나무 · 방명록 · 포토존 (자연 힐링)
 function plant(x, z, big) { cyl(scene, x, 0, z, big ? .35 : .25, big ? .55 : .4, 0x6B4423); const l = new THREE.Mesh(new THREE.SphereGeometry(big ? .7 : .45, 10, 8), M(0x16A34A)); l.position.set(x, big ? 1.2 : .8, z); scene.add(l); solid(x - .35, z - .35, .7, .7); }
+function tree(x, z, h = 2.4) { cyl(scene, x, 0, z, .18, h, 0x7C4A1E); for (const [dx, dy, dz, r] of [[0, h + .3, 0, 1.0], [.5, h - .1, .2, .7], [-.5, h, -.2, .75]]) { const l = new THREE.Mesh(new THREE.SphereGeometry(r, 10, 8), M(0x22A04B)); l.position.set(x + dx, dy, z + dz); scene.add(l); } solid(x - .3, z - .3, .6, .6); }
+function flowers(x, z, w, d) { for (let i = 0; i < w * d * 3; i++) { const f = new THREE.Mesh(new THREE.SphereGeometry(.09, 6, 5), M([0xF472B6, 0xFDE047, 0xFFFFFF, 0x60A5FA, 0xFB923C][i % 5])); f.position.set(x + Math.random() * w, .12, z + Math.random() * d); scene.add(f); } box(scene, x - .1, 0, z - .1, w + .2, .1, d + .2, 0x6B4423); }
 function parasol(x, z) { cyl(scene, x, 0, z, .04, 2.3, 0xE5E7EB); const top = new THREE.Mesh(new THREE.ConeGeometry(1.6, .5, 8), M(NEON)); top.position.set(x, 2.4, z); scene.add(top); cyl(scene, x, 0, z, .5, .72, 0xF8FAFC); solid(x - .5, z - .5, 1, 1); for (const dx of [-1, 1]) { cyl(scene, x + dx, 0, z, .24, .45, 0xF8FAFC); seats.push({ x: x + dx, z, y: .45 }); } }
 function bench(x, z, w = 2.6) { box(scene, x, 0, z, w, .45, .55, 0x7C4A1E); box(scene, x, .45, z, w, .5, .08, 0x7C4A1E); solid(x, z, w, .55); for (let k = .5; k < w; k += 1) seats.push({ x: x + k, z: z + .32, y: .45 }); }
 function sunbed(x, z) { box(scene, x, 0, z, .8, .3, 2.0, 0xF8FAFC); const b = box(scene, x, .3, z, .8, .08, .7, 0xF8FAFC); b.rotation.x = .7; b.position.y = .55; solid(x, z, .8, 2.0); seats.push({ x: x + .4, z: z + 1.2, y: .38, lie: true }); }
-[[s(6.5), -4.0], [s(9.5), -4.0], [s(12.5), -4.0], [s(6.5), -8.0], [s(12.5), -8.0]].forEach(p => parasol(...p));
-bench(1.0, -TD + .6); bench(1.0, -4.5); bench(s(15.2), -TD + .6); bench(s(9.0), -TD + .6, 3);
-for (let i = 0; i < 4; i++) sunbed(WW - 1 + i * 1.1, -TD + .9);
-[[.5, -TD + .5, 1], [.5, -1.2], [4.6, -1.2], [s(8), -1.4], [s(11), -1.4], [s(14), -1.4], [WW + 3.6, -1.4, 1], [s(11), -TD + .5, 1], [WW + 3.6, -6]].forEach(p => plant(...p));
+[[11, -5], [16.2, -5], [21.4, -5]].forEach(p => parasol(...p));
+bench(1.0, -TD + .6); bench(1.0, -4.5); bench(18.3, -TD + .6, 3);
+for (let i = 0; i < 4; i++) sunbed(18.6 + i * 1.1, -9.6);
+[[.5, -1.2], [4.6, -1.2], [s(8), -1.4], [s(11), -1.4], [s(14), -1.4], [WW + 3.6, -1.4, 1], [WW + 3.6, -6]].forEach(p => plant(...p));
+[[2.2, -12.5], [5.2, -13.6], [33.6, -15.2], [9.2, -12.2], [27.8, -6.2]].forEach(p => tree(...p));
+flowers(1.2, -11.2, 2.6, 1.0); flowers(26.2, -8.2, 3, 1); flowers(13.6, -8.4, 1.4, .8); flowers(18.4, -12.6, 1.2, 1.4);
 for (let i = 0; i < 3; i++) box(scene, s(1.2) + i * 2.4, 0, -8.6, 1.9, .03, 2.6, 0x2563EB);
-floorText('야외 스트레칭', s(1.2) + 3.3, -7.3, 5.5, '#ffffff', .6);
+floorText('야외 스트레칭', s(1.2) + 3.3, -7.3, 3.2, '#ffffff', .6);
 mats4.push(...[0, 1, 2].map(i => ({ x: s(1.2) + i * 2.4 + .95, z: -7.3 })));
+// 분수
+const FOUNT = { x: 15.8, z: -11.2 };
+{ const g = G(FOUNT.x, FOUNT.z); cyl(g, 0, 0, 0, 1.9, .45, 0xE5E7EB); cyl(g, 0, .3, 0, 1.7, .17, 0x60A5FA, { op: .85 }); cyl(g, 0, 0, 0, .35, 1.1, 0xE5E7EB); cyl(g, 0, 1.1, 0, .8, .15, 0xE5E7EB); cyl(g, 0, 1.2, 0, .7, .08, 0x93C5FD, { op: .85 });
+  const jet = new THREE.Mesh(new THREE.ConeGeometry(.35, 1.3, 12, 1, true), new THREE.MeshBasicMaterial({ color: 0xBFE3FF, transparent: true, opacity: .55, depthWrite: false })); jet.position.y = 1.9; jet.rotation.x = Math.PI; g.add(jet); FOUNT.jet = jet;
+  solid(FOUNT.x - 1.9, FOUNT.z - 1.9, 3.8, 3.8); }
+// 물고기 연못
+const POND = { x: 24.2, z: -12.8, rx: 3.2, rz: 2.3, fish: [] };
+{ const w = new THREE.Mesh(new THREE.CircleGeometry(1, 40), M(0x3B82F6, { op: .85 })); w.scale.set(POND.rx, POND.rz, 1); w.rotation.x = -Math.PI / 2; w.position.set(POND.x, .02, POND.z); scene.add(w);
+  for (let i = 0; i < 26; i++) { const t = i / 26 * Math.PI * 2, st = new THREE.Mesh(new THREE.SphereGeometry(.28 + Math.random() * .15, 7, 6), M(0x9CA3AF)); st.scale.y = .55; st.position.set(POND.x + Math.cos(t) * (POND.rx + .15), .1, POND.z + Math.sin(t) * (POND.rz + .15)); scene.add(st); }
+  for (let i = 0; i < 4; i++) { const pad = new THREE.Mesh(new THREE.CircleGeometry(.35, 12), M(0x22C55E)); pad.rotation.x = -Math.PI / 2; pad.position.set(POND.x - 1.5 + i * 1.1, .04, POND.z + (i % 2 ? .9 : -.8)); scene.add(pad); }
+  for (let i = 0; i < 6; i++) { const f = new THREE.Group(); box(f, -.1, 0, -.05, .22, .07, .1, i % 3 ? 0xF97316 : 0xFFFFFF); box(f, -.18, 0, -.04, .08, .06, .08, 0xFB923C); f.position.y = .06; scene.add(f); POND.fish.push({ f, r: .8 + Math.random() * 1.6, sp: .4 + Math.random() * .5, a: Math.random() * 6 }); }
+  solid(POND.x - POND.rx, POND.z - POND.rz, POND.rx * 2, POND.rz * 2); }
+// 포토존 + 방명록 (크게)
 { const x = s(4.2), z = -TD + .6; box(scene, x, 0, z, .15, 2.4, .15, 0xE5E7EB); box(scene, x + 2.4, 0, z, .15, 2.4, .15, 0xE5E7EB); box(scene, x, 2.4, z, 2.55, .4, .15, 0x093692);
   label(scene, 'RUN N FIT 포토존', x + 1.27, 2.6, z + .2, { bg: null, fg: '#fff', size: 30, scale: .011 }); solid(x, z, .15, .15); solid(x + 2.4, z, .15, .15); }
-const BOOK = { x: s(16.0), z: -TD + .4 };
-box(scene, BOOK.x, 0, BOOK.z, 2.0, 2.2, .2, 0x093692); solid(BOOK.x, BOOK.z, 2.0, .2);
-for (let r = 0; r < 3; r++) for (let c = 0; c < 4; c++) box(scene, BOOK.x + .15 + c * .45, .5 + r * .5, BOOK.z + .21, .35, .35, .01, [0xFDE68A, 0xBFDBFE, 0xFBCFE8, 0xBBF7D0][(r + c) % 4], { basic: 1 });
-label(scene, '응원 방명록', BOOK.x + 1, 2.55, BOOK.z + .2, { bg: '#fff', fg: '#093692', size: 30, scale: .011 });
-floorText('테라스 쉼터', s(9), -1.7, 6, '#FFFFFF', .55);
-floorText('러닝존', s(10), 3.95, 4.5, '#86EFAC', .55);
-floorText('머신존', s(11), s(12.15), 4.5, '#93C5FD', .55);
-floorText('프리웨이트존', 4.1, s(8.85), 5.0, '#FDBA74', .55);
+const BOOK = { x: 10.4, z: -TD + .3, w: 4.6 };
+box(scene, BOOK.x, 0, BOOK.z, BOOK.w, 3.0, .25, 0x093692); box(scene, BOOK.x - .1, 3.0, BOOK.z - .05, BOOK.w + .2, .2, .35, 0xFFD54A); solid(BOOK.x, BOOK.z, BOOK.w, .3);
+for (let r = 0; r < 4; r++) for (let c = 0; c < 8; c++) box(scene, BOOK.x + .2 + c * .54, .4 + r * .55, BOOK.z + .26, .42, .42, .01, [0xFDE68A, 0xBFDBFE, 0xFBCFE8, 0xBBF7D0][(r + c) % 4], { basic: 1 });
+label(scene, '방명록', BOOK.x + BOOK.w / 2, 3.55, BOOK.z + .2, { bg: '#fff', fg: '#093692', size: 40, scale: .013 });
+// 소원나무 (큰 나무 · 소원 쪽지 매달기)
+const WISH = { x: 30.6, z: -10.6, tags: [] };
+const wishTree = new THREE.Group(); wishTree.position.set(WISH.x, 0, WISH.z); scene.add(wishTree);
+{ cyl(wishTree, 0, 0, 0, .5, 3.0, 0x6B4423); for (const [dx, dz, ry] of [[.6, 0, .0], [-.5, .3, 1], [0, -.6, 2]]) { const br = box(wishTree, 0, 2.4, 0, .25, 1.4, .25, 0x6B4423); br.position.set(dx * .6, 2.8, dz * .6); br.rotation.set(dz * .6, ry, -dx * .8); }
+  for (const [dx, dy, dz, r] of [[0, 4.4, 0, 2.2], [1.4, 3.7, .6, 1.5], [-1.4, 3.8, -.4, 1.6], [.3, 3.6, -1.4, 1.5], [-.5, 3.5, 1.4, 1.4], [0, 5.4, 0, 1.4]]) { const l = new THREE.Mesh(new THREE.SphereGeometry(r, 12, 10), M(0x2FA84F)); l.position.set(dx, dy, dz); wishTree.add(l); }
+  cyl(wishTree, 0, 0, 0, 1.6, .45, 0x9A7750); solid(WISH.x - 1.6, WISH.z - 1.6, 3.2, 3.2);
+  label(wishTree, '🌳 소원나무', 0, 6.9, 0, { bg: 'rgba(22,101,52,.92)', size: 34, scale: .012 }); }
+function hangWish(i) { const t = i * 2.399, r = 1.6 + (i % 3) * .35, y = 2.6 + (i % 4) * .22; const g = new THREE.Group(); g.position.set(Math.cos(t) * r, y, Math.sin(t) * r);
+  box(g, -.005, -.35, -.005, .01, .35, .01, 0xE5E7EB); box(g, -.11, -.62, -.02, .22, .3, .03, [0xFDE68A, 0xFBCFE8, 0xBFDBFE, 0xBBF7D0, 0xFED7AA][i % 5], { basic: 1 }); wishTree.add(g); WISH.tags.push(g); }
+floorText('테라스', s(9), -1.7, 3.2, '#FFFFFF', .55);
+floorText('러닝존', s(10), 3.95, 3.0, '#86EFAC', .55);
+floorText('머신존', s(11), s(12.15), 2.6, '#93C5FD', .5);
+floorText('프리웨이트존', 4.1, s(8.85), 3.4, '#FDBA74', .55);
 { const pl = new THREE.PointLight(0x93C5FD, 30, 18); pl.position.set(s(11), 3, s(8)); scene.add(pl); }
 
 // ── 캐릭터
@@ -596,10 +643,11 @@ npc('3대500', 0x374151, 0x111827, [[s(3.3) + .7, s(9.7) + 2.0]], 0, ['오늘 PR
 npc('꾸준이', 0x7C3AED, 0x3B2A1A, [[s(10.95) + .65, s(7.65) + 1.0]], 0, ['랫풀 3세트 끝'], 'sit', 0);
 npc('런관장', 0x0B0D12, 0x111827, [[s(6.6), s(12.4)], [s(16.9), s(12.4)], [s(16.9), s(4.35)], [s(6.6), s(4.35)]], 1.4, ['자세 좋아요!', '물 많이 드세요', '궁금하면 불러요'], null, undefined, true);
 npc('출석요정', 0x0EA5E9, 0x3B2A1A, [[s(8.0), s(7.2)], [s(16.6), s(7.2)], [s(16.6), s(10.1)], [s(8.0), s(10.1)]], 1.1, ['안녕하세요~']);
-npc('쉬는중', 0x16A34A, 0x7C2D12, [[s(6.5) + 1, -4.0]], 0, ['바람 좋다~', '테라스 최고'], 'sit', -Math.PI / 2);
-npc('일광욕', 0xF472B6, 0x111827, [[WW - .6, -TD + 2.1]], 0, ['햇살 좋다'], 'lie', 0);
+npc('쉬는중', 0x16A34A, 0x7C2D12, [[12, -5]], 0, ['바람 좋다~', '테라스 최고'], 'sit', -Math.PI / 2);
+npc('일광욕', 0xF472B6, 0x111827, [[19.0, -8.4]], 0, ['햇살 좋다'], 'lie', 0);
 npc('스트레칭중', 0x14B8A6, 0x3B2A1A, [[mats4[1].x, mats4[1].z]], 0, ['쭉쭉~'], 'stretch', Math.PI);
-npc('응원단장', 0xF97316, 0x111827, [[BOOK.x + 1, -TD + 2.0], [s(10), -2.4], [s(4), -2.6]], 1.0, ['다들 파이팅!']);
+npc('응원단장', 0xF97316, 0x111827, [[12.6, -13.6], [12.6, -7.2], [26.6, -7.2], [27.6, -12.8]], 1.0, ['다들 파이팅!', '소원 꼭 이뤄져요!']);
+npc('물멍중', 0x0EA5E9, 0x3B2A1A, [[24.2, -9.9]], 0, ['물고기 귀엽다'], null, Math.PI);
 npc('덤벨러', 0x0F766E, 0x111827, [[1.9, s(10.6) + 2.2]], 0, ['덤벨 컬 10회째', '팔이 터진다'], 'curl', -Math.PI / 2);
 npc('하체러버', 0xDB2777, 0x3B2A1A, [[s(3.0), s(2.6)], [s(3.0), s(14.5)], [s(5.7), s(14.5)], [s(5.7), s(2.6)]], 1.0, []);
 
@@ -809,6 +857,25 @@ setInterval(() => {
   $('rNo').onclick = () => { d.remove(); n.busy = .1; };
   setTimeout(() => { if (d.isConnected) { d.remove(); n.busy = .1; } }, 10000);
 }, 38000);
+// ── 소원나무: 소원 매달기 · 응원 · 댓글
+const wishes = [
+  { n: '새벽러너', t: '올해 안에 하프 마라톤 완주하기', cheer: 12, cm: [['런관장', '할 수 있어요! 같이 뛰어요 🏃'], ['걷기왕', '응원합니다!']] },
+  { n: '스쿼트요정', t: '스쿼트 100kg 성공 🦵', cheer: 8, cm: [['3대500', '자세만 지키면 금방!']] },
+  { n: '꾸준이', t: '첫 30일 동안 12번 출석해서 노란 띠 받기', cheer: 15, cm: [] },
+  { n: '하체러버', t: '엄마랑 같이 건강하게 등산 가기', cheer: 6, cm: [['응원단장', '너무 멋진 소원이에요 💙']] },
+];
+wishes.forEach((w, i) => hangWish(i));
+let openWish = -1;
+function renderWish() {
+  $('wishList').innerHTML = wishes.slice().reverse().map((w, ri) => { const i = wishes.length - 1 - ri; return `<div class="wish"><div class="w0">${esc(w.n)}님의 소원</div><div class="w1">${esc(w.t)}</div>
+    <div class="wb"><button data-c="${i}">💙 응원 ${w.cheer}</button><button data-o="${i}">💬 댓글 ${w.cm.length}</button></div>
+    ${openWish === i ? `<div class="cm">${w.cm.map(c => `<b>${esc(c[0])}</b> ${esc(c[1])}`).join('<br>') || '첫 댓글을 남겨 주세요'}</div><div class="inrow"><input id="cmIn" maxlength="30" placeholder="응원 댓글 달기"><button class="btn p" id="cmSend" style="width:64px;height:40px">달기</button></div>` : ''}</div>`; }).join('');
+  $('wishList').querySelectorAll('[data-c]').forEach(b => b.onclick = () => { const w = wishes[+b.dataset.c]; w.cheer++; renderWish(); burst(WISH.x, 4, WISH.z, ['💙', '✨'], 6); });
+  $('wishList').querySelectorAll('[data-o]').forEach(b => b.onclick = () => { openWish = openWish === +b.dataset.o ? -1 : +b.dataset.o; renderWish(); });
+  if ($('cmSend')) $('cmSend').onclick = () => { const t = $('cmIn').value.trim(); if (!t) return; const w = wishes[openWish]; w.cm.push([myName, t]); feed('', `${myName}님이 ${w.n}님의 소원에 응원 댓글을 남겼어요 🌳`, 'sys'); renderWish(); };
+}
+$('wishSend').onclick = () => { const t = $('wishMsg').value.trim(); if (!t) return; wishes.push({ n: myName, t, cheer: 0, cm: [] }); hangWish(wishes.length - 1); $('wishMsg').value = ''; renderWish(); closeAll();
+  burst(WISH.x, 3.5, WISH.z, ['🌟', '💛', '✨', '🍀'], 12, '소원 매달기!'); feed('', `${myName}님이 소원나무에 소원을 매달았어요 🌳`, 'sys'); toast('소원을 매달았어요! 꼭 이뤄질 거예요 🌟', 2600); };
 const card = $('card'); let nearKey = '', curPerson = null;
 function showEq(n) {
   const [nm, loc] = EQ[n]; nearKey = 'eq' + n;
@@ -822,13 +889,14 @@ function updateCard() {
   if (curPerson) { if (Math.hypot(curPerson.a.position.x - me.position.x, curPerson.a.position.z - me.position.z) < 4.5) return; curPerson = null; nearKey = ''; card.style.display = 'none'; }
   let best = null, bd = 2.0;
   for (const [n, p] of Object.entries(eqPos)) { const d = Math.hypot(p.x - me.position.x, p.z - me.position.z); if (d < bd) { bd = d; best = +n; } }
-  const dBook = Math.hypot(BOOK.x + 1 - me.position.x, BOOK.z + 1 - me.position.z);
+  const dBook = Math.hypot(BOOK.x + BOOK.w / 2 - me.position.x, BOOK.z + 1.2 - me.position.z), dWish = Math.hypot(WISH.x - me.position.x, WISH.z - me.position.z);
   let lift = null; for (const L of LIFTS) if (Math.hypot(L.x - me.position.x, L.z - me.position.z) < 2.3) lift = L;
-  const key = lift ? 'lift' + lift.k : best ? 'eq' + best : dBook < 2.6 ? 'book' : '';
+  const key = lift ? 'lift' + lift.k : best ? 'eq' + best : dBook < 3.2 ? 'book' : dWish < 4.0 ? 'wish' : '';
   if (key === nearKey) return; nearKey = key;
   if (!key) { card.style.display = 'none'; return; }
   if (lift) { card.innerHTML = `<div class="t">${lift.ic} ${lift.nm}</div><div class="s">${lift.s}</div><div class="row"><button class="btn p" id="cLift">${lift.nm} 들기</button></div>`; $('cLift').onclick = () => doLift(lift); card.style.display = 'block'; return; }
-  if (key === 'book') { card.innerHTML = `<div class="t">🌿 응원 방명록</div><div class="s">테라스에서 쉬면서 서로 응원 한 줄씩 남겨요</div><div class="row"><button class="btn p" id="cBook">방명록 보기</button></div>`; $('cBook').onclick = () => { renderBook(); openM('mBook'); }; card.style.display = 'block'; }
+  if (key === 'book') { card.innerHTML = `<div class="t">📖 방명록</div><div class="s">꿈과 사랑이 가득한 행복한 런앤핏 방명록</div><div class="row"><button class="btn p" id="cBook">방명록 보기</button></div>`; $('cBook').onclick = () => { renderBook(); openM('mBook'); }; card.style.display = 'block'; }
+  else if (key === 'wish') { card.innerHTML = `<div class="t">🌳 소원나무</div><div class="s">꼭 이뤄졌으면 하는 목표나 꿈을 적어 매달아요 · 서로 응원해요</div><div class="row"><button class="btn g" id="cWl">소원 구경하기</button><button class="btn p" id="cWa">소원 매달기</button></div>`; $('cWl').onclick = () => { renderWish(); openM('mWish'); }; $('cWa').onclick = () => { renderWish(); openM('mWish'); setTimeout(() => $('wishMsg').focus(), 50); }; card.style.display = 'block'; }
   else showEq(best);
 }
 
@@ -839,11 +907,14 @@ const RANDOM = ['달리는민수', '새싹러너', '정릉불꽃', '오운완요
 $('nick').value = RANDOM[Math.floor(Math.random() * RANDOM.length)];
 $('enter').onclick = () => { setName($('nick').value.trim() || '나'); $('start').style.display = 'none'; $('skip').style.display = 'block'; cutscene = { t: 0, step: 0 }; };
 $('skip').onclick = () => finishEntry(true);
+$('guideOk').onclick = () => { $('guide').style.display = 'none'; try { localStorage.setItem('rnfGuide', '1'); } catch (e) {} };
 function finishEntry(skip) {
   cutscene = null; entered = true; $('skip').style.display = 'none'; $('face').style.display = 'none'; armPivot.rotation.y = 0;
   if (skip) me.position.set(GX + 1.3, 0, GZ - 1.5);
   follow(1); me.rotation.y = Math.PI;
   $('hint').style.opacity = 1; setTimeout(() => $('hint').style.opacity = 0, 6000);
+  let seen = false; try { seen = localStorage.getItem('rnfGuide') === '1'; } catch (e) {}
+  if (!seen) setTimeout(() => $('guide').style.display = 'flex', 900);
   toast('런앤핏이 기다렸어요! 오늘도 출석 완료 ✓', 3000); feed('', `${myName}님이 입장했어요 👋`, 'sys'); say(me, '출석 완료!', 3);
 }
 function walkTo(tx, tz, sp, dt) { const dx = tx - me.position.x, dz = tz - me.position.z, d = Math.hypot(dx, dz); if (d < .05) return true; const st = Math.min(d, sp * dt); me.position.x += dx / d * st; me.position.z += dz / d * st; me.rotation.y = Math.atan2(dx, dz); pose(me, 'walk', dt); return false; }
@@ -903,12 +974,21 @@ function loop() {
   if (beacon.visible) beacon.userData.ar.position.y = 4.2 + Math.sin(clock.elapsedTime * 4) * .25;
   sky.position.copy(camera.position); stars.position.copy(camera.position);
   for (const c of clouds) { c.position.x += c.userData.v * dt; if (c.position.x > 140) c.position.x = -110; }
+  if (FOUNT.jet) { const k = 1 + Math.sin(clock.elapsedTime * 5) * .08; FOUNT.jet.scale.set(k, 1 + Math.sin(clock.elapsedTime * 3) * .15, k); }
+  for (const f of POND.fish) { f.a += f.sp * dt; f.f.position.x = POND.x + Math.cos(f.a) * f.r * POND.rx / 2.4; f.f.position.z = POND.z + Math.sin(f.a) * f.r * POND.rz / 2.4; f.f.rotation.y = -f.a; }
+  for (const t of WISH.tags) t.rotation.z = Math.sin(clock.elapsedTime * 1.5 + t.position.x) * .12;
   $('cnt').textContent = `지금 ${NPCS.length + 1}명 / 30명`;
   controls.update(); renderer.render(scene, camera);
   requestAnimationFrame(loop);
 }
 // ── 실시간 한마디 피드 (왼쪽 아래 반투명, 최대 5줄)
+const feedLog = [];
+function esc(t) { return String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
+function hhmm() { const d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+function renderFeedAll() { const el = $('feedAll'); el.innerHTML = feedLog.map(f => `<div class="r"><i>${f.t}</i><div>${f.n ? `<b>${esc(f.n)}</b>` : ''}${esc(f.x)}</div></div>`).join('') || '<div class="r">아직 이야기가 없어요</div>'; el.scrollTop = el.scrollHeight; }
+$('feedBtn').onclick = () => { const el = $('feedAll'), open = el.style.display !== 'block'; el.style.display = open ? 'block' : 'none'; $('feed').style.display = open ? 'none' : 'flex'; $('feedBtn').textContent = open ? '💬 접기 ▾' : '💬 지난 이야기 ▴'; if (open) renderFeedAll(); };
 function feed(name, txt, cls = '') {
+  feedLog.push({ t: hhmm(), n: name, x: txt }); if (feedLog.length > 300) feedLog.shift(); if ($('feedAll').style.display === 'block') renderFeedAll();
   const box = $('feed'), d = document.createElement('div'); if (cls) d.className = cls;
   d.innerHTML = name ? `<b>${name.replace(/</g, '&lt;')}</b>${txt.replace(/</g, '&lt;')}` : txt.replace(/</g, '&lt;');
   box.appendChild(d); while (box.children.length > 5) box.removeChild(box.firstChild);
