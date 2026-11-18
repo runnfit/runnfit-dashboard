@@ -122,7 +122,7 @@
           <div class="lhead"><b>할 일</b>
             <button class="chip on" data-f="new">처리 전</button><button class="chip" data-f="done">처리 완료</button><button class="chip" data-f="all">전체</button></div>
           <div class="lhead" style="padding-top:0">
-            <button class="chip on" data-k="all">모두</button><button class="chip" data-k="help">도움 요청</button><button class="chip" data-k="voice">런앤핏에 한마디</button><button class="chip" data-k="inq">체험·상담</button></div>
+            <button class="chip on" data-k="all">모두</button><button class="chip" data-k="help">도움 요청</button><button class="chip" data-k="voice">런앤핏에 한마디</button><button class="chip" data-k="inq">체험·상담</button><button class="chip" data-k="goal">출석 목표</button></div>
           <div id="items"></div>
         </div>
         <div class="card panel" id="panel"></div>
@@ -162,11 +162,18 @@ const esc = (s)=> String(s == null ? '' : s).replace(/[&<>"']/g, (c)=> ({ '&': '
 const KST = ()=> new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
 const BELT = [[100, '검', '#111827'], [50, '빨', '#B91C32'], [30, '파', '#093692'], [10, '노', '#FFD54A'], [0, '흰', '#CBD5E1']];
 const belt = (t)=> BELT.find((b)=> (t || 0) >= b[0]);
+function weekCount(m){
+  const t = KST(), dow = (new Date(t + 'T12:00:00+09:00').getUTCDay() + 6) % 7;
+  const mon = new Date(Date.parse(t + 'T12:00:00+09:00') - dow * 864e5 + 9 * 3600e3).toISOString().slice(0, 10);
+  const days = new Set(Array.isArray(m.recentDays) ? m.recentDays : []); if(m.lastAttend === t) days.add(t);
+  return [...days].filter((d)=> d >= mon && d <= t).length;
+}
 const COACH_PHOTO = { '런관장': 'run.jpg', '가온코치': 'gaon.jpg', '하루코치': 'haru.jpg', '로라코치': 'laura.jpg' };
 const ICON = {
   help: '<path d="M12 3.5a3.2 3.2 0 1 1 0 6.4 3.2 3.2 0 0 1 0-6.4z"/><path d="M5.5 20c.6-3.8 3.2-6 6.5-6s5.9 2.2 6.5 6"/><path d="M3 11h3M18 11h3M4.5 9.5v3M19.5 9.5v3"/>',
   pt: '<path d="M4 5.5h16v10H9l-4 3.5v-3.5H4z"/><path d="M8 10.5h8"/>',
   voice: '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
+  goal: '<path d="M5 21V4"/><path d="M5 4h12l-2.5 4L17 12H5"/>',
   inq: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1z"/>',
 };
 const ico = (k, bg)=> '<span class="ico" style="' + (bg ? 'background:' + bg : '') + '"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="' + B + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + ICON[k] + '</svg></span>';
@@ -181,7 +188,7 @@ const ymd = (ms)=> ms ? new Date(ms + 9 * 3600e3).toISOString().slice(0, 10).rep
 const phoneFmt = (p)=>{ const d = String(p || '').replace(/^\+82/, '0').replace(/\D/g, ''); return d.length === 11 ? d.slice(0, 3) + '-' + d.slice(3, 7) + '-' + d.slice(7) : d || '-'; };
 
 // ---------- 상태 ----------
-const S = { members: [], help: [], voice: [], inq: [], people: [], f: 'new', k: 'all', sel: null, mView: 'joined', mSort: 'joined', q: '' };
+const S = { members: [], help: [], voice: [], inq: [], goal: [], people: [], f: 'new', k: 'all', sel: null, mView: 'joined', mSort: 'joined', q: '' };
 let api = null;     // { save(kind, id, patch) }
 
 // ---------- 그리기 ----------
@@ -190,6 +197,7 @@ function todos(){
     ...S.help.map((x)=> ({ k: 'help', id: x.id, x, done: x.status === 'done', at: tsMs(x.createdAt) })),
     ...S.voice.map((x)=> ({ k: 'voice', id: x.id, x, done: x.status === 'answered' || !!x.reply, at: tsMs(x.createdAt) })),
     ...S.inq.map((x)=> ({ k: 'inq', id: x.id, x, done: x.status === 'done', at: tsMs(x.createdAt) })),
+    ...S.goal.map((x)=> ({ k: 'goal', id: x.id, x, done: x.status === 'done', at: tsMs(x.createdAt) })),
   ];
   return all.sort((a, b)=> (b.at || 9e15) - (a.at || 9e15));
 }
@@ -198,7 +206,8 @@ function itemText(t){
   if(t.k === 'help'){ const pt = x.kind === 'pt';
     return { ic: ico(pt ? 'pt' : 'help'), t: (pt ? 'PT 상담 신청' : '1:1 운동가이드 신청') + ' · ' + esc(x.nickname || x.name || '회원'),
       d: esc((x.coach || '런관장 추천') + ' · ' + (x.times || []).join(', ') + (x.text ? ' · ' + x.text : '')) }; }
-  if(t.k === 'voice') return { ic: ico('voice'), t: '런앤핏에 한마디' + (x.category ? ' · ' + esc(x.category) : ''), d: esc(x.text || '') };
+  if(t.k === 'voice') return { ic: ico('voice'), t: '런앤핏에 한마디' + (x.category ? ' · ' + esc(x.category) : '') + (x.nickname ? ' · ' + esc(x.nickname) : ''), d: esc(x.text || '') };
+  if(t.k === 'goal') return { ic: ico('goal', '#E8F7EE'), t: '출석 목표 · ' + esc(x.nickname || x.name || '회원') + ' 주 ' + x.goal + '회', d: x.prev ? '주 ' + x.prev + '회 → 주 ' + x.goal + '회로 바꿨어요' : '처음으로 목표를 정했어요' };
   return { ic: ico('inq', '#FFF4CC'), t: '비회원 ' + esc(x.kind || '문의') + ' · ' + esc(x.name || ''), d: esc(phoneFmt(x.phone) + ' · 미니런앤핏에서 신청') };
 }
 function paintStats(){
@@ -212,7 +221,7 @@ function paintStats(){
     '<div class="stat"><div class="l">앱 가입 회원</div><div class="v" style="color:' + B + '">' + joined + '명</div><div class="s">유효 회원 ' + total + '명 중 ' + pct + '% · 오늘 +' + todayJoin + '</div><div class="bar"><i style="width:' + pct + '%"></i></div></div>' +
     '<div class="stat"><div class="l">오늘 출석</div><div class="v">' + att + '명</div><div class="s">그중 앱 가입 ' + attApp + '명</div></div>' +
     '<div class="stat"><div class="l">미니런앤핏에 지금</div><div class="v" style="color:' + B + '">' + now.length + '명</div><div class="s">회원 ' + (now.length - staffNow) + ' · 직원 ' + staffNow + '</div></div>' +
-    '<div class="stat"><div class="l">처리 전 할 일</div><div class="v" style="color:' + (open ? '#B91C32' : '#15803D') + '">' + open + '개</div><div class="s">도움 요청 ' + S.help.filter((x)=> x.status !== 'done').length + ' · 한마디 ' + S.voice.filter((x)=> !(x.status === 'answered' || x.reply)).length + ' · 체험·상담 ' + S.inq.filter((x)=> x.status !== 'done').length + '</div></div>' +
+    '<div class="stat"><div class="l">처리 전 할 일</div><div class="v" style="color:' + (open ? '#B91C32' : '#15803D') + '">' + open + '개</div><div class="s">도움 요청 ' + S.help.filter((x)=> x.status !== 'done').length + ' · 한마디 ' + S.voice.filter((x)=> !(x.status === 'answered' || x.reply)).length + ' · 체험·상담 ' + S.inq.filter((x)=> x.status !== 'done').length + ' · 목표 ' + S.goal.filter((x)=> x.status !== 'done').length + '</div></div>' +
     '<div class="stat"><div class="l">이번 달 도움 요청</div><div class="v">' + S.help.filter((x)=> ymd(tsMs(x.createdAt)).slice(0, 7) === today.slice(0, 7).replace('-', '.')).length + '건</div><div class="s">운동가이드 ' + S.help.filter((x)=> x.kind !== 'pt').length + ' · PT 상담 ' + S.help.filter((x)=> x.kind === 'pt').length + ' (전체)</div></div>';
   const b = $('todoBadge'); b.textContent = open; b.classList.toggle('hidden', !open);
   document.title = (open ? '(' + open + ') ' : '') + '회원앱 관리 · 런앤핏';
@@ -250,9 +259,18 @@ function paintPanel(t){
       '<div class="row">' + (t.done ? '<button class="btn sec" id="undo">처리 전으로 되돌리기</button><button class="btn sec" id="saveMemo">메모 저장</button>' : '<button class="btn sec" id="saveMemo">메모 저장</button><button class="btn" id="doneBtn">연락 완료로 바꾸기</button>') + '<span class="msg" id="pMsg"></span></div>' +
       '<div style="font-size:12px;color:var(--muted);margin-top:10px">연락 완료로 바꾸면 회원앱의 \'내 신청\'에 "연락 완료"로 보여요.' + (x.handledBy ? ' · 처리: ' + esc(x.handledBy) : '') + '</div>';
     bind('help', t.id, { status: 'done' }, { status: 'new' });
+  } else if(t.k === 'goal'){
+    const m = memberOf(x) || {}, wk = weekCount(m);
+    P.innerHTML = '<div style="display:flex;align-items:center;gap:10px">' + ico('goal', '#E8F7EE') + '<h2>출석 목표를 정했어요</h2>' + (t.done ? '<span class="tag t-done">확인 완료</span>' : '<span class="tag t-new">확인 전</span>') + '<span style="margin-left:auto;color:var(--muted);font-size:12.5px">' + ago(t.at) + '</span></div>' +
+      '<div style="margin-top:16px;background:#093692;color:#fff;border-radius:12px;padding:16px 18px;display:flex;align-items:center;gap:16px"><div style="font-size:34px;font-weight:900">주 ' + x.goal + '회</div><div style="font-size:13.5px;line-height:1.6;opacity:.92">' + (x.prev ? '이전 목표 주 ' + x.prev + '회에서 바꿨어요' : '처음으로 목표를 정했어요') + '<br>이번 주 지금까지 <b>' + wk + '회</b> 출석</div></div>' +
+      '<dl class="kv"><dt>회원</dt><dd><b>' + esc(x.name || m.name || '') + '</b> · 닉네임 ' + esc(x.nickname || m.nickname || '-') + '</dd><dt>전화</dt><dd>' + phoneFmt(m.phone) + '</dd>' +
+      '<dt>출석</dt><dd>총 ' + (m.total || 0) + '회 · ' + belt(m.total)[1] + ' 띠 · 최근 ' + esc(m.lastAttend || '-') + '</dd></dl>' +
+      '<div class="quote" style="font-size:14px">💡 센터에서 마주치면 "목표 봤어요! 주 ' + x.goal + '회 같이 해봐요" 한마디 응원해 주세요.</div>' +
+      '<div class="row">' + (t.done ? '<button class="btn sec" id="undo">확인 전으로 되돌리기</button>' : '<button class="btn" id="doneBtn">확인했어요</button>') + '<span class="msg" id="pMsg"></span></div>';
+    bind('goal', t.id, { status: 'done' }, { status: 'new' });
   } else if(t.k === 'voice'){
     P.innerHTML = '<div style="display:flex;align-items:center;gap:10px">' + ico('voice') + '<h2>런앤핏에 한마디</h2>' + (x.category ? '<span class="tag t-done">' + esc(x.category) + '</span>' : '') + (t.done ? '<span class="tag t-done">답변 완료</span>' : '<span class="tag t-new">답변 전</span>') + '<span style="margin-left:auto;color:var(--muted);font-size:12.5px">' + ago(t.at) + ' · 🔒 보낸 사람은 대표님만 볼 수 있어요</span></div>' +
-      '<div class="quote">' + esc(x.text || '') + '</div>' + (x.photoUrl ? '<img src="' + esc(x.photoUrl) + '" alt="" style="max-width:260px;border-radius:10px;margin-top:10px">' : '') +
+      (x.nickname ? '<div style="margin-top:12px;font-size:13px;color:var(--muted)">보낸 회원 닉네임 <b style="color:var(--ink)">' + esc(x.nickname) + '</b></div>' : '') + '<div class="quote">' + esc(x.text || '') + '</div>' + (x.photoUrl ? '<img src="' + esc(x.photoUrl) + '" alt="" style="max-width:260px;border-radius:10px;margin-top:10px">' : '') +
       '<div style="margin-top:18px;font-weight:700;font-size:13px;color:#374151">런앤핏 이름으로 답변</div>' +
       '<textarea id="reply" style="margin-top:6px" maxlength="500" placeholder="소중한 이야기 감사해요! …">' + esc(x.reply || '') + '</textarea>' +
       '<div class="row"><button class="btn sec" data-tpl="소중한 이야기 감사해요! 바로 확인하고 더 나은 런앤핏으로 답할게요 💙">감사 답변</button><button class="btn sec" data-tpl="응원 정말 감사해요! 회원님 덕분에 런앤핏이 힘이 나요. 오늘도 함께 달려요 💙">칭찬 답변</button><span style="flex:1"></span><button class="btn" id="replyBtn">' + (t.done ? '답변 고치기' : '답변 보내기') + '</button><span class="msg" id="pMsg"></span></div>';
@@ -270,7 +288,7 @@ function paintPanel(t){
 function msg(t, err){ const m = $('pMsg'); if(m){ m.className = 'msg ' + (err ? 'err' : 'ok'); m.textContent = t; } }
 function bind(kind, id, done, undo){
   const memo = ()=> ($('memo') ? $('memo').value.trim().slice(0, 300) : '');
-  if($('doneBtn')) $('doneBtn').onclick = ()=> save(kind, id, { ...done, memo: memo(), handledBy: api.who, handledAt: serverTimestamp() }, '연락 완료로 바꿨어요.');
+  if($('doneBtn')) $('doneBtn').onclick = ()=> save(kind, id, kind === 'goal' ? { ...done, handledBy: api.who, handledAt: serverTimestamp() } : { ...done, memo: memo(), handledBy: api.who, handledAt: serverTimestamp() }, kind === 'goal' ? '확인했어요.' : '연락 완료로 바꿨어요.');
   if($('undo')) $('undo').onclick = ()=> save(kind, id, { ...undo }, '처리 전으로 되돌렸어요.');
   if($('saveMemo')) $('saveMemo').onclick = ()=> save(kind, id, { memo: memo() }, '메모를 저장했어요.');
 }
@@ -282,27 +300,37 @@ async function save(kind, id, patch, ok){
 }
 
 // 가입 회원
-const COLS = [['nick', '닉네임'], ['name', '이름'], ['phone', '전화'], ['joined', '앱 가입일'], ['total', '총 출석'], ['last', '최근 출석'], ['exp', '회원권']];
+const COLS = [['nick', '닉네임'], ['goal', '주 목표'], ['name', '이름'], ['phone', '전화'], ['joined', '앱 가입일'], ['total', '총 출석'], ['last', '최근 출석'], ['exp', '회원권']];
 function paintMembers(){
   const joinedOnly = S.mView === 'joined', q = S.q.trim();
   let rows = S.members.filter((m)=> !!(m.uid || m.appJoinedAt) === joinedOnly);
   if(q) rows = rows.filter((m)=> (m.name || '').includes(q) || (m.nickname || '').includes(q) || String(m.phone || '').slice(-4) === q);
-  const key = { nick: (m)=> m.nickname || '', name: (m)=> m.name || '', phone: (m)=> m.phone || '', joined: (m)=> -tsMs(m.appJoinedAt), total: (m)=> -(m.total || 0), last: (m)=> -(Date.parse(m.lastAttend || 0) || 0), exp: (m)=> m.gymExp || '' }[S.mSort];
+  const key = { goal: (m)=> -(m.weeklyGoal || 0), nick: (m)=> m.nickname || '', name: (m)=> m.name || '', phone: (m)=> m.phone || '', joined: (m)=> -tsMs(m.appJoinedAt), total: (m)=> -(m.total || 0), last: (m)=> -(Date.parse(m.lastAttend || 0) || 0), exp: (m)=> m.gymExp || '' }[S.mSort];
   rows.sort((a, b)=>{ const x = key(a), y = key(b); return x < y ? -1 : x > y ? 1 : 0; });
   const jn = S.members.filter((m)=> m.uid || m.appJoinedAt).length;
   $('mCount').textContent = jn + '명 / 유효 ' + S.members.length + '명';
-  $('mHead').innerHTML = '<tr>' + COLS.filter((c)=> joinedOnly || !['nick', 'joined'].includes(c[0])).map((c)=> '<th data-sort="' + c[0] + '">' + c[1] + (S.mSort === c[0] ? ' ▾' : '') + '</th>').join('') + '</tr>';
+  $('mHead').innerHTML = '<tr>' + COLS.filter((c)=> joinedOnly || !['nick', 'joined', 'goal'].includes(c[0])).map((c)=> '<th data-sort="' + c[0] + '">' + c[1] + (S.mSort === c[0] ? ' ▾' : '') + '</th>').join('') + '</tr>';
   const today = KST();
   $('mBody').innerHTML = rows.length ? rows.map((m)=>{ const bl = belt(m.total);
-    return '<tr>' + (joinedOnly ? '<td><span class="nick"><i class="dot" title="' + bl[1] + ' 띠" style="background:' + bl[2] + (bl[1] === '흰' ? ';box-shadow:inset 0 0 0 1.5px #9CA3AF;background:#fff' : '') + '"></i>' + esc(m.nickname || '-') + '</span></td>' : '') +
+    return '<tr>' + (joinedOnly ? '<td><span class="nick"><i class="dot" title="' + bl[1] + ' 띠" style="background:' + bl[2] + (bl[1] === '흰' ? ';box-shadow:inset 0 0 0 1.5px #9CA3AF;background:#fff' : '') + '"></i>' + esc(m.nickname || '-') + '</span></td><td>' + (m.weeklyGoal ? '<b style="color:' + B + '">주 ' + m.weeklyGoal + '회</b> <span style="color:var(--muted);font-size:12px">이번 주 ' + weekCount(m) + '회</span>' : '<span style="color:#9CA3AF">-</span>') + '</td>' : '') +
       '<td>' + (joinedOnly ? '' : '<span class="nick" style="font-weight:500"><i class="dot" style="background:' + bl[2] + (bl[1] === '흰' ? ';box-shadow:inset 0 0 0 1.5px #9CA3AF;background:#fff' : '') + '"></i>') + esc(m.name || '') + (joinedOnly ? '' : '</span>') + '</td><td>' + phoneFmt(m.phone) + '</td>' +
       (joinedOnly ? '<td>' + ymd(tsMs(m.appJoinedAt)) + '</td>' : '') +
       '<td>' + (m.total || 0) + '회 <span style="color:var(--muted);font-size:12px">' + bl[1] + ' 띠</span></td>' +
       '<td>' + (m.lastAttend === today ? '<b style="color:#15803D">오늘 ✓</b>' : esc(m.lastAttend || '-')) + '</td><td>' + esc(m.gymExp || '-') + '</td></tr>'; }).join('')
-    : '<tr><td colspan="7" class="empty">' + (q ? '찾는 회원이 없어요' : joinedOnly ? '아직 가입한 회원이 없어요' : '모두 가입했어요 🎉') + '</td></tr>';
+    : '<tr><td colspan="8" class="empty">' + (q ? '찾는 회원이 없어요' : joinedOnly ? '아직 가입한 회원이 없어요' : '모두 가입했어요 🎉') + '</td></tr>';
   $('mHead').querySelectorAll('[data-sort]').forEach((th)=> th.onclick = ()=>{ S.mSort = th.dataset.sort; paintMembers(); });
 }
-function paint(){ paintStats(); paintList(); if(!$('v-members').classList.contains('hidden')) paintMembers(); }
+const seen = new Set(); let primed = false;
+function notifyNew(){
+  const list = todos();
+  if(!primed){ list.forEach((t)=> seen.add(t.k + t.id)); if(S.members.length || list.length) primed = true; return; }
+  list.filter((t)=> !t.done && !seen.has(t.k + t.id)).forEach((t)=>{
+    seen.add(t.k + t.id); const x = t.x, who = x.nickname || x.name || '회원';
+    const text = t.k === 'goal' ? who + '님이 출석 목표를 주 ' + x.goal + '회로 정했어요' : t.k === 'help' ? who + '님이 ' + (x.kind === 'pt' ? 'PT 상담' : '1:1 운동가이드') + '을 신청했어요' : t.k === 'voice' ? '런앤핏에 한마디가 도착했어요' : '비회원 ' + (x.kind || '문의') + ' 신청이 왔어요';
+    if(EMBED){ try{ window.parent.postMessage({ rfAdminNew: text }, '*'); }catch(e){} }
+  });
+}
+function paint(){ notifyNew(); paintStats(); paintList(); if(!$('v-members').classList.contains('hidden')) paintMembers(); }
 
 // 화면 이동 · 필터
 document.querySelectorAll('.nav [data-view]').forEach((b)=> b.onclick = ()=>{
@@ -323,19 +351,21 @@ if(DEMO){
   const now = Date.now(), T = (min)=> ({ seconds: Math.floor((now - min * 60e3) / 1000) }), today = KST();
   const NAMES = [['김민수', '달리는민수', 12], ['이지은', '새싹러너', 4], ['박하나', '스쿼트요정', 57], ['최도윤', '꾸준이', 31], ['정유진', '오운완요정', 104], ['한지민', '', 24], ['오세훈', '정릉불꽃', 9], ['윤서아', '아침형인간', 18], ['강태호', '', 3], ['서지우', '헬린이', 1]];
   S.members = Array.from({ length: 488 }, (_, i)=>{ const n = NAMES[i % NAMES.length], j = i < 136;
-    return { id: 'm' + i, name: i < 10 ? n[0] : n[0].slice(0, 1) + '회원' + i, nickname: j ? (i < 10 ? n[1] || '런앤핏' + i : '러너' + i) : '', phone: '+8210' + String(20000000 + i * 7919).slice(0, 8), total: (i * 37) % 120, lastAttend: i % 5 === 0 ? today : '2026-11-' + String(1 + i % 17).padStart(2, '0'), gymExp: '2027-0' + (1 + i % 9) + '-15', uid: j ? 'u' + i : null, appJoinedAt: j ? T(i * 200) : null }; });
+    return { id: 'm' + i, name: i < 10 ? n[0] : n[0].slice(0, 1) + '회원' + i, nickname: j ? (i < 10 ? n[1] || '런앤핏' + i : '러너' + i) : '', phone: '+8210' + String(20000000 + i * 7919).slice(0, 8), total: (i * 37) % 120, lastAttend: i % 5 === 0 ? today : '2026-11-' + String(1 + i % 17).padStart(2, '0'), gymExp: '2027-0' + (1 + i % 9) + '-15', uid: j ? 'u' + i : null, appJoinedAt: j ? T(i * 200) : null, weeklyGoal: j && i % 3 !== 2 ? 1 + (i % 5) : 0, recentDays: [today] }; });
   S.help = [
     { id: 'h1', kind: 'guide', pick: 'want', coach: '가온코치', times: ['평일 점심', '평일 저녁'], text: '스쿼트할 때 무릎이 아파요. 하체 기구 사용법도 같이 알려주세요!', name: '김민수', nickname: '달리는민수', phone: '+821012345678', memberId: 'm0', status: 'new', createdAt: T(4) },
     { id: 'h2', kind: 'pt', pick: 'rec', coach: null, times: ['주말'], text: '3개월 안에 5kg 빼고 싶어요. 허리가 조금 안 좋아요.', name: '이지은', nickname: '새싹러너', phone: '+821055556666', memberId: 'm1', status: 'new', createdAt: T(52) },
     { id: 'h3', kind: 'guide', pick: 'want', coach: '로라코치', times: ['평일 오전'], text: '', name: '윤서아', nickname: '아침형인간', phone: '+821077778888', memberId: 'm7', status: 'done', memo: '11/19 오전 10시 로라코치 배정', handledBy: '런관장', createdAt: T(60 * 26) },
   ];
   S.voice = [
-    { id: 'v1', category: '불편해요', text: '저녁 7시쯤 러닝머신이 항상 꽉 차 있어요. 시간 제한이 있으면 좋겠어요.', status: 'new', createdAt: T(60 * 30) },
-    { id: 'v2', category: '칭찬해요', text: '하루코치님이 지나가다 자세 봐주셔서 너무 감사했어요!', status: 'new', createdAt: T(130) },
+    { id: 'v1', nickname: '꾸준이', category: '불편해요', text: '저녁 7시쯤 러닝머신이 항상 꽉 차 있어요. 시간 제한이 있으면 좋겠어요.', status: 'new', createdAt: T(60 * 30) },
+    { id: 'v2', nickname: '오운완요정', category: '칭찬해요', text: '센터가 늘 깔끔해서 좋아요!', status: 'new', createdAt: T(130) },
   ];
+  S.goal = [{ id: 'g1', memberId: 'm2', name: '박하나', nickname: '스쿼트요정', goal: 4, prev: 3, status: 'new', createdAt: T(9) }, { id: 'g2', memberId: 'm0', name: '김민수', nickname: '달리는민수', goal: 3, prev: 0, status: 'done', createdAt: T(60 * 5) }];
   S.inq = [{ id: 'q1', name: '박서준', phone: '01033334444', kind: '무료 체험', src: 'pixel-gym', createdAt: T(18) }];
   S.people = Array.from({ length: 6 }, (_, i)=> ({ ts: T(0), staff: i === 0 }));
   api = { who: '예시', save: async (kind, id, patch)=>{ const L = S[kind], x = L.find((y)=> y.id === id); Object.assign(x, patch, patch.answeredAt || patch.handledAt ? { answeredAt: T(0), handledAt: T(0) } : {}); paint(); } };
+  setTimeout(()=>{ S.goal.unshift({ id: 'g3', memberId: 'm4', name: '정유진', nickname: '오운완요정', goal: 5, prev: 0, status: 'new', createdAt: T(0) }); paint(); }, 7000);
   showShell('예시 직원'); $('demoTag').classList.remove('hidden'); $('logout').onclick = ()=> location.href = EMBED ? './?embed' : './';
   paint();
 } else {
@@ -363,6 +393,7 @@ if(DEMO){
     listen('help', query(collection(db, 'help_requests'), orderBy('createdAt', 'desc'), limit(200)));
     listen('voice', query(collection(db, 'voices'), orderBy('createdAt', 'desc'), limit(200)));
     listen('inq', query(collection(db, 'inquiries'), orderBy('createdAt', 'desc'), limit(200)));
+    listen('goal', query(collection(db, 'goal_logs'), orderBy('createdAt', 'desc'), limit(200)));
     listen('people', collection(db, 'gym_people'));
     const loadMembers = async ()=>{ try{ const s = await getDocs(collection(db, 'members')); S.members = s.docs.map((d)=> ({ id: d.id, ...d.data() })); paint(); }catch(e){ console.warn('members', e); } };
     loadMembers(); const t = setInterval(loadMembers, 5 * 60e3); unsubs.push(()=> clearInterval(t));

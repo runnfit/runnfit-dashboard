@@ -248,12 +248,12 @@ function renderHome(){
       '<div class="grid12" style="margin-top:8px">' + bar + '</div>' +
       '<div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5">30일 ' + f30.visits + '회 출석<br><b style="color:var(--ink)">' + (f30.visits >= goal ? '도전 성공! 🎉' : '목표까지 ' + (goal - f30.visits) + '회') + '</b></div></div>';
   } else {
-    const mk = today().slice(0, 7), n = me.monthKey === mk ? (Number(me.monthCount) || 0) : 0, goal = Number(me.monthlyGoal) || 8;
-    const bar = Array.from({ length: goal }, (_, i)=> '<div class="seg ' + (i < n ? 'on' : '') + '"></div>').join('');
-    left = '<div class="card" style="padding:12px 10px;text-align:center"><div style="display:flex;align-items:center;justify-content:center;gap:5px;font-size:13px;font-weight:700">' + FLAG + '이번 달 출석</div>' +
-      '<div style="display:flex;align-items:baseline;justify-content:center;gap:4px;margin-top:8px"><span class="pxf" style="font-size:20px">' + n + '</span><span style="font-size:13px;font-weight:700;color:var(--muted)">/ ' + goal + '회</span></div>' +
-      '<div style="display:grid;grid-template-columns:repeat(' + goal + ',minmax(0,1fr));gap:2px;margin-top:8px">' + bar + '</div>' +
-      '<div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5">내가 정한 목표 월 ' + goal + '회<br><a href="#" id="goalBtn" style="font-weight:700">목표 바꾸기</a></div></div>';
+    const w = weekInfo(), goal = w.goal, n = w.n, slots = goal || 7;
+    const bar = Array.from({ length: slots }, (_, i)=> '<div class="seg ' + (i < n ? 'on' : '') + '"></div>').join('');
+    left = '<div class="card" style="padding:12px 10px;text-align:center"><div style="display:flex;align-items:center;justify-content:center;gap:5px;font-size:13px;font-weight:700">' + FLAG + '이번 주 출석</div>' +
+      '<div style="display:flex;align-items:baseline;justify-content:center;gap:4px;margin-top:8px"><span class="pxf" style="font-size:20px">' + n + '</span><span style="font-size:13px;font-weight:700;color:var(--muted)">' + (goal ? '/ 주 ' + goal + '회' : '회') + '</span></div>' +
+      '<div style="display:grid;grid-template-columns:repeat(' + slots + ',minmax(0,1fr));gap:2px;margin-top:8px">' + bar + '</div>' +
+      '<div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5">' + (goal ? (n >= goal ? '<b style="color:' + B + '">이번 주 목표 달성!</b>' : '내 목표 주 ' + goal + '회') + '<br><a href="#" id="goalBtn" style="font-weight:700">목표 바꾸기</a>' : '일주일에 몇 번 올까요?<br><a href="#" id="goalBtn" style="font-weight:700">목표 정하기</a>') + '</div></div>';
   }
   const right = '<div class="card" style="padding:12px 10px;text-align:center"><div style="display:flex;align-items:center;justify-content:center;gap:5px;font-size:13px;font-weight:700">' + CAL + '회원권</div>' +
     '<div class="pxf" style="font-size:20px;color:' + B + ';margin-top:10px">' + (dday == null ? '-' : dday >= 0 ? 'D-' + dday : '만료') + '</div>' +
@@ -263,8 +263,8 @@ function renderHome(){
     '<div style="padding:12px 24px 0;display:flex;gap:12px;align-items:center">' + AVATAR(44) +
       '<div><div style="font-size:13px;color:var(--muted);font-weight:500">' + (f30 ? '등록 ' + f30.day + '일째 · ' : '') + (none ? '첫 출석을 기다려요' : cur.name) + '</div><div style="font-size:20px;font-weight:900;margin-top:1px">' + esc(me.nickname || me.name) + '님, 반가워요!</div></div></div>' +
     (attendedToday
-      ? '<div class="m" style="background:#E3E9FF;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px"><div style="width:26px;height:26px;background:' + B + ';display:flex;align-items:center;justify-content:center;flex-shrink:0">' + CHECK('#fff') + '</div><div style="font-size:14px"><b style="color:' + B + '">오늘 출석 완료</b> · 오늘도 와주셨네요!</div></div>'
-      : '<div class="m" style="background:#fff;border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:10px;box-shadow:inset 0 0 0 2px var(--line)"><div style="width:26px;height:26px;box-shadow:inset 0 0 0 2px #9CA3AF;flex-shrink:0"></div><div style="font-size:14px;color:#374151"><b>오늘은 아직 출석 전</b> · 센터에서 출석하면 바로 표시돼요</div></div>') +
+      ? '<div class="m" style="display:flex;align-items:center;gap:12px;background:' + B + ';color:#fff;border-radius:14px;padding:12px 14px;box-shadow:0 6px 18px rgba(9,54,146,.22)"><span style="width:38px;height:38px;border-radius:50%;background:#FFD54A;display:flex;align-items:center;justify-content:center;flex:none"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="' + B + '" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span><span><b style="display:block;font-size:16px">오늘도 출석 완료!</b><span style="font-size:13px;opacity:.9">짱! 잘했어요 · 총 <b>' + total + '</b>번째 출석</span></span></div>'
+      : '<div class="m" style="display:flex;align-items:center;gap:12px;background:#fff;border-radius:14px;padding:12px 14px;box-shadow:inset 0 0 0 2px #C7D3EE"><span style="width:38px;height:38px;border-radius:50%;background:#E3E9FF;display:flex;align-items:center;justify-content:center;flex:none"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="' + B + '" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5"/><path d="M12 7.5V12l3 2"/></svg></span><span><b style="display:block;font-size:16px;color:' + B + '">아직 출석 전</b><span style="font-size:13px;color:#374151">런앤핏이 기다리고 있어요!</span></span></div>') +
     helpCard() +
     '<div class="hero m" style="padding:14px 16px">' +
       '<div style="display:flex;justify-content:space-between;align-items:center"><div style="font-size:13px;font-weight:700;color:var(--muted)">출석 띠</div><div style="font-size:13px;color:var(--muted)">총 <b style="color:var(--ink)">' + total + '회</b> 출석</div></div>' +
@@ -286,9 +286,16 @@ function showNotices(){
 }
 function coach(){ sheet('<div class="ttl">코치에게 물어보기</div><div style="font-size:15px;margin-top:10px;line-height:1.6">앱에서 바로 묻는 기능은 곧 열려요!<br>지금은 운동하다 궁금한 점이 있으면 <b>트레이너나 프론트</b>에 편하게 물어봐 주세요. 런앤핏이 함께할게요 💙</div>'); }
 function changeGoal(){
-  const opts = [4, 8, 12, 16, 20];
-  const bg = sheet('<div class="ttl">이번 달 출석 목표</div><div class="muted" style="font-size:14px;margin-top:4px">한 달에 몇 번 오고 싶으세요?</div><div class="chips" style="margin-top:14px">' + opts.map((n)=> '<button type="button" data-n="' + n + '" class="' + ((Number(me.monthlyGoal) || 8) === n ? 'on' : '') + '">월 ' + n + '회</button>').join('') + '</div>');
-  bg.querySelectorAll('[data-n]').forEach((b)=> b.onclick = async ()=>{ const n = Number(b.dataset.n); try{ await updateDoc(doc(db, 'members', me.id), { monthlyGoal: n }); me.monthlyGoal = n; bg.remove(); renderHome(); toast('목표를 월 ' + n + '회로 정했어요!'); }catch(e){ toast('저장하지 못했어요.'); } });
+  const cur = Number(me.weeklyGoal) || 0;
+  const bg = sheet('<div class="ttl">이번 주 출석 목표</div><div class="muted" style="font-size:14px;margin-top:4px">일주일에 몇 번 오고 싶으세요? 런앤핏이 함께 응원할게요!</div><div class="chips" style="margin-top:14px">' + [1, 2, 3, 4, 5, 6, 7].map((n)=> '<button type="button" data-n="' + n + '" class="' + (cur === n ? 'on' : '') + '">주 ' + n + '회</button>').join('') + '</div>');
+  bg.querySelectorAll('[data-n]').forEach((b)=> b.onclick = async ()=>{
+    const n = Number(b.dataset.n); if(n === cur){ bg.remove(); return; }
+    try{
+      await updateDoc(doc(db, 'members', me.id), { weeklyGoal: n, goalSetAt: serverTimestamp() });
+      me.weeklyGoal = n; bg.remove(); (document.getElementById('goalBtn2') ? renderChallenge : renderHome)(); toast('목표를 주 ' + n + '회로 정했어요! 런앤핏이 응원할게요 💙');
+      setDoc(doc(collection(db, 'goal_logs')), { uid: auth.currentUser.uid, memberId: me.id, name: me.name || '', nickname: me.nickname || '', goal: n, prev: cur, status: 'new', createdAt: serverTimestamp() }).catch((e)=> console.warn(e));
+    }catch(e){ toast('저장하지 못했어요.'); }
+  });
 }
 
 // ---------- 오늘의 운동 ----------
@@ -325,11 +332,20 @@ async function renderWorkout(){
   document.getElementById('wCoach').onclick = coach;
 }
 
+// ---------- 이번 주 출석 (월~일, KST) ----------
+function weekInfo(){
+  const t = today(), dow = (new Date(t + 'T12:00:00+09:00').getUTCDay() + 6) % 7, mon = addDays(t, -dow);
+  const days = new Set(Array.isArray(me.recentDays) ? me.recentDays : []);
+  if(me.lastAttend === t) days.add(t);
+  const list = Array.from({ length: 7 }, (_, i)=> addDays(mon, i));
+  return { mon, list, n: list.filter((d)=> days.has(d)).length, days, goal: Number(me.weeklyGoal) || 0 };
+}
+
 // ---------- 첫 30일 출석 도전 / 이번 달 ----------
 function renderChallenge(){
   const f30 = first30Info();
   if(!f30){
-    const mk = today().slice(0, 7), n = me.monthKey === mk ? (Number(me.monthCount) || 0) : 0, goal = Number(me.monthlyGoal) || 8;
+    const mk = today().slice(0, 7), mN = me.monthKey === mk ? (Number(me.monthCount) || 0) : 0, w = weekInfo(), n = w.n, goal = w.goal;
     const days = new Set(Array.isArray(me.recentDays) ? me.recentDays : []);
     const first = mk + '-01', last = kstDate(Date.parse(addDays(first, 32) .slice(0, 7) + '-01T12:00:00+09:00') - 864e5);
     const total = daysBetween(last, first) + 1, lead = (new Date(first + 'T12:00:00+09:00').getUTCDay() + 6) % 7;
@@ -338,13 +354,18 @@ function renderChallenge(){
       const st = on ? 'background:' + B + ';color:#fff' : isT ? 'background:#fff;color:' + B + ';box-shadow:inset 0 0 0 3px ' + B : d < today() ? 'background:#E9EEF6;color:#6B7280' : 'background:#fff;color:#9CA3AF;box-shadow:inset 0 0 0 1px var(--line)';
       return '<div style="height:38px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:' + (on || isT ? 900 : 500) + ';' + st + '">' + (on ? CHECK('#FFD54A', 14) : isT ? '오늘' : (i + 1)) + '</div>';
     })).join('');
-    $app.innerHTML = topbar('이번 달 출석') +
-      '<div class="hero m" style="padding:16px;text-align:center"><div style="font-size:13px;color:var(--muted)">' + Number(mk.slice(5)) + '월 · 내가 정한 목표 월 ' + goal + '회</div>' +
-        '<div style="display:flex;align-items:baseline;justify-content:center;gap:6px;margin-top:8px"><span class="pxf" style="font-size:30px;color:' + B + '">' + n + '</span><span style="font-size:16px;font-weight:700;color:var(--muted)">/ ' + goal + '회 출석</span></div>' +
-        '<div style="display:inline-block;margin-top:10px" class="chip">' + (n >= goal ? '이번 달 목표 달성! 🎉' : (goal - n) + '번 더 출석하면 목표 달성!') + '</div></div>' +
-      '<div class="card m" style="padding:12px"><div style="display:flex;justify-content:space-between;margin-bottom:10px"><div style="font-size:14px;font-weight:900">' + Number(mk.slice(5)) + '월 출석 도장</div><div style="font-size:12px;color:var(--muted)">파란 칸 = 출석</div></div>' +
+    const wk = w.list.map((d, i)=>{ const on = w.days.has(d), isT = d === today();
+      return '<div style="text-align:center"><div style="font-size:11px;color:var(--muted)">' + '월화수목금토일'[i] + '</div><div style="height:30px;margin-top:3px;display:flex;align-items:center;justify-content:center;' + (on ? 'background:' + B : isT ? 'background:#fff;box-shadow:inset 0 0 0 3px ' + B : 'background:#E9EEF6') + '">' + (on ? CHECK('#FFD54A', 14) : '') + '</div></div>'; }).join('');
+    $app.innerHTML = topbar('이번 주 출석') +
+      '<div class="hero m" style="padding:16px;text-align:center"><div style="font-size:13px;color:var(--muted)">' + (goal ? '내가 정한 목표 주 ' + goal + '회' : '아직 목표를 안 정했어요') + '</div>' +
+        '<div style="display:flex;align-items:baseline;justify-content:center;gap:6px;margin-top:8px"><span class="pxf" style="font-size:30px;color:' + B + '">' + n + '</span><span style="font-size:16px;font-weight:700;color:var(--muted)">' + (goal ? '/ ' + goal + '회 출석' : '회 출석') + '</span></div>' +
+        '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;margin-top:12px">' + wk + '</div>' +
+        '<div style="display:inline-block;margin-top:12px" class="chip">' + (!goal ? '목표를 정하면 런앤핏이 함께 응원해요' : n >= goal ? '이번 주 목표 달성! 짱!' : (goal - n) + '번 더 출석하면 이번 주 목표 달성!') + '</div>' +
+        '<div style="margin-top:10px"><a href="#" id="goalBtn2" style="font-weight:700;font-size:13px">' + (goal ? '목표 바꾸기' : '목표 정하기') + '</a></div></div>' +
+      '<div class="card m" style="padding:12px"><div style="display:flex;justify-content:space-between;margin-bottom:10px"><div style="font-size:14px;font-weight:900">' + Number(mk.slice(5)) + '월 출석 도장 · ' + mN + '회</div><div style="font-size:12px;color:var(--muted)">파란 칸 = 출석</div></div>' +
         '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;font-size:11px;color:var(--muted);text-align:center;margin-bottom:4px">' + ['월', '화', '수', '목', '금', '토', '일'].map((x)=> '<div>' + x + '</div>').join('') + '</div>' +
         '<div style="display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px">' + cells + '</div></div>';
+    document.getElementById('goalBtn2').onclick = (e)=>{ e.preventDefault(); changeGoal(); };
     return;
   }
   const set = new Set(f30.days);
@@ -369,7 +390,7 @@ function renderChallenge(){
 }
 
 // ---------- 런앤핏에 한마디 ----------
-const VTYPES = [['praise', '칭찬해요', '어떤 점이 좋으셨어요?', '예: 트레이너님 덕분에 운동이 즐거워졌어요'], ['issue', '불편해요', '어떤 점이 불편하셨어요?', '예: 3번 러닝머신에서 소리가 나요'], ['idea', '제안해요', '어떤 점이 있으면 좋을까요?', '예: 주말 아침 러닝 크루가 있으면 좋겠어요']];
+const VTYPES = [['praise', '칭찬해요', '어떤 점이 좋으셨어요?', '예: 센터가 늘 깔끔해서 좋아요!'], ['issue', '불편해요', '어떤 점이 불편하셨어요?', '예: 3번 러닝머신에서 소리가 나요'], ['idea', '제안해요', '어떤 점이 있으면 좋을까요?', '예: 마라톤 대회 같이 또 나가고 싶어요!']];
 const VCATS = ['기구', '청결', '직원', '수업', '기타'];
 let vType = 'praise', vCat = '직원';
 async function renderVoice(){
@@ -378,7 +399,7 @@ async function renderVoice(){
     '<div class="card m tabseg">' + VTYPES.map((x)=> '<button type="button" data-vt="' + x[0] + '" class="' + (x[0] === vType ? 'on' : '') + '">' + x[1] + '</button>').join('') + '</div>' +
     '<div class="m chips">' + VCATS.map((c)=> '<button type="button" data-vc="' + c + '" class="' + (c === vCat ? 'on' : '') + '">' + c + '</button>').join('') + '</div>' +
     '<div class="card m field" style="padding:14px"><label for="vText">' + t[2] + '</label><textarea id="vText" maxlength="1000" placeholder="' + t[3] + '"></textarea></div>' +
-    '<div class="hero m" style="padding:12px 14px;display:flex;gap:10px;align-items:flex-start;color:' + B + '"><div style="margin-top:2px">' + LOCK + '</div><div style="font-size:13px;line-height:1.55;color:var(--ink)"><b style="color:' + B + '">트레이너·직원에게는 익명으로 전달돼요.</b><br>작은 이야기도 소중하게 듣고, 더 나은 런앤핏으로 답할게요.</div></div>' +
+    '<div class="hero m" style="padding:12px 14px;display:flex;gap:10px;align-items:flex-start;color:' + B + '"><div style="margin-top:2px">' + LOCK + '</div><div style="font-size:13px;line-height:1.55;color:var(--ink)"><b style="color:' + B + '">코치님들에게는 보이지 않아요. 익명(닉네임)으로 전달돼요!</b><br>작은 이야기도 소중하게 듣고, 더 나은 런앤핏으로 답할게요.</div></div>' +
     '<div class="m"><button class="btn" id="vSend" type="button" style="width:100%;height:52px;font-size:16px">익명으로 보내기</button><div class="msg" id="vMsg"></div></div>' +
     '<div class="card m" style="padding:8px 14px 6px"><div style="font-size:13px;font-weight:900;padding:4px 0 8px">내가 보낸 이야기</div><div id="vList"><div class="muted" style="font-size:13px;padding:6px 0 10px">불러오는 중…</div></div></div>' +
     '<div style="height:18px"></div>';
@@ -394,7 +415,7 @@ async function sendVoice(){
   btn.disabled = true;
   try{
     const ref = doc(collection(db, 'voices'));
-    await setDoc(ref, { type: vType, category: vCat, text, photoUrl: null, status: 'new', createdAt: serverTimestamp() });
+    await setDoc(ref, { type: vType, category: vCat, text, nickname: me.nickname || '', photoUrl: null, status: 'new', createdAt: serverTimestamp() });
     await setDoc(doc(db, 'voices_private', ref.id), { uid: auth.currentUser.uid, memberId: me.id, name: me.name, createdAt: serverTimestamp() });
     document.getElementById('vText').value = '';
     msg.className = 'msg ok'; msg.textContent = vType === 'praise' ? '따뜻한 한마디 고마워요! 런앤핏이 꼭 전할게요 💙' : '소중한 이야기 고마워요. 확인하고 답할게요.';
