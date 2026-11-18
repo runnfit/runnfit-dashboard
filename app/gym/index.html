@@ -672,8 +672,9 @@ function avatar(name, shirt, hair, me, staff, belt) {
   g.userData = { name, me, body, torso, legL, legR, armL, armR, tag: tg, phase: Math.random() * 6, bubble: null, bubbleT: 0, act: null };
   scene.add(g); return g;
 }
+// 직접 쓴 한마디만 대화로, 동작에서 나온 말은 회색 안내로
 function say(av, txt, sec = 3.5, chat = false) {
-  if (av === me) { if (chat) feed(myName, txt, 'me'); else feed('', `${myName} · ${txt}`, 'sys');   // 직접 쓴 한마디만 대화로, 동작에서 나온 말은 회색 안내로 if (LIVE) pubMe({ say: String(txt).slice(0, 40), sayT: Date.now() }); } else if (DEMO) showFeed(av.userData.name, txt);
+  if (av === me) { if (chat) feed(myName, txt, 'me'); else feed('', `${myName} · ${txt}`, 'sys'); if (LIVE) pubMe({ say: String(txt).slice(0, 40), sayT: Date.now() }); } else if (DEMO) showFeed(av.userData.name, txt);
   if (av.userData.bubble) av.remove(av.userData.bubble);
   const bt = String(txt).length > 22 ? String(txt).slice(0, 21) + '…' : String(txt);   // 말풍선은 짧게, 전체 글은 아래 이야기 창에
   const b = textSprite(bt, { bg: '#fff', fg: '#111827', size: 32, scale: .011, border: '#111827' });
