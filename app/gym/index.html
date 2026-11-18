@@ -69,15 +69,16 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 .inrow{display:flex;gap:6px;margin-top:6px}
 #feed{left:10px;bottom:calc(106px + env(safe-area-inset-bottom));width:min(300px,72%);display:flex;flex-direction:column;align-items:flex-start;gap:4px;pointer-events:none}
 #feed div{max-width:100%;background:rgba(15,23,42,.42);color:#fff;font-size:12.5px;line-height:1.35;padding:4px 9px;border-radius:10px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:opacity 1.2s,transform .3s;text-shadow:0 1px 2px rgba(0,0,0,.4);animation:fin .3s ease-out}
-#feed div b{color:#FFD54A;margin-right:5px}
+#feed div b{color:#fff;margin-right:6px;border-bottom:3px solid #F3F4F6;padding-bottom:1px}
+#feed div b.st,#feedAll .r b.st{background:#2563EB;border:0;border-radius:5px;padding:0 5px;color:#fff}
 #feed div.sys{background:rgba(37,99,235,.45)}
-#feed div.me b{color:#7DD3FC}
+#feed div.sys{color:#DDE3FF}
 #feed div.old{opacity:.45}
 #feedBtn{left:10px;bottom:calc(72px + env(safe-area-inset-bottom));z-index:6;border:0;border-radius:999px;background:rgba(15,23,42,.55);color:#fff;font-family:inherit;font-size:12px;font-weight:900;padding:6px 11px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
 #feedAll{left:10px;right:10px;bottom:calc(108px + env(safe-area-inset-bottom));max-height:42vh;overflow-y:auto;background:rgba(15,23,42,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:14px;padding:8px 10px;display:none;z-index:6;-webkit-overflow-scrolling:touch}
 #feedAll .r{display:flex;gap:8px;color:#fff;font-size:12.5px;line-height:1.45;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.08)}
 #feedAll .r i{font-style:normal;color:#94A3B8;font-size:11px;flex:none;width:36px}
-#feedAll .r b{color:#FFD54A;margin-right:4px}
+#feedAll .r b{color:#fff;margin-right:6px;border-bottom:3px solid #F3F4F6;padding-bottom:1px}
 .wish{background:#F8FAFC;border-radius:12px;padding:10px;margin-bottom:8px}
 .wish .w1{font-size:14px;font-weight:900;line-height:1.45}
 .wish .w0{font-size:11px;color:#6B7280;margin-bottom:3px}
@@ -167,14 +168,15 @@ const colliders = [], fadeables = [];
 function fadeable(m) { m.material = m.material.clone(); m.material.transparent = true; m.userData.fo = 1; fadeables.push(m); return m; }
 function solid(x, z, w, d) { colliders.push([x, z, x + w, z + d]); }
 
-function textSprite(txt, { bg = '#2563EB', fg = '#fff', size = 44, pad = 16, scale = .011, radius = 10, border } = {}) {
+function textSprite(txt, { bg = '#2563EB', fg = '#fff', size = 44, pad = 16, scale = .011, radius = 10, border, stripe } = {}) {
   const c = document.createElement('canvas'), g = c.getContext('2d');
   g.font = `900 ${size}px 'Noto Sans KR', sans-serif`;
   const w = Math.ceil(g.measureText(txt).width) + pad * 2, h = size + pad * 1.4;
   c.width = w; c.height = h; g.font = `900 ${size}px 'Noto Sans KR', sans-serif`;
   if (bg) { g.fillStyle = bg; g.beginPath(); g.roundRect(0, 0, w, h, radius); g.fill(); }
   if (border) { g.strokeStyle = border; g.lineWidth = 4; g.beginPath(); g.roundRect(2, 2, w - 4, h - 4, radius); g.stroke(); }
-  g.fillStyle = fg; g.textBaseline = 'middle'; g.textAlign = 'center'; g.fillText(txt, w / 2, h / 2 + 2);
+  if (stripe) { g.save(); g.beginPath(); g.roundRect(0, 0, w, h, radius); g.clip(); if (stripe === '#F3F4F6') { g.fillStyle = '#CBD5E1'; g.fillRect(0, h - 12, w, 12); } g.fillStyle = stripe; g.fillRect(0, h - 10, w, 10); g.restore(); }
+  g.fillStyle = fg; g.textBaseline = 'middle'; g.textAlign = 'center'; g.fillText(txt, w / 2, h / 2 - (stripe ? 3 : -2));
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
   const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: t, transparent: true, fog: false }));
   sp.scale.set(w * scale * .6, h * scale * .6, 1); sp.renderOrder = 5; return sp;
@@ -603,6 +605,12 @@ floorText('프리웨이트존', 4.1, s(8.85), 3.4, '#FDBA74', .55);
 { const pl = new THREE.PointLight(0x93C5FD, 30, 18); pl.position.set(s(11), 3, s(8)); scene.add(pl); }
 
 // ── 캐릭터
+// 띠 색 (이름표 밑줄 · 지난 이야기 밑줄)
+const BELTHEX = { 흰: '#F3F4F6', 노: '#F5B301', 파: '#2563EB', 빨: '#DC2626', 검: '#0B0D12' };
+const BELTOF = { 새벽러너: '빨', 걷기왕: '노', 스쿼트요정: '빨', '3대500': '검', 꾸준이: '노', 출석요정: '파', 쉬는중: '흰', 일광욕: '파', 스트레칭중: '흰', 응원단장: '파', 하체러버: '노', 덤벨러: '빨', 물멍중: '흰', 오운완요정: '노', 정릉불꽃: '파', 아침형인간: '빨', 헬린이: '흰', 하루한번: '노', 새싹러너: '흰' };
+const STAFF = new Set(['런관장']);
+let MYBELT = '노';
+function nameTag(name, me, staff) { return staff ? textSprite(name, { bg: '#2563EB', fg: '#fff', size: 30, scale: .011 }) : textSprite(name, { bg: '#FFFFFF', fg: '#111827', size: 30, scale: .011, stripe: BELTHEX[me ? MYBELT : BELTOF[name]] || '#F3F4F6', border: me ? '#2563EB' : null }); }
 function avatar(name, shirt, hair, me, staff) {
   const g = new THREE.Group(), body = new THREE.Group(); g.add(body);
   const legL = new THREE.Group(), legR = new THREE.Group(); legL.position.set(-.1, .45, 0); legR.position.set(.1, .45, 0); body.add(legL, legR);
@@ -619,7 +627,7 @@ function avatar(name, shirt, hair, me, staff) {
   box(torso, -.24, .5, -.2, .48, .44, .4, 0xF2C9A0);
   box(torso, -.26, .85, -.22, .52, .14, .44, hair); box(torso, -.26, .6, -.22, .52, .3, .08, hair);
   box(torso, -.13, .67, .2, .06, .07, .01, 0x111827); box(torso, .07, .67, .2, .06, .07, .01, 0x111827);
-  const tg = textSprite(name, { bg: me ? '#FFD54A' : staff ? 'rgba(37,99,235,.95)' : 'rgba(17,24,39,.85)', fg: me ? '#111827' : '#fff', size: 30, scale: .011 }); tg.position.y = 1.9; g.add(tg);
+  const tg = nameTag(name, me, staff); tg.position.y = 1.9; g.add(tg);
   g.userData = { name, me, body, torso, legL, legR, armL, armR, tag: tg, phase: Math.random() * 6, bubble: null, bubbleT: 0, act: null };
   scene.add(g); return g;
 }
@@ -996,7 +1004,7 @@ function updateCard() {
 
 // ── 입장 연출: 엘리베이터 → 복도 → 얼굴인식 → 턴게이트
 let myName = '나';
-function setName(n) { myName = n; me.userData.name = n; me.remove(me.userData.tag); const tg = textSprite(n, { bg: '#FFD54A', fg: '#111827', size: 30, scale: .011 }); tg.position.y = 1.9; me.add(tg); me.userData.tag = tg; }
+function setName(n) { myName = n; me.userData.name = n; me.remove(me.userData.tag); const tg = nameTag(n, true); tg.position.y = 1.9; me.add(tg); me.userData.tag = tg; }
 const RANDOM = ['달리는민수', '새싹러너', '정릉불꽃', '오운완요정', '꾸준왕'];
 $('nick').value = RANDOM[Math.floor(Math.random() * RANDOM.length)];
 $('enter').onclick = () => { setName($('nick').value.trim() || '나'); $('start').style.display = 'none'; $('skip').style.display = 'block'; cutscene = { t: 0, step: 0 }; };
@@ -1088,12 +1096,13 @@ function loop() {
 const feedLog = [];
 function esc(t) { return String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
 function hhmm() { const d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
-function renderFeedAll() { const el = $('feedAll'); el.innerHTML = feedLog.map(f => `<div class="r"><i>${f.t}</i><div>${f.n ? `<b>${esc(f.n)}</b>` : ''}${esc(f.x)}</div></div>`).join('') || '<div class="r">아직 이야기가 없어요</div>'; el.scrollTop = el.scrollHeight; }
+function nameHtml(n) { if (STAFF.has(n)) return `<b class="st">${esc(n)}</b>`; const b = n === myName ? MYBELT : BELTOF[n]; const c = BELTHEX[b] || '#F3F4F6'; return `<b style="border-bottom-color:${c}${b === '검' ? ';box-shadow:0 2px 0 #F5B301' : ''}">${esc(n)}</b>`; }
+function renderFeedAll() { const el = $('feedAll'); el.innerHTML = feedLog.map(f => `<div class="r"><i>${f.t}</i><div>${f.n ? nameHtml(f.n) : ''}${esc(f.x)}</div></div>`).join('') || '<div class="r">아직 이야기가 없어요</div>'; el.scrollTop = el.scrollHeight; }
 $('feedBtn').onclick = () => { const el = $('feedAll'), open = el.style.display !== 'block'; el.style.display = open ? 'block' : 'none'; $('feed').style.display = open ? 'none' : 'flex'; $('feedBtn').textContent = open ? '💬 접기 ▾' : '💬 지난 이야기 ▴'; if (open) renderFeedAll(); };
 function feed(name, txt, cls = '') {
   feedLog.push({ t: hhmm(), n: name, x: txt }); if (feedLog.length > 300) feedLog.shift(); if ($('feedAll').style.display === 'block') renderFeedAll();
   const box = $('feed'), d = document.createElement('div'); if (cls) d.className = cls;
-  d.innerHTML = name ? `<b>${name.replace(/</g, '&lt;')}</b>${txt.replace(/</g, '&lt;')}` : txt.replace(/</g, '&lt;');
+  d.innerHTML = name ? nameHtml(name) + esc(txt) : esc(txt);
   box.appendChild(d); while (box.children.length > 5) box.removeChild(box.firstChild);
   setTimeout(() => d.classList.add('old'), 7000);
 }
