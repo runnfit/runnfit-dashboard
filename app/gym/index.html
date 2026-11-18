@@ -76,6 +76,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 #feed div{max-width:100%;word-break:keep-all;overflow-wrap:anywhere;background:rgba(15,23,42,.42);color:#fff;font-size:12.5px;line-height:1.35;padding:4px 9px;border-radius:10px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);transition:opacity 1.2s,transform .3s;text-shadow:0 1px 2px rgba(0,0,0,.4);animation:fin .3s ease-out}
 #feed div b{color:#fff;margin-right:6px;border-bottom:3px solid #F3F4F6;padding-bottom:1px}
 #feed div b.st,#feedAll .r b.st{background:#153189;border:0;border-radius:5px;padding:0 5px;color:#fff}
+#feed div b.co,#feedAll .r b.co{background:#fff;border:1.5px solid #153189;border-radius:5px;padding:0 5px;color:#153189}
 #feed div.sys{background:rgba(37,99,235,.45)}
 #feed div.sys{color:#DDE3FF}
 #feed div.old{opacity:.45}
@@ -647,7 +648,7 @@ const beltKey = n => { n = Number(n) || 0; return n >= 100 ? '검' : n >= 50 ? '
 const BELTOF = { 새벽러너: '빨', 걷기왕: '노', 스쿼트요정: '빨', '3대500': '검', 꾸준이: '노', 출석요정: '파', 쉬는중: '흰', 일광욕: '파', 스트레칭중: '흰', 응원단장: '파', 하체러버: '노', 덤벨러: '빨', 물멍중: '흰', 오운완요정: '노', 정릉불꽃: '파', 아침형인간: '빨', 헬린이: '흰', 하루한번: '노', 새싹러너: '흰' };
 const STAFF = new Set(['런관장']);
 let MYBELT = '노';
-function nameTag(name, me, staff, belt) { return staff ? textSprite(name, { bg: '#153189', fg: '#fff', size: 30, scale: .011 }) : textSprite(name, { bg: '#FFFFFF', fg: '#111827', size: 30, scale: .011, stripe: BELTHEX[me ? MYBELT : (belt !== undefined ? belt : BELTOF[name])] || '#E5E7EB', border: me ? '#153189' : null }); }
+function nameTag(name, me, staff, belt) { return staff === 'coach' ? textSprite(name, { bg: '#FFFFFF', fg: '#153189', size: 30, scale: .011, border: '#153189' }) : staff ? textSprite(name, { bg: '#153189', fg: '#fff', size: 30, scale: .011 }) : textSprite(name, { bg: '#FFFFFF', fg: '#111827', size: 30, scale: .011, stripe: BELTHEX[me ? MYBELT : (belt !== undefined ? belt : BELTOF[name])] || '#E5E7EB', border: me ? '#153189' : null }); }
 function avatar(name, shirt, hair, me, staff, belt) {
   const g = new THREE.Group(), body = new THREE.Group(); g.add(body);
   const legL = new THREE.Group(), legR = new THREE.Group(); legL.position.set(-.1, .45, 0); legR.position.set(.1, .45, 0); body.add(legL, legR);
@@ -753,6 +754,7 @@ npc('스쿼트요정', 0xB91C32, 0x111827, [[.55 + .77, s(5.3) + .68]], 0, ['3�
 npc('3대500', 0x374151, 0x111827, [[s(3.3) + .7, s(9.7) + 2.0]], 0, ['오늘 PR!'], null, Math.PI);
 npc('꾸준이', 0x7C3AED, 0x3B2A1A, [[s(10.95) + .65, s(7.65) + 1.0]], 0, ['랫풀 3세트 끝'], 'sit', 0);
 npc('런관장', 0x0B0D12, 0x111827, [[s(6.6), s(12.4)], [s(16.9), s(12.4)], [s(16.9), s(4.35)], [s(6.6), s(4.35)]], 1.4, ['자세 좋아요!', '물 많이 드세요', '궁금하면 불러요'], null, undefined, true);
+npc('가온코치', 0x0B0D12, 0x111827, [[s(14.5), s(5.2)], [s(16.6), s(5.2)], [s(16.6), s(8.6)], [s(14.5), s(8.6)]], 1.0, ['자세 봐드릴까요?', '천천히 해도 돼요'], null, undefined, 'coach');
 npc('출석요정', 0x0EA5E9, 0x3B2A1A, [[s(8.0), s(7.2)], [s(16.6), s(7.2)], [s(16.6), s(10.1)], [s(8.0), s(10.1)]], 1.1, ['안녕하세요~']);
 npc('쉬는중', 0x16A34A, 0x7C2D12, [[12, -5]], 0, ['바람 좋다~', '테라스 최고'], 'sit', -Math.PI / 2);
 npc('일광욕', 0xF472B6, 0x111827, [[19.0, -8.4]], 0, ['햇살 좋다'], 'lie', 0);
@@ -1061,8 +1063,7 @@ const card = $('card'); let nearKey = '', curPerson = null;
 function addX() { card.style.display = 'block'; if (!card.querySelector('.cx')) { const x = document.createElement('button'); x.className = 'cx'; x.textContent = '✕'; x.onclick = () => { card.style.display = 'none'; curPerson = null; }; card.appendChild(x); } }
 function showEq(n) {
   const [nm, loc] = EQ[n]; nearKey = 'eq' + n;
-  card.innerHTML = `<div class="t"><span class="n">${String(n).padStart(2, '0')}</span>${nm}${WOD.has(n) ? ' <span style="font-size:11px;background:#FFD54A;border-radius:5px;padding:1px 6px">이번 주 WOD</span>' : ''}</div><div class="s">${loc} · 실제 센터에서도 이 자리에 있어요</div><div class="row"><button class="btn p" id="cHow">사용법 보기</button><button class="btn g" id="cDo">운동하기</button></div><div style="font-size:11px;color:#6B7280;margin-top:6px">💡 실제 운동 기록은 미니런앤핏을 나가서 앱에서 남길 수 있어요</div>`;
-  $('cHow').onclick = () => toast('실제 앱에서는 런관장 사용법 영상이 열려요');
+  card.innerHTML = `<div class="t"><span class="n">${String(n).padStart(2, '0')}</span>${nm}${WOD.has(n) ? ' <span style="font-size:11px;background:#FFD54A;border-radius:5px;padding:1px 6px">이번 주 WOD</span>' : ''}</div><div class="s">${loc} · 실제 센터에서도 이 자리에 있어요</div><div class="row"><button class="btn p" id="cDo">운동하기</button></div><div style="font-size:11px;color:#6B7280;margin-top:6px">💡 실제 운동 기록은 미니런앤핏을 나가서 앱에서 남길 수 있어요</div>`;
   $('cDo').onclick = () => doEq(n);
   addX();
 }
@@ -1084,7 +1085,7 @@ function updateCard() {
 
 // ── 입장 연출: 엘리베이터 → 복도 → 얼굴인식 → 턴게이트
 let myName = '나';
-function setName(n) { myName = n; me.userData.name = n; me.remove(me.userData.tag); const tg = nameTag(n, true, !!(ME && ME.staff)); tg.position.y = 1.9; me.add(tg); me.userData.tag = tg; }
+function setName(n) { myName = n; me.userData.name = n; me.remove(me.userData.tag); const tg = nameTag(n, true, (ME && ME.staff) || false); tg.position.y = 1.9; me.add(tg); me.userData.tag = tg; }
 const RANDOM = ['달리는민수', '새싹러너', '정릉불꽃', '오운완요정', '꾸준왕'];
 $('nick').value = RANDOM[Math.floor(Math.random() * RANDOM.length)];
 $('enter').onclick = () => { if (DEMO) setName($('nick').value.trim() || '나'); $('start').style.display = 'none'; $('skip').style.display = 'block'; cutscene = { t: 0, step: 0 }; };
@@ -1180,11 +1181,11 @@ function loop() {
 const feedLog = [];
 function esc(t) { return String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
 function hhmm() { const d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
-function nameHtml(n, belt, staff) { if (staff || (staff === undefined && STAFF.has(n))) return `<b class="st">${esc(n)}</b>`; const b = belt !== undefined ? belt : n === myName ? MYBELT : BELTOF[n]; const c = BELTHEX[b] || '#F3F4F6'; return `<b style="border-bottom-color:${c}${b === '검' ? ';box-shadow:0 2px 0 #F5B301' : ''}">${esc(n)}</b>`; }
+function nameHtml(n, belt, staff) { if (staff === 'coach') return `<b class="co">${esc(n)}</b>`; if (staff || (staff === undefined && STAFF.has(n))) return `<b class="st">${esc(n)}</b>`; const b = belt !== undefined ? belt : n === myName ? MYBELT : BELTOF[n]; const c = BELTHEX[b] || '#F3F4F6'; return `<b style="border-bottom-color:${c}${b === '검' ? ';box-shadow:0 2px 0 #F5B301' : ''}">${esc(n)}</b>`; }
 function renderFeedAll() { const el = $('feedAll'); el.innerHTML = feedLog.map(f => `<div class="r"><i>${f.t}</i><div>${f.n ? nameHtml(f.n, f.b, f.s) : ''}${esc(f.x)}</div></div>`).join('') || '<div class="r">아직 이야기가 없어요</div>'; el.scrollTop = el.scrollHeight; }
 $('feedBtn').onclick = () => { const el = $('feedAll'), open = el.style.display !== 'block'; el.style.display = open ? 'block' : 'none'; $('feed').style.display = open ? 'none' : 'flex'; $('feedBtn').textContent = open ? '💬 접기 ▾' : '💬 지난 이야기 ▴'; if (open) renderFeedAll(); };
 function feed(name, txt, cls = '') {
-  if (LIVE) { addDoc(collection(db, 'gym_feed'), { uid: myUid, nick: name || '', text: String(txt).slice(0, 200), sys: !name, belt: MYBELT, staff: !!ME.staff, ts: serverTimestamp() }).catch(() => {}); return; }
+  if (LIVE) { addDoc(collection(db, 'gym_feed'), { uid: myUid, nick: name || '', text: String(txt).slice(0, 200), sys: !name, belt: MYBELT, staff: ME.staff || false, ts: serverTimestamp() }).catch(() => {}); return; }
   showFeed(name, txt, cls);
 }
 function showFeed(name, txt, cls = '', belt, staff, t) {
@@ -1200,6 +1201,8 @@ setInterval(() => { if (!entered || !DEMO) return; const r = Math.random(); cons
 // ═════════ 실서비스 연결: 회원 로그인 · 실시간 함께 걷기 · 저장 ═════════
 // 직원 번호 (블루 이름표). 관리 화면 '가입 회원 → 직원으로'로 켜도 같아요
 const STAFF_PHONES = ['+821096091607', '+821028774334', '+821041224441', '+821075563855'];   // 최고실장 · 런관장(대표) · 직원 · 직원
+// 코치 번호 (흰 바탕 + 파랑 글씨 이름표)
+const COACH_PHONES = ['+821082522866', '+821091458865', '+821051015969'];
 let GUEST = false;
 const KSTd = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
 const tsTime = t => { const d = t && t.toDate ? t.toDate() : new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
@@ -1223,7 +1226,7 @@ $('inqSend').onclick = () => { const name = $('inqName').value.trim(), phone = $
 const remotes = new Map(), PAL = [0x15803D, 0xF59E0B, 0xB91C32, 0x374151, 0x7C3AED, 0x0EA5E9, 0x16A34A, 0xF472B6, 0x14B8A6, 0xF97316, 0xDB2777, 0x0F766E];
 const hashc = t => { let h = 0; for (const c of t) h = (h * 31 + c.charCodeAt(0)) | 0; return Math.abs(h); };
 function addRemote(uid, d) {
-  const a = avatar(d.nick || '회원', d.staff ? 0x0B0D12 : PAL[hashc(uid) % PAL.length], 0x3B2A1A, false, !!d.staff, d.belt || '');
+  const a = avatar(d.nick || '회원', d.staff ? 0x0B0D12 : PAL[hashc(uid) % PAL.length], 0x3B2A1A, false, d.staff || false, d.belt || '');
   a.position.set(d.x ?? GX + 1.3, d.y || 0, d.z ?? GZ - 1.5);
   const r = { a, path: [[0, 0]], i: 0, speed: 0, lines: [], wait: 0, talkT: 1e9, busy: 0, remote: true, uid, route: null, final: null, seen: Date.now() };
   a.userData.npc = r; NPCS.push(r); remotes.set(uid, r); return r;
@@ -1261,7 +1264,7 @@ function remoteEmo(r, e) {
 let lastPub = '', lastPubT = 0, lastBeat = 0;
 function myState() { if (route && route.length) { const l = route[route.length - 1]; return { mv: 1, tx: +l[0].toFixed(2), tz: +l[1].toFixed(2) }; }
   const u = me.userData; return { mv: 0, x: +me.position.x.toFixed(2), y: +me.position.y.toFixed(2), z: +me.position.z.toFixed(2), rot: +me.rotation.y.toFixed(2), act: u.act || null, mt: u.mtype || null, ms: !!u.mstand }; }
-function pubMe(extra = {}) { if (!LIVE) return; setDoc(doc(db, 'gym_people', myUid), { nick: myName, belt: MYBELT, staff: !!ME.staff, ...myState(), ...extra, ts: serverTimestamp() }, { merge: true }).catch(() => {}); }
+function pubMe(extra = {}) { if (!LIVE) return; setDoc(doc(db, 'gym_people', myUid), { nick: myName, belt: MYBELT, staff: ME.staff || false, ...myState(), ...extra, ts: serverTimestamp() }, { merge: true }).catch(() => {}); }
 function pubEmo(k, to) { if (LIVE) pubMe({ emo: { k, to: to || null, t: Date.now() } }); }
 function liveTick() {
   if (!entered) return; const now = Date.now(), k = JSON.stringify(myState());
@@ -1338,7 +1341,7 @@ else onAuthStateChanged(auth, async user => {
     if (snap.empty) { startGuest('회원 정보를 찾지 못했어요<br>센터에 문의해 주세요'); return; }
     const m = snap.docs[0].data(), td = KSTd();
     if (!((m.gymExp && m.gymExp >= td) || (m.holdEnd && m.holdEnd >= td))) { startGuest('회원권이 끝났어요<br>다시 등록하시면 바로 들어올 수 있어요'); return; }
-    myUid = user.uid; ME = { nick: m.nickname || m.name || '회원', total: Number(m.total) || 0, attendedToday: m.lastAttend === td, staff: !!m.staff || STAFF_PHONES.includes(String(m.phone || user.phoneNumber || '')) };
+    myUid = user.uid; ME = { nick: m.nickname || m.name || '회원', total: Number(m.total) || 0, attendedToday: m.lastAttend === td, staff: (!!m.staff || STAFF_PHONES.includes(String(m.phone || user.phoneNumber || ''))) || (COACH_PHONES.includes(String(m.phone || user.phoneNumber || '')) ? 'coach' : false) };
     MYBELT = beltKey(ME.total); LIVE = true; setName(ME.nick); startMember(); startListeners();
   } catch (e) { startGuest('잠시 후 다시 들어와 주세요'); }
 });
