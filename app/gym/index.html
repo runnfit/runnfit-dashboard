@@ -1199,7 +1199,7 @@ setInterval(() => { if (!entered || !DEMO) return; const r = Math.random(); cons
   if (r < .35) feed('', `${n}님이 입장했어요 👋`, 'sys'); else if (r < .55) feed('', `${n}님이 08 랫풀다운 3세트 완료 💪`, 'sys'); else if (r < .7) feed('', `${n}님이 방명록에 응원을 남겼어요 🌿`, 'sys'); }, 9000);
 // ═════════ 실서비스 연결: 회원 로그인 · 실시간 함께 걷기 · 저장 ═════════
 // 직원 번호 (블루 이름표). 관리 화면 '가입 회원 → 직원으로'로 켜도 같아요
-const STAFF_PHONES = ['+821096091607'];
+const STAFF_PHONES = ['+821096091607', '+821028774334', '+821041224441', '+821075563855'];   // 최고실장 · 런관장(대표) · 직원 · 직원
 let GUEST = false;
 const KSTd = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
 const tsTime = t => { const d = t && t.toDate ? t.toDate() : new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
