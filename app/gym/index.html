@@ -315,6 +315,11 @@ room(Z(11.2), Z(14.0), '남자 탈의실', 0x1D4ED8); room(Z(8.4), Z(11.2), '여
     const a = box(g, xo, 2.55 - len, z - .012, .01, len, .025, c); a.rotation.x = .08; const b = box(g, xo, 2.55 - len, z + .02, .01, len, .025, c); b.rotation.x = -.08;
     const d = rod(g, xo - .02, 2.5 - len, z + .004, .045 + (k % 4) * .006, .015, [0xF5B301, 0xD1D5DB, 0xB45309, 0xF5B301][k % 4], 'x'); }
   label(scene, '🏅 마라톤 완주 메달', WW - .4, 3.25, (z0 + z1) / 2, { bg: 'rgba(245,179,1,.95)', fg: '#111827', size: 28, scale: .011 }); }
+// 입구 수건함 위에도 메달 (실제 입구처럼)
+{ const g = new THREE.Group(); scene.add(g); const RB = [0xEF4444, 0xF97316, 0xFACC15, 0x22C55E, 0x06B6D4, 0x3B82F6, 0x8B5CF6, 0xEC4899, 0xFFFFFF];
+  const z0 = Z(14.2) - .1, z1 = Z(14.2) + 2.3, bx = WW - .55; box(g, bx - .02, 2.9, z0, .04, .04, z1 - z0, 0x9CA3AF); box(g, bx - .02, 1.9, z0, .04, 1.0, .04, 0x111827); box(g, bx - .02, 1.9, z1 - .04, .04, 1.0, .04, 0x111827);
+  let k = 0; for (let z = z0 + .05; z < z1 - .05; z += .075, k++) { const c = RB[k % RB.length], len = .45 + (k * 31 % 4) * .05;
+    box(g, bx - .01, 2.9 - len, z, .02, len, .03, c); rod(g, bx - .025, 2.86 - len, z + .015, .045, .015, [0xF5B301, 0xD1D5DB, 0xB45309][k % 3], 'x'); } }
 room(Z(7.3), Z(8.4), '게시판', 0x6B7280, false); box(scene, WW - .05, .9, Z(7.4), .05, 1.2, 1.4, 0xF3F4F6);
 for (let k = 0; k < 8; k++) room(Z(k * .91), Z((k + 1) * .91), `샤워 ${8 - k}`, 0x6B7280, true, k % 2 ? 0x2B2F36 : 0x374151);
 
