@@ -182,13 +182,14 @@ async function loadMe(user){
   sessionStorage.removeItem('rfNick'); sessionStorage.removeItem('rfName');
   try{ if(verifier){ verifier.clear(); verifier = null; } }catch(e){}
   try{
-    const ns = await getDocs(query(collection(db, 'notices'), orderBy('createdAt', 'desc'), limit(5)));
-    notices = ns.docs.map((x)=> Object.assign({ id: x.id }, x.data()));
+    const ns = await getDocs(query(collection(db, 'notices'), orderBy('createdAt', 'desc'), limit(20)));
+    notices = ns.docs.map((x)=> Object.assign({ id: x.id }, x.data())).filter((n)=> !n.hidden);
   }catch(e){ notices = []; }
   loadCoaches();
   if(!me.nickname){ askNickname(); }
   const hm = /^#help-(guide|pt)$/.exec(location.hash);
   if(hm){ helpKind = hm[1]; history.replaceState(null, '', location.pathname); go('help'); } else go('home');
+  autoNotice();
 }
 function askNickname(){
   const bg = sheet('<div class="ttl">닉네임을 정해 주세요</div><div class="muted" style="font-size:14px;margin-top:4px">미니런앤핏과 방명록에서 이 이름으로 보여요</div>' +
@@ -259,7 +260,7 @@ function renderHome(){
     '<div class="pxf" style="font-size:20px;color:' + B + ';margin-top:10px">' + (dday == null ? '-' : dday >= 0 ? 'D-' + dday : '만료') + '</div>' +
     '<div style="font-size:12px;color:var(--muted);margin-top:12px">' + (holding ? '홀딩 중 · ' + dotDate(me.holdEnd).slice(5) + '까지' : dotDate(me.gymExp) + '까지') + '</div></div>';
   $app.innerHTML =
-    '<div class="top"><img class="logo" src="./logo.png" alt="RUN N FIT"><button class="iconbtn" type="button" id="bellBtn" aria-label="공지">' + BELL + (notices.length ? '<span class="dot"></span>' : '') + '</button></div>' +
+    '<div class="top"><img class="logo" src="./logo.png" alt="RUN N FIT"><button class="iconbtn" type="button" id="bellBtn" aria-label="공지">' + BELL + (notices.some((n)=> !noticeSeen().includes(n.id)) ? '<span class="dot"></span>' : '') + '</button></div>' +
     '<div style="padding:12px 24px 0;display:flex;gap:12px;align-items:center">' + AVATAR(44) +
       '<div><div style="font-size:13px;color:var(--muted);font-weight:500">' + (f30 ? '등록 ' + f30.day + '일째 · ' : '') + (none ? '첫 출석을 기다려요' : cur.name) + '</div><div style="font-size:20px;font-weight:900;margin-top:1px">' + esc(me.nickname || me.name) + '님, 반가워요!</div></div></div>' +
     (attendedToday
@@ -284,8 +285,26 @@ function renderHome(){
   $app.querySelectorAll('[data-help]').forEach((b)=> b.onclick = ()=>{ helpKind = b.dataset.help; go('help'); });
   const gb = document.getElementById('goalBtn'); if(gb) gb.onclick = (e)=>{ e.preventDefault(); changeGoal(); };
 }
+const noticeSeen = ()=>{ try{ return JSON.parse(localStorage.getItem('rfNotice.seen') || '[]'); }catch(e){ return []; } };
+function markNotices(ids){ try{ const s = noticeSeen(); localStorage.setItem('rfNotice.seen', JSON.stringify(s.concat(ids.filter((i)=> !s.includes(i))).slice(-200))); }catch(e){} const d = document.querySelector('#bellBtn .dot'); if(d && notices.every((n)=> noticeSeen().includes(n.id))) d.remove(); }
+const noticeDate = (n)=> n.createdAt && n.createdAt.toDate ? dotDate(kstDate(n.createdAt.toDate().getTime())) : '';
+function noticeBody(n){ return '<div style="font-size:12px;color:var(--muted);margin-top:4px">' + noticeDate(n) + (n.by ? ' · ' + esc(n.by) : '') + '</div><div style="font-size:15px;line-height:1.75;margin-top:12px;white-space:pre-line;color:var(--ink)">' + esc(n.body || '') + '</div>'; }
+function showNotice(n){
+  const bg = sheet('<div style="font-size:12px;font-weight:900;color:' + B + '">런앤핏 공지</div><div class="ttl" style="margin-top:4px;line-height:1.4">' + esc(n.title || '') + '</div>' + noticeBody(n));
+  const c = bg.querySelector('[data-close]'); if(c){ c.textContent = '확인했어요'; c.className = 'btn'; }
+  markNotices([n.id]);
+}
 function showNotices(){
-  sheet('<div class="ttl">공지</div>' + (notices.length ? notices.map((n)=> '<div style="padding:12px 0;border-top:1px solid #E5E7EB"><div style="font-weight:900">' + esc(n.title || '') + '</div><div class="muted" style="font-size:12px;margin-top:2px">' + (n.createdAt && n.createdAt.toDate ? dotDate(kstDate(n.createdAt.toDate().getTime())) : '') + '</div><div style="font-size:14px;margin-top:6px;white-space:pre-line">' + esc(n.body || '') + '</div></div>').join('') : '<div class="muted" style="margin-top:12px">아직 공지가 없어요.</div>'));
+  const bg = sheet('<div class="ttl">공지</div>' + (notices.length ? notices.map((n, i)=> '<button type="button" data-n="' + i + '" style="display:block;width:100%;text-align:left;background:none;border:0;border-top:1px solid #E5E7EB;padding:12px 0;font-family:inherit;cursor:pointer">' +
+    '<div style="display:flex;align-items:center;gap:6px"><b style="font-size:15px;color:var(--ink);flex:1">' + esc(n.title || '') + '</b>' + (noticeSeen().includes(n.id) ? '' : '<span style="background:#EF4444;color:#fff;border-radius:6px;font-size:10.5px;font-weight:900;padding:1px 6px">NEW</span>') + '<span style="color:var(--muted)">›</span></div>' +
+    '<div class="muted" style="font-size:12px;margin-top:2px">' + noticeDate(n) + '</div></button>').join('') : '<div class="muted" style="margin-top:12px">아직 공지가 없어요.</div>'));
+  bg.querySelectorAll('[data-n]').forEach((b)=> b.onclick = ()=>{ bg.remove(); showNotice(notices[Number(b.dataset.n)]); });
+}
+// '처음 열 때 한 번 보여주기' 공지는 처음 로그인했을 때 자동으로 한 번 띄움 (다른 창이 열려 있으면 닫힐 때까지 기다림)
+function autoNotice(){
+  const n = notices.find((x)=> x.popup && !noticeSeen().includes(x.id)); if(!n) return;
+  let tries = 0;
+  const t = setInterval(()=>{ if(++tries > 120){ clearInterval(t); return; } if(document.querySelector('.sheet-bg') || tab !== 'home') return; clearInterval(t); showNotice(n); }, 800);
 }
 function coach(){ sheet('<div class="ttl">코치에게 물어보기</div><div style="font-size:15px;margin-top:10px;line-height:1.6">앱에서 바로 묻는 기능은 곧 열려요!<br>지금은 운동하다 궁금한 점이 있으면 <b>트레이너나 프론트</b>에 편하게 물어봐 주세요. 런앤핏이 함께할게요 💙</div>'); }
 function changeGoal(){

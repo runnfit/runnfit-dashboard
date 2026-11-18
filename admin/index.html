@@ -110,6 +110,7 @@
       <button data-view="todo" class="on">할 일 <span class="badge hidden" id="todoBadge">0</span></button>
       <button data-view="logs">운동 기록 <span class="badge hidden" id="logBadge">0</span></button>
       <button data-view="members">가입 회원</button>
+      <button data-view="notice">공지</button>
       <button data-view="soon">주간 WOD</button>
     </nav>
     <div class="me"><span id="demoTag" class="demo hidden">예시 화면</span><span class="live"><i></i>실시간</span><span id="who"></span><a id="popOut" href="./" target="runfit_admin" rel="noopener" style="display:none;color:#fff;font-weight:700;font-size:12.5px;text-decoration:none;background:rgba(255,255,255,.15);border-radius:8px;padding:6px 10px">새 창 ↗</a><button id="logout" type="button">나가기</button></div>
@@ -150,6 +151,22 @@
           <span style="margin-left:auto;display:flex;gap:6px"><button class="chip on" data-l="today">오늘</button><button class="chip" data-l="week">이번 주</button><button class="chip" data-l="all">전체</button></span>
         </div>
         <div id="lBody" style="max-height:calc(100vh - 250px);overflow:auto"></div>
+      </div>
+    </section>
+
+    <section id="v-notice" class="hidden">
+      <div class="split">
+        <div class="card list"><div class="lhead"><b>공지</b><button class="chip on" id="nNew">+ 새 공지</button></div><div id="nList"></div></div>
+        <div class="card panel">
+          <div style="display:flex;align-items:center;gap:10px"><h2 id="nHead">새 공지 쓰기</h2><span class="msg" id="nMsg"></span></div>
+          <label style="display:block;font-weight:700;font-size:13px;margin-top:16px">제목</label>
+          <input id="nTitle" class="search" style="width:100%;margin-top:6px" maxlength="60">
+          <label style="display:block;font-weight:700;font-size:13px;margin-top:14px">내용</label>
+          <textarea id="nBody" style="margin-top:6px;min-height:340px" maxlength="4000"></textarea>
+          <label style="display:flex;align-items:center;gap:8px;margin-top:12px;font-size:14px;cursor:pointer"><input type="checkbox" id="nPop" style="width:18px;height:18px"> 회원이 앱을 처음 열 때 <b>한 번 자동으로</b> 보여주기</label>
+          <div class="row"><button class="btn sec" id="nHide" style="display:none">내리기</button><span style="flex:1"></span><button class="btn" id="nSave">회원앱에 올리기</button></div>
+          <div style="font-size:12px;color:var(--muted);margin-top:8px">올리면 회원앱 홈 오른쪽 위 종 아이콘에 빨간 점이 생기고, 공지 목록에 NEW로 보여요.</div>
+        </div>
       </div>
     </section>
 
@@ -212,7 +229,7 @@ const ymd = (ms)=> ms ? new Date(ms + 9 * 3600e3).toISOString().slice(0, 10).rep
 const phoneFmt = (p)=>{ const d = String(p || '').replace(/^\+82/, '0').replace(/\D/g, ''); return d.length === 11 ? d.slice(0, 3) + '-' + d.slice(3, 7) + '-' + d.slice(7) : d || '-'; };
 
 // ---------- 상태 ----------
-const S = { logs: [], logSeen: Number(localStorage.getItem('rfAdmin.logSeen') || 0), lf: 'today', wod: null, members: [], help: [], voice: [], inq: [], goal: [], people: [], f: 'new', k: 'all', sel: null, mView: 'joined', mSort: 'joined', q: '' };
+const S = { notices: [], nSel: null, logs: [], logSeen: Number(localStorage.getItem('rfAdmin.logSeen') || 0), lf: 'today', wod: null, members: [], help: [], voice: [], inq: [], goal: [], people: [], f: 'new', k: 'all', sel: null, mView: 'joined', mSort: 'joined', q: '' };
 let api = null;     // { save(kind, id, patch) }
 
 // ---------- 그리기 ----------
@@ -445,13 +462,51 @@ $('wSave').onclick = async ()=>{
   $('wSave').disabled = false;
 };
 
+
+// ---------- 공지 ----------
+const FIRST_NOTICE = { title: '이런 마음으로 런앤핏 앱을 만들었습니다', body: "안녕하세요, 런앤핏 대표 런관장입니다.\n\n어떻게 하면 회원님들이 운동을 조금 더 재미있게 이어가실 수 있을까, 자주 고민했습니다.\n마음먹고 헬스장에 등록했는데 막상 무엇부터 해야 할지 몰라 발길을 끊는 회원님이 없었으면 하는 마음이었습니다.\n처음엔 낯설어도, 운동을 마치고 돌아가는 길에 '오늘도 런앤핏에 오길 잘했다'는 생각이 드셨으면 좋겠습니다.\n\n그런 날이 하나둘 쌓이면 런앤핏에 오는 날이 조금씩 기다려지고,\n운동도 자연스레 일상의 한 부분이 될 테니까요.\n\n그런 마음으로 이 앱을 만들었습니다.\n차곡차곡 쌓인 내 출석 기록을 보며 뿌듯해하고,\n함께 운동하는 회원님과 응원 한마디를 주고받는 곳이면 좋겠습니다.\n\n그런 작은 즐거움이 쌓여 운동이 회원님의 일상에 자연스럽게 자리 잡도록 곁에서 돕고 싶습니다.\n\n이제 막 문을 연 앱이라 아직 서툴고 부족한 부분도 있습니다.\n쓰시면서 불편한 점이나 바라는 점이 있다면 '런앤핏에 한마디'로 편하게 들려주세요.\n\n회원님 입장에서 한 번 더 생각하고,\n하루하루 더 나아지는 런앤핏이 되겠습니다.\n\n이 글을 보신 회원님, 오늘도 건강해지셨습니다!\n출석만 해도 성공이에요. 오시면 런앤핏이 정성을 다하겠습니다.\n\n늘 런앤핏을 찾아주시는 회원님들께 진심으로 감사드립니다.\n\n– 런관장 드림 –", popup: true };
+function paintNotices(keepForm){
+  const L = S.notices.slice().sort((a, b)=> tsMs(b.createdAt) - tsMs(a.createdAt));
+  $('nList').innerHTML = L.length ? L.map((n)=> '<div class="item' + (S.nSel === n.id ? ' on' : '') + '" data-nid="' + n.id + '"><div style="flex:1;min-width:0"><div class="t">' + esc(n.title || '') + '</div><div class="d">' + ymd(tsMs(n.createdAt)) + (n.by ? ' · ' + esc(n.by) : '') + '</div></div>' +
+    (n.hidden ? '<span class="tag" style="background:#F1F4FA;color:#6B7280">내림</span>' : n.popup ? '<span class="tag t-done">자동으로 띄움</span>' : '<span class="tag t-done">올림</span>') + '</div>').join('')
+    : '<div class="empty">아직 올린 공지가 없어요<br>오른쪽에 첫 공지가 준비돼 있어요</div>';
+  $('nList').querySelectorAll('[data-nid]').forEach((el)=> el.onclick = ()=>{ S.nSel = el.dataset.nid; paintNotices(); });
+  if(keepForm) return;
+  const n = S.notices.find((x)=> x.id === S.nSel);
+  const f = n || (L.length ? { title: '', body: '', popup: false } : FIRST_NOTICE);
+  $('nHead').textContent = n ? '공지 고치기' : '새 공지 쓰기';
+  $('nTitle').value = f.title || ''; $('nBody').value = f.body || ''; $('nPop').checked = !!f.popup;
+  $('nSave').textContent = n ? '고친 내용 저장' : '회원앱에 올리기';
+  $('nHide').style.display = n ? '' : 'none'; $('nHide').textContent = n && n.hidden ? '다시 올리기' : '내리기';
+  $('nMsg').textContent = '';
+}
+$('nNew').onclick = ()=>{ S.nSel = null; paintNotices(); $('nTitle').focus(); };
+$('nSave').onclick = async ()=>{
+  const title = $('nTitle').value.trim(), body = $('nBody').value.trim(), m = $('nMsg');
+  if(!title || !body){ m.className = 'msg err'; m.textContent = '제목과 내용을 써 주세요.'; return; }
+  $('nSave').disabled = true;
+  try{
+    if(S.nSel) await api.saveNotice(S.nSel, { title, body, popup: $('nPop').checked, updatedAt: serverTimestamp() });
+    else S.nSel = await api.saveNotice(null, { title, body, popup: $('nPop').checked, hidden: false, by: '런관장', createdAt: serverTimestamp() });
+    m.className = 'msg ok'; m.textContent = '회원앱에 올렸어요!';
+  }catch(e){ console.warn(e); m.className = 'msg err'; m.textContent = /permission/i.test(String(e)) ? '권한이 없어요. 직원 계정으로 로그인했는지 확인해 주세요.' : '올리지 못했어요. 다시 해주세요.'; }
+  $('nSave').disabled = false; paintNotices(true);
+  if(S.nSel){ $('nHead').textContent = '공지 고치기'; $('nSave').textContent = '고친 내용 저장'; $('nHide').style.display = ''; }
+};
+$('nHide').onclick = async ()=>{
+  const n = S.notices.find((x)=> x.id === S.nSel); if(!n) return;
+  if(!n.hidden && !confirm('이 공지를 회원앱에서 내릴까요? 언제든 다시 올릴 수 있어요.')) return;
+  try{ await api.saveNotice(n.id, { hidden: !n.hidden }); paintNotices(); }catch(e){ alert('바꾸지 못했어요.'); }
+};
+
 // 화면 이동 · 필터
 document.querySelectorAll('.nav [data-view]').forEach((b)=> b.onclick = ()=>{
   document.querySelectorAll('.nav [data-view]').forEach((x)=> x.classList.toggle('on', x === b));
-  ['todo', 'logs', 'members', 'soon'].forEach((v)=> $('v-' + v).classList.toggle('hidden', v !== b.dataset.view));
+  ['todo', 'logs', 'members', 'notice', 'soon'].forEach((v)=> $('v-' + v).classList.toggle('hidden', v !== b.dataset.view));
   if(b.dataset.view === 'members') paintMembers();
   if(b.dataset.view === 'logs'){ S.logSeen = Date.now(); try{ localStorage.setItem('rfAdmin.logSeen', String(S.logSeen)); }catch(e){} paintLogs(); paintStats(); }
   if(b.dataset.view === 'soon') paintWodEditor();
+  if(b.dataset.view === 'notice') paintNotices();
 });
 document.querySelectorAll('[data-f]').forEach((b)=> b.onclick = ()=>{ S.f = b.dataset.f; document.querySelectorAll('[data-f]').forEach((x)=> x.classList.toggle('on', x === b)); S.sel = null; paintList(); });
 document.querySelectorAll('[data-k]').forEach((b)=> b.onclick = ()=>{ S.k = b.dataset.k; document.querySelectorAll('[data-k]').forEach((x)=> x.classList.toggle('on', x === b)); S.sel = null; paintList(); });
@@ -483,6 +538,7 @@ if(DEMO){
   const td = KST(), mk = (min, o)=> Object.assign({ id: 'L' + min, date: td, createdAt: T(min), exTotal: 6, cheer: false, items: [{ t: '01', n: '레그프레스', sets: [{ kg: 60, reps: 12 }, { kg: 60, reps: 12 }, { kg: 60, reps: 12 }] }, { t: '12', n: '체스트프레스', sets: [{ kg: 30, reps: 12 }, { kg: 30, reps: 12 }, { kg: 30, reps: 10 }] }, { t: '체력', n: '스텝박스 기본 스텝', unit: '회', sets: [{ kg: null, reps: 20 }, { kg: null, reps: 20 }, { kg: null, reps: 20 }] }] }, o);
   S.logs = [mk(3, { nickname: '꾸준왕', name: '정민호', total: 23, myBelt: '노', belt: '노', prog: 'A', exDone: 6, kg: 3240, minutes: 52, grow: '체스트프레스 +5kg!' }), mk(16, { nickname: '스쿼트요정', name: '박하나', total: 57, myBelt: '빨', belt: '빨', prog: 'B', exDone: 6, kg: 6820, minutes: 61, grow: '바벨 데드리프트 +10kg!' }), mk(41, { nickname: '새싹러너', name: '이지은', total: 12, myBelt: '노', belt: '노', prog: 'C', exDone: 4, kg: 1920, minutes: 38, grow: '' }), mk(89, { nickname: '달리는민수', name: '김민수', total: 31, myBelt: '노', belt: '파', prog: 'A', exDone: 6, kg: 4110, minutes: 55, grow: '파란 띠 첫 도전!', cheer: true })];
   api.loadWod = async ()=> null; api.saveWod = async ()=>{};
+  api.saveNotice = async (id, d)=>{ if(id){ Object.assign(S.notices.find((x)=> x.id === id), d); } else { id = 'n' + Date.now(); S.notices.push(Object.assign({ id }, d, { createdAt: T(0) })); } paint(); if(!$('v-notice').classList.contains('hidden')) paintNotices(true); return id; };
   setTimeout(()=>{ S.logs.unshift(mk(0, { id: 'Lnew', nickname: '오운완요정', name: '정유진', total: 104, myBelt: '검', belt: '검', prog: 'B', exDone: 6, kg: 8450, minutes: 70, grow: '' })); paint(); }, 9000);
   setTimeout(()=>{ S.goal.unshift({ id: 'g3', memberId: 'm4', name: '정유진', nickname: '오운완요정', goal: 5, prev: 0, status: 'new', createdAt: T(0) }); paint(); }, 7000);
   showShell('예시 직원'); $('demoTag').classList.remove('hidden'); $('logout').onclick = ()=> location.href = EMBED ? './?embed' : './';
@@ -507,6 +563,7 @@ if(DEMO){
     const who = (u.email || '').split('@')[0];
     api = { who, save: (kind, id, patch)=> updateDoc(doc(db, COL[kind], id), patch),
       loadWod: async ()=>{ const s = await getDoc(doc(db, 'wods', 'current')); return s.exists() ? s.data() : null; },
+      saveNotice: async (id, d)=>{ if(id){ await updateDoc(doc(db, 'notices', id), d); return id; } const r = doc(collection(db, 'notices')); await setDoc(r, d); return r.id; },
       saveWod: async (w)=>{ const d = Object.assign({}, w, { updatedAt: serverTimestamp(), updatedBy: who }); await setDoc(doc(db, 'wods', 'current'), d); await setDoc(doc(db, 'wods', w.start), d); } };
     showShell(who + (role === 'owner' ? ' (대표)' : ''));
     paint();
@@ -516,6 +573,7 @@ if(DEMO){
     listen('inq', query(collection(db, 'inquiries'), orderBy('createdAt', 'desc'), limit(200)));
     listen('goal', query(collection(db, 'goal_logs'), orderBy('createdAt', 'desc'), limit(200)));
     listen('logs', query(collection(db, 'workout_logs'), orderBy('createdAt', 'desc'), limit(300)));
+    unsubs.push(onSnapshot(query(collection(db, 'notices'), orderBy('createdAt', 'desc'), limit(50)), (s)=>{ S.notices = s.docs.map((d)=> ({ id: d.id, ...d.data() })); if(!$('v-notice').classList.contains('hidden')) paintNotices(true); }, (e)=> console.warn('notices', e)));
     listen('people', collection(db, 'gym_people'));
     const loadMembers = async ()=>{ try{ const s = await getDocs(collection(db, 'members')); S.members = s.docs.map((d)=> ({ id: d.id, ...d.data() })); paint(); }catch(e){ console.warn('members', e); } };
     loadMembers(); const t = setInterval(loadMembers, 5 * 60e3); unsubs.push(()=> clearInterval(t));
