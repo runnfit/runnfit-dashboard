@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#093692">
+<title>회원앱 관리 · 런앤핏</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{ --b:#093692; --b2:#2563EB; --ink:#111827; --muted:#6B7280; --line:#E5E9F2; --bg:#F4F7FB; --soft:#E3E9FF; }
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; height:100%; }
+  body{ font-family:'Noto Sans KR',system-ui,sans-serif; color:var(--ink); background:var(--bg); word-break:keep-all; font-size:14px; }
+  button,input,textarea,select{ font-family:inherit; font-size:inherit; }
+  button{ cursor:pointer; }
+  .hidden{ display:none !important; }
+  .top{ height:60px; background:var(--b); color:#fff; display:flex; align-items:center; gap:14px; padding:0 24px; position:sticky; top:0; z-index:5; }
+  .logo{ font-weight:900; font-style:italic; font-size:20px; letter-spacing:.5px; }
+  .top .ttl{ font-weight:700; opacity:.9; padding-left:14px; border-left:1px solid rgba(255,255,255,.3); }
+  .nav{ display:flex; gap:4px; background:rgba(255,255,255,.1); border-radius:10px; padding:4px; margin-left:12px; }
+  .nav button{ border:0; background:transparent; color:#fff; font-weight:700; padding:7px 14px; border-radius:7px; display:flex; align-items:center; gap:6px; }
+  .nav button.on{ background:#fff; color:var(--b); }
+  .nav button[disabled]{ opacity:.5; cursor:default; }
+  .badge{ background:#EF4444; color:#fff; border-radius:9px; padding:0 6px; font-size:11px; font-weight:900; line-height:18px; }
+  .top .me{ margin-left:auto; display:flex; align-items:center; gap:10px; font-size:13px; }
+  .top .me button{ border:0; background:rgba(255,255,255,.15); color:#fff; border-radius:8px; padding:6px 10px; font-weight:700; }
+  .live{ display:inline-flex; align-items:center; gap:6px; font-size:12.5px; font-weight:700; }
+  .live i{ width:8px; height:8px; border-radius:50%; background:#4ADE80; }
+  .demo{ background:#FFD54A; color:#5B4300; border-radius:6px; padding:3px 8px; font-size:12px; font-weight:900; }
+  main{ padding:18px 24px 30px; max-width:1360px; margin:0 auto; }
+  .stats{ display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:12px; }
+  .stat{ background:#fff; border-radius:12px; padding:14px 16px; box-shadow:0 1px 2px rgba(17,24,39,.06); }
+  .stat .l{ font-size:12.5px; color:var(--muted); font-weight:700; }
+  .stat .v{ font-size:26px; font-weight:900; margin-top:2px; }
+  .stat .s{ font-size:12px; color:var(--muted); margin-top:2px; }
+  .bar{ height:6px; background:#EEF1F6; border-radius:3px; margin-top:8px; overflow:hidden; }
+  .bar i{ display:block; height:100%; background:var(--b); }
+  .card{ background:#fff; border-radius:12px; box-shadow:0 1px 2px rgba(17,24,39,.06); }
+  .split{ display:grid; grid-template-columns:420px minmax(0,1fr); gap:16px; margin-top:16px; align-items:start; }
+  .list{ padding:8px; max-height:calc(100vh - 230px); overflow:auto; }
+  .lhead{ display:flex; align-items:center; gap:6px; padding:8px 8px 10px; flex-wrap:wrap; }
+  .lhead b{ font-size:15px; margin-right:auto; }
+  .chip{ border:0; background:#F1F4FA; color:#374151; border-radius:999px; padding:5px 11px; font-size:12.5px; font-weight:700; }
+  .chip.on{ background:var(--b); color:#fff; }
+  .item{ display:flex; gap:11px; padding:11px 12px; border-radius:10px; cursor:pointer; align-items:flex-start; }
+  .item:hover{ background:#F6F8FD; }
+  .item.on{ background:#EEF4FF; box-shadow:inset 3px 0 0 var(--b2); }
+  .ico{ width:36px; height:36px; border-radius:9px; background:var(--soft); display:flex; align-items:center; justify-content:center; flex:none; }
+  .item .t{ font-weight:700; font-size:14px; }
+  .item .d{ font-size:12px; color:var(--muted); margin-top:1px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:290px; }
+  .tag{ display:inline-block; border-radius:5px; padding:1px 7px; font-size:11.5px; font-weight:700; }
+  .t-new{ background:#FEE2E2; color:#B91C32; } .t-done{ background:var(--soft); color:var(--b); }
+  .empty{ color:var(--muted); text-align:center; padding:40px 10px; }
+  .panel{ padding:22px 24px; min-height:420px; }
+  .panel h2{ font-size:19px; margin:0; }
+  .kv{ display:grid; grid-template-columns:110px 1fr; gap:8px 12px; margin-top:16px; font-size:14px; }
+  .kv dt{ color:var(--muted); font-weight:700; } .kv dd{ margin:0; }
+  .quote{ background:var(--bg); border-radius:10px; padding:14px 16px; font-size:15px; line-height:1.6; margin-top:14px; white-space:pre-line; }
+  textarea{ width:100%; border:2px solid #C7D3EE; border-radius:10px; padding:12px; min-height:90px; line-height:1.55; resize:vertical; }
+  textarea:focus,input:focus{ outline:none; border-color:var(--b2); }
+  .btn{ height:40px; padding:0 16px; border:0; border-radius:9px; background:var(--b); color:#fff; font-weight:900; }
+  .btn.sec{ background:var(--soft); color:var(--b); }
+  .btn:disabled{ opacity:.5; cursor:default; }
+  .row{ display:flex; gap:8px; align-items:center; margin-top:12px; flex-wrap:wrap; }
+  .msg{ font-size:13px; font-weight:700; margin-left:auto; } .msg.ok{ color:#15803D; } .msg.err{ color:#B91C32; }
+  .tbl{ width:100%; border-collapse:collapse; }
+  .tbl th{ text-align:left; font-size:12.5px; color:var(--muted); font-weight:700; padding:10px 12px; border-bottom:1px solid var(--line); background:#FAFBFE; position:sticky; top:0; cursor:pointer; user-select:none; }
+  .tbl td{ padding:10px 12px; border-bottom:1px solid #F0F2F7; font-size:13.5px; }
+  .tbl tr:hover td{ background:#F8FAFE; }
+  .nick{ font-weight:700; padding-bottom:1px; border-bottom:3px solid; }
+  .search{ height:38px; border:2px solid #D5DCE8; border-radius:9px; padding:0 12px; width:260px; }
+  .coach{ width:28px; height:28px; border-radius:50%; object-fit:cover; vertical-align:middle; margin-right:6px; background:var(--b); }
+  .soon{ background:#fff; border-radius:12px; padding:40px; text-align:center; color:var(--muted); margin-top:16px; }
+  /* 로그인 */
+  .login{ min-height:100vh; display:flex; align-items:center; justify-content:center; padding:20px; background:linear-gradient(160deg,#093692,#2563EB); }
+  .login .box{ background:#fff; border-radius:16px; padding:30px 28px; width:min(380px,100%); }
+  .login h1{ margin:0; font-size:22px; } .login p{ color:var(--muted); margin:6px 0 18px; font-size:13.5px; line-height:1.5; }
+  .login label{ display:block; font-weight:700; font-size:13px; margin:12px 0 6px; }
+  .login input{ width:100%; height:46px; border:2px solid #D5DCE8; border-radius:10px; padding:0 12px; }
+  .login .btn{ width:100%; height:48px; margin-top:18px; font-size:15px; }
+  .login .demoLink{ display:block; text-align:center; margin-top:14px; font-size:13px; color:var(--b); }
+</style>
+</head>
+<body>
+<div id="login" class="login hidden">
+  <form class="box" id="loginForm">
+    <div class="logo" style="color:var(--b)">RUN N FIT</div>
+    <h1 style="margin-top:10px">회원앱 관리</h1>
+    <p>직원 계정으로 들어와요.<br>(회원앱 연결할 때 쓰는 Firebase 직원 계정 · 다짐 계정 아님)</p>
+    <label for="em">이메일</label><input id="em" type="email" autocomplete="username" required>
+    <label for="pw">비밀번호</label><input id="pw" type="password" autocomplete="current-password" required>
+    <button class="btn" id="loginBtn">들어가기</button>
+    <div class="msg err" id="loginMsg" style="margin-top:10px;text-align:center"></div>
+    <a class="demoLink" href="?demo">로그인 없이 예시 화면 보기 ›</a>
+  </form>
+</div>
+
+<div id="shell" class="hidden">
+  <header class="top">
+    <span class="logo">RUN N FIT</span><span class="ttl">회원앱 관리</span>
+    <nav class="nav" aria-label="화면">
+      <button data-view="todo" class="on">할 일 <span class="badge hidden" id="todoBadge">0</span></button>
+      <button data-view="members">가입 회원</button>
+      <button data-view="soon" title="곧 열려요">공지 · 주간 WOD</button>
+    </nav>
+    <div class="me"><span id="demoTag" class="demo hidden">예시 화면</span><span class="live"><i></i>실시간</span><span id="who"></span><button id="logout" type="button">나가기</button></div>
+  </header>
+  <main>
+    <section class="stats" id="stats"></section>
+
+    <section id="v-todo">
+      <div class="split">
+        <div class="card list">
+          <div class="lhead"><b>할 일</b>
+            <button class="chip on" data-f="new">처리 전</button><button class="chip" data-f="done">처리 완료</button><button class="chip" data-f="all">전체</button></div>
+          <div class="lhead" style="padding-top:0">
+            <button class="chip on" data-k="all">모두</button><button class="chip" data-k="help">도움 요청</button><button class="chip" data-k="voice">런앤핏에 한마디</button><button class="chip" data-k="inq">체험·상담</button></div>
+          <div id="items"></div>
+        </div>
+        <div class="card panel" id="panel"></div>
+      </div>
+    </section>
+
+    <section id="v-members" class="hidden">
+      <div class="card" style="margin-top:16px">
+        <div style="display:flex;align-items:center;gap:10px;padding:14px 16px;flex-wrap:wrap">
+          <b style="font-size:16px">앱 가입 회원 <span id="mCount" style="color:var(--b)"></span></b>
+          <button class="chip on" data-m="joined">가입한 회원</button><button class="chip" data-m="not">아직 안 한 회원</button>
+          <input class="search" id="mSearch" placeholder="이름 · 닉네임 · 전화 뒤 4자리" style="margin-left:auto">
+        </div>
+        <div style="max-height:calc(100vh - 250px);overflow:auto">
+          <table class="tbl"><thead id="mHead"></thead><tbody id="mBody"></tbody></table>
+        </div>
+      </div>
+    </section>
+
+    <section id="v-soon" class="hidden">
+      <div class="soon"><b style="font-size:17px;color:var(--ink)">공지 · 주간 WOD 올리기는 다음 단계에서 열려요</b><br><br>회원앱 홈의 '오늘의 운동' 자리는 주간 WOD로 바뀔 예정이에요.</div>
+    </section>
+  </main>
+</div>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
+import { getFirestore, collection, query, orderBy, limit, getDocs, getDoc, doc, onSnapshot, updateDoc, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+
+const DEMO = /[?&]demo/.test(location.search);
+const B = '#093692';
+const $ = (id)=> document.getElementById(id);
+const esc = (s)=> String(s == null ? '' : s).replace(/[&<>"']/g, (c)=> ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const KST = ()=> new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
+const BELT = [[100, '검', '#111827'], [50, '빨', '#B91C32'], [30, '파', '#093692'], [10, '노', '#FFD54A'], [0, '흰', '#CBD5E1']];
+const belt = (t)=> BELT.find((b)=> (t || 0) >= b[0]);
+const COACH_PHOTO = { '런관장': 'run.jpg', '가온코치': 'gaon.jpg', '하루코치': 'haru.jpg', '로라코치': 'laura.jpg' };
+const ICON = {
+  help: '<path d="M12 3.5a3.2 3.2 0 1 1 0 6.4 3.2 3.2 0 0 1 0-6.4z"/><path d="M5.5 20c.6-3.8 3.2-6 6.5-6s5.9 2.2 6.5 6"/><path d="M3 11h3M18 11h3M4.5 9.5v3M19.5 9.5v3"/>',
+  pt: '<path d="M4 5.5h16v10H9l-4 3.5v-3.5H4z"/><path d="M8 10.5h8"/>',
+  voice: '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>',
+  inq: '<path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a1 1 0 0 1-1 1A16 16 0 0 1 4 5a1 1 0 0 1 1-1z"/>',
+};
+const ico = (k, bg)=> '<span class="ico" style="' + (bg ? 'background:' + bg : '') + '"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="' + B + '" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + ICON[k] + '</svg></span>';
+const tsMs = (t)=> t && t.toDate ? t.toDate().getTime() : (t && t.seconds ? t.seconds * 1000 : (typeof t === 'number' ? t : 0));
+function ago(ms){
+  if(!ms) return '방금';
+  const m = Math.floor((Date.now() - ms) / 60000);
+  if(m < 1) return '방금'; if(m < 60) return m + '분 전'; const h = Math.floor(m / 60); if(h < 24) return h + '시간 전';
+  const d = Math.floor(h / 24); return d < 7 ? d + '일 전' : new Date(ms + 9 * 3600e3).toISOString().slice(5, 10).replace('-', '.');
+}
+const ymd = (ms)=> ms ? new Date(ms + 9 * 3600e3).toISOString().slice(0, 10).replace(/-/g, '.') : '-';
+const phoneFmt = (p)=>{ const d = String(p || '').replace(/^\+82/, '0').replace(/\D/g, ''); return d.length === 11 ? d.slice(0, 3) + '-' + d.slice(3, 7) + '-' + d.slice(7) : d || '-'; };
+
+// ---------- 상태 ----------
+const S = { members: [], help: [], voice: [], inq: [], people: [], f: 'new', k: 'all', sel: null, mView: 'joined', mSort: 'joined', q: '' };
+let api = null;     // { save(kind, id, patch) }
+
+// ---------- 그리기 ----------
+function todos(){
+  const all = [
+    ...S.help.map((x)=> ({ k: 'help', id: x.id, x, done: x.status === 'done', at: tsMs(x.createdAt) })),
+    ...S.voice.map((x)=> ({ k: 'voice', id: x.id, x, done: x.status === 'answered' || !!x.reply, at: tsMs(x.createdAt) })),
+    ...S.inq.map((x)=> ({ k: 'inq', id: x.id, x, done: x.status === 'done', at: tsMs(x.createdAt) })),
+  ];
+  return all.sort((a, b)=> (b.at || 9e15) - (a.at || 9e15));
+}
+function itemText(t){
+  const x = t.x;
+  if(t.k === 'help'){ const pt = x.kind === 'pt';
+    return { ic: ico(pt ? 'pt' : 'help'), t: (pt ? 'PT 상담 신청' : '1:1 운동가이드 신청') + ' · ' + esc(x.nickname || x.name || '회원'),
+      d: esc((x.coach || '런관장 추천') + ' · ' + (x.times || []).join(', ') + (x.text ? ' · ' + x.text : '')) }; }
+  if(t.k === 'voice') return { ic: ico('voice'), t: '런앤핏에 한마디' + (x.category ? ' · ' + esc(x.category) : ''), d: esc(x.text || '') };
+  return { ic: ico('inq', '#FFF4CC'), t: '비회원 ' + esc(x.kind || '문의') + ' · ' + esc(x.name || ''), d: esc(phoneFmt(x.phone) + ' · 미니런앤핏에서 신청') };
+}
+function paintStats(){
+  const total = S.members.length, joined = S.members.filter((m)=> m.uid || m.appJoinedAt).length;
+  const today = KST(), todayJoin = S.members.filter((m)=> m.appJoinedAt && ymd(tsMs(m.appJoinedAt)).replace(/\./g, '-') === today).length;
+  const att = S.members.filter((m)=> m.lastAttend === today).length, attApp = S.members.filter((m)=> m.lastAttend === today && (m.uid || m.appJoinedAt)).length;
+  const now = S.people.filter((p)=> Date.now() - tsMs(p.ts) < 90e3), staffNow = now.filter((p)=> p.staff).length;
+  const open = todos().filter((t)=> !t.done).length;
+  const pct = total ? Math.round(joined / total * 100) : 0;
+  $('stats').innerHTML =
+    '<div class="stat"><div class="l">앱 가입 회원</div><div class="v" style="color:' + B + '">' + joined + '명</div><div class="s">유효 회원 ' + total + '명 중 ' + pct + '% · 오늘 +' + todayJoin + '</div><div class="bar"><i style="width:' + pct + '%"></i></div></div>' +
+    '<div class="stat"><div class="l">오늘 출석</div><div class="v">' + att + '명</div><div class="s">그중 앱 가입 ' + attApp + '명</div></div>' +
+    '<div class="stat"><div class="l">미니런앤핏에 지금</div><div class="v" style="color:' + B + '">' + now.length + '명</div><div class="s">회원 ' + (now.length - staffNow) + ' · 직원 ' + staffNow + '</div></div>' +
+    '<div class="stat"><div class="l">처리 전 할 일</div><div class="v" style="color:' + (open ? '#B91C32' : '#15803D') + '">' + open + '개</div><div class="s">도움 요청 ' + S.help.filter((x)=> x.status !== 'done').length + ' · 한마디 ' + S.voice.filter((x)=> !(x.status === 'answered' || x.reply)).length + ' · 체험·상담 ' + S.inq.filter((x)=> x.status !== 'done').length + '</div></div>' +
+    '<div class="stat"><div class="l">이번 달 도움 요청</div><div class="v">' + S.help.filter((x)=> ymd(tsMs(x.createdAt)).slice(0, 7) === today.slice(0, 7).replace('-', '.')).length + '건</div><div class="s">운동가이드 ' + S.help.filter((x)=> x.kind !== 'pt').length + ' · PT 상담 ' + S.help.filter((x)=> x.kind === 'pt').length + ' (전체)</div></div>';
+  const b = $('todoBadge'); b.textContent = open; b.classList.toggle('hidden', !open);
+  document.title = (open ? '(' + open + ') ' : '') + '회원앱 관리 · 런앤핏';
+}
+function paintList(){
+  const rows = todos().filter((t)=> (S.f === 'all' || (S.f === 'new' ? !t.done : t.done)) && (S.k === 'all' || S.k === t.k));
+  if(S.sel && !rows.some((t)=> t.k + t.id === S.sel)) S.sel = null;
+  if(!S.sel && rows.length) S.sel = rows[0].k + rows[0].id;
+  $('items').innerHTML = rows.length ? rows.map((t)=>{ const it = itemText(t);
+    return '<div class="item' + (S.sel === t.k + t.id ? ' on' : '') + '" data-sel="' + t.k + t.id + '">' + it.ic +
+      '<div style="flex:1;min-width:0"><div class="t">' + it.t + '</div><div class="d">' + it.d + '</div></div>' +
+      '<div style="text-align:right;flex:none"><div style="font-size:11.5px;color:var(--muted)">' + ago(t.at) + '</div>' + (t.done ? '<span class="tag t-done" style="margin-top:4px">완료</span>' : '<span class="tag t-new" style="margin-top:4px">처리 전</span>') + '</div></div>'; }).join('')
+    : '<div class="empty">' + (S.f === 'new' ? '처리할 일이 없어요 👏' : '아직 없어요') + '</div>';
+  $('items').querySelectorAll('[data-sel]').forEach((el)=> el.onclick = ()=>{ S.sel = el.dataset.sel; paintList(); });
+  paintPanel(rows.find((t)=> t.k + t.id === S.sel));
+}
+function memberOf(x){ return S.members.find((m)=> m.id === x.memberId || (x.uid && m.uid === x.uid)); }
+function paintPanel(t){
+  const P = $('panel');
+  if(!t){ P.innerHTML = '<div class="empty" style="padding-top:120px">왼쪽에서 할 일을 고르면 여기서 바로 처리해요</div>'; return; }
+  const x = t.x;
+  if(t.k === 'help'){
+    const m = memberOf(x) || {}, pt = x.kind === 'pt';
+    const coach = x.coach ? (COACH_PHOTO[x.coach] ? '<img class="coach" src="../app/coaches/' + COACH_PHOTO[x.coach] + '" alt="">' : '') + esc(x.coach) : '런관장님 추천 요청';
+    P.innerHTML = '<div style="display:flex;align-items:center;gap:10px">' + ico(pt ? 'pt' : 'help') + '<h2>' + (pt ? 'PT 상담 신청' : '1:1 운동가이드 신청') + '</h2>' + (t.done ? '<span class="tag t-done">연락 완료</span>' : '<span class="tag t-new">처리 전</span>') + '<span style="margin-left:auto;color:var(--muted);font-size:12.5px">' + ago(t.at) + '</span></div>' +
+      '<dl class="kv"><dt>회원</dt><dd><b>' + esc(x.name || m.name || '') + '</b> · 닉네임 ' + esc(x.nickname || m.nickname || '-') + '</dd>' +
+      '<dt>전화</dt><dd><b style="font-size:16px">' + phoneFmt(x.phone || m.phone) + '</b></dd>' +
+      '<dt>원하는 코치</dt><dd>' + coach + '</dd>' +
+      '<dt>편한 시간</dt><dd>' + esc((x.times || []).join(', ') || '-') + '</dd>' +
+      '<dt>출석</dt><dd>총 ' + (m.total || 0) + '회 · ' + (belt(m.total)[1]) + ' 띠 · 최근 ' + esc(m.lastAttend || '-') + (m.gymExp ? ' · 회원권 ~' + esc(m.gymExp) : '') + '</dd></dl>' +
+      (x.text ? '<div class="quote">' + esc(x.text) + '</div>' : '<div class="quote" style="color:var(--muted)">하고 싶은 말은 비워 두었어요</div>') +
+      '<div style="margin-top:18px;font-weight:700;font-size:13px;color:#374151">처리 메모 <span style="font-weight:500;color:var(--muted)">(직원끼리만 봐요)</span></div>' +
+      '<textarea id="memo" style="margin-top:6px;min-height:70px" placeholder="예: 11/20(목) 저녁 7시 가온코치 배정, 문자 보냄">' + esc(x.memo || '') + '</textarea>' +
+      '<div class="row">' + (t.done ? '<button class="btn sec" id="undo">처리 전으로 되돌리기</button><button class="btn sec" id="saveMemo">메모 저장</button>' : '<button class="btn sec" id="saveMemo">메모 저장</button><button class="btn" id="doneBtn">연락 완료로 바꾸기</button>') + '<span class="msg" id="pMsg"></span></div>' +
+      '<div style="font-size:12px;color:var(--muted);margin-top:10px">연락 완료로 바꾸면 회원앱의 \'내 신청\'에 "연락 완료"로 보여요.' + (x.handledBy ? ' · 처리: ' + esc(x.handledBy) : '') + '</div>';
+    bind('help', t.id, { status: 'done' }, { status: 'new' });
+  } else if(t.k === 'voice'){
+    P.innerHTML = '<div style="display:flex;align-items:center;gap:10px">' + ico('voice') + '<h2>런앤핏에 한마디</h2>' + (x.category ? '<span class="tag t-done">' + esc(x.category) + '</span>' : '') + (t.done ? '<span class="tag t-done">답변 완료</span>' : '<span class="tag t-new">답변 전</span>') + '<span style="margin-left:auto;color:var(--muted);font-size:12.5px">' + ago(t.at) + ' · 🔒 보낸 사람은 대표님만 볼 수 있어요</span></div>' +
+      '<div class="quote">' + esc(x.text || '') + '</div>' + (x.photoUrl ? '<img src="' + esc(x.photoUrl) + '" alt="" style="max-width:260px;border-radius:10px;margin-top:10px">' : '') +
+      '<div style="margin-top:18px;font-weight:700;font-size:13px;color:#374151">런앤핏 이름으로 답변</div>' +
+      '<textarea id="reply" style="margin-top:6px" maxlength="500" placeholder="소중한 이야기 감사해요! …">' + esc(x.reply || '') + '</textarea>' +
+      '<div class="row"><button class="btn sec" data-tpl="소중한 이야기 감사해요! 바로 확인하고 더 나은 런앤핏으로 답할게요 💙">감사 답변</button><button class="btn sec" data-tpl="응원 정말 감사해요! 회원님 덕분에 런앤핏이 힘이 나요. 오늘도 함께 달려요 💙">칭찬 답변</button><span style="flex:1"></span><button class="btn" id="replyBtn">' + (t.done ? '답변 고치기' : '답변 보내기') + '</button><span class="msg" id="pMsg"></span></div>';
+    P.querySelectorAll('[data-tpl]').forEach((b)=> b.onclick = ()=>{ $('reply').value = b.dataset.tpl; $('reply').focus(); });
+    $('replyBtn').onclick = async ()=>{ const r = $('reply').value.trim(); if(!r){ msg('답변을 적어 주세요.', 1); return; }
+      await save('voice', t.id, { reply: r, status: 'answered', answeredAt: serverTimestamp() }, '답변을 보냈어요. 회원앱에 바로 보여요.'); };
+  } else {
+    P.innerHTML = '<div style="display:flex;align-items:center;gap:10px">' + ico('inq', '#FFF4CC') + '<h2>비회원 ' + esc(x.kind || '문의') + '</h2>' + (t.done ? '<span class="tag t-done">연락 완료</span>' : '<span class="tag t-new">처리 전</span>') + '<span style="margin-left:auto;color:var(--muted);font-size:12.5px">' + ago(t.at) + '</span></div>' +
+      '<dl class="kv"><dt>이름</dt><dd><b>' + esc(x.name || '') + '</b></dd><dt>전화</dt><dd><b style="font-size:16px">' + phoneFmt(x.phone) + '</b></dd><dt>신청한 곳</dt><dd>미니런앤핏 (유리문 너머 구경 중)</dd></dl>' +
+      '<div style="margin-top:18px;font-weight:700;font-size:13px;color:#374151">처리 메모</div><textarea id="memo" style="margin-top:6px;min-height:70px" placeholder="예: 토요일 11시 체험 예약">' + esc(x.memo || '') + '</textarea>' +
+      '<div class="row">' + (t.done ? '<button class="btn sec" id="undo">처리 전으로 되돌리기</button><button class="btn sec" id="saveMemo">메모 저장</button>' : '<button class="btn sec" id="saveMemo">메모 저장</button><button class="btn" id="doneBtn">연락 완료로 바꾸기</button>') + '<span class="msg" id="pMsg"></span></div>';
+    bind('inq', t.id, { status: 'done' }, { status: 'new' });
+  }
+}
+function msg(t, err){ const m = $('pMsg'); if(m){ m.className = 'msg ' + (err ? 'err' : 'ok'); m.textContent = t; } }
+function bind(kind, id, done, undo){
+  const memo = ()=> ($('memo') ? $('memo').value.trim().slice(0, 300) : '');
+  if($('doneBtn')) $('doneBtn').onclick = ()=> save(kind, id, { ...done, memo: memo(), handledBy: api.who, handledAt: serverTimestamp() }, '연락 완료로 바꿨어요.');
+  if($('undo')) $('undo').onclick = ()=> save(kind, id, { ...undo }, '처리 전으로 되돌렸어요.');
+  if($('saveMemo')) $('saveMemo').onclick = ()=> save(kind, id, { memo: memo() }, '메모를 저장했어요.');
+}
+async function save(kind, id, patch, ok){
+  document.querySelectorAll('#panel .btn').forEach((b)=> b.disabled = true);
+  try{ await api.save(kind, id, patch); msg(ok); }
+  catch(e){ console.warn(e); msg(/permission/i.test(String(e)) ? '권한이 없어요. 보안 규칙 게시를 확인해 주세요.' : '저장하지 못했어요. 다시 해주세요.', 1); }
+  document.querySelectorAll('#panel .btn').forEach((b)=> b.disabled = false);
+}
+
+// 가입 회원
+const COLS = [['nick', '닉네임'], ['name', '이름'], ['phone', '전화'], ['joined', '앱 가입일'], ['total', '총 출석'], ['last', '최근 출석'], ['exp', '회원권']];
+function paintMembers(){
+  const joinedOnly = S.mView === 'joined', q = S.q.trim();
+  let rows = S.members.filter((m)=> !!(m.uid || m.appJoinedAt) === joinedOnly);
+  if(q) rows = rows.filter((m)=> (m.name || '').includes(q) || (m.nickname || '').includes(q) || String(m.phone || '').slice(-4) === q);
+  const key = { nick: (m)=> m.nickname || '', name: (m)=> m.name || '', phone: (m)=> m.phone || '', joined: (m)=> -tsMs(m.appJoinedAt), total: (m)=> -(m.total || 0), last: (m)=> -(Date.parse(m.lastAttend || 0) || 0), exp: (m)=> m.gymExp || '' }[S.mSort];
+  rows.sort((a, b)=>{ const x = key(a), y = key(b); return x < y ? -1 : x > y ? 1 : 0; });
+  const jn = S.members.filter((m)=> m.uid || m.appJoinedAt).length;
+  $('mCount').textContent = jn + '명 / 유효 ' + S.members.length + '명';
+  $('mHead').innerHTML = '<tr>' + COLS.filter((c)=> joinedOnly || !['nick', 'joined'].includes(c[0])).map((c)=> '<th data-sort="' + c[0] + '">' + c[1] + (S.mSort === c[0] ? ' ▾' : '') + '</th>').join('') + '</tr>';
+  const today = KST();
+  $('mBody').innerHTML = rows.length ? rows.map((m)=>{ const bl = belt(m.total);
+    return '<tr>' + (joinedOnly ? '<td><span class="nick" style="border-color:' + bl[2] + '">' + esc(m.nickname || '-') + '</span></td>' : '') +
+      '<td>' + esc(m.name || '') + '</td><td>' + phoneFmt(m.phone) + '</td>' +
+      (joinedOnly ? '<td>' + ymd(tsMs(m.appJoinedAt)) + '</td>' : '') +
+      '<td>' + (m.total || 0) + '회 <span style="color:var(--muted);font-size:12px">' + bl[1] + ' 띠</span></td>' +
+      '<td>' + (m.lastAttend === today ? '<b style="color:#15803D">오늘 ✓</b>' : esc(m.lastAttend || '-')) + '</td><td>' + esc(m.gymExp || '-') + '</td></tr>'; }).join('')
+    : '<tr><td colspan="7" class="empty">' + (q ? '찾는 회원이 없어요' : joinedOnly ? '아직 가입한 회원이 없어요' : '모두 가입했어요 🎉') + '</td></tr>';
+  $('mHead').querySelectorAll('[data-sort]').forEach((th)=> th.onclick = ()=>{ S.mSort = th.dataset.sort; paintMembers(); });
+}
+function paint(){ paintStats(); paintList(); if(!$('v-members').classList.contains('hidden')) paintMembers(); }
+
+// 화면 이동 · 필터
+document.querySelectorAll('.nav [data-view]').forEach((b)=> b.onclick = ()=>{
+  document.querySelectorAll('.nav [data-view]').forEach((x)=> x.classList.toggle('on', x === b));
+  ['todo', 'members', 'soon'].forEach((v)=> $('v-' + v).classList.toggle('hidden', v !== b.dataset.view));
+  if(b.dataset.view === 'members') paintMembers();
+});
+document.querySelectorAll('[data-f]').forEach((b)=> b.onclick = ()=>{ S.f = b.dataset.f; document.querySelectorAll('[data-f]').forEach((x)=> x.classList.toggle('on', x === b)); S.sel = null; paintList(); });
+document.querySelectorAll('[data-k]').forEach((b)=> b.onclick = ()=>{ S.k = b.dataset.k; document.querySelectorAll('[data-k]').forEach((x)=> x.classList.toggle('on', x === b)); S.sel = null; paintList(); });
+document.querySelectorAll('[data-m]').forEach((b)=> b.onclick = ()=>{ S.mView = b.dataset.m; S.mSort = S.mView === 'joined' ? 'joined' : 'last'; document.querySelectorAll('[data-m]').forEach((x)=> x.classList.toggle('on', x === b)); paintMembers(); });
+$('mSearch').oninput = (e)=>{ S.q = e.target.value; paintMembers(); };
+setInterval(paintStats, 30e3);
+
+function showShell(who){ $('login').classList.add('hidden'); $('shell').classList.remove('hidden'); $('who').textContent = who; }
+
+// ---------- 예시 화면 ----------
+if(DEMO){
+  const now = Date.now(), T = (min)=> ({ seconds: Math.floor((now - min * 60e3) / 1000) }), today = KST();
+  const NAMES = [['김민수', '달리는민수', 12], ['이지은', '새싹러너', 4], ['박하나', '스쿼트요정', 57], ['최도윤', '꾸준이', 31], ['정유진', '오운완요정', 104], ['한지민', '', 24], ['오세훈', '정릉불꽃', 9], ['윤서아', '아침형인간', 18], ['강태호', '', 3], ['서지우', '헬린이', 1]];
+  S.members = Array.from({ length: 488 }, (_, i)=>{ const n = NAMES[i % NAMES.length], j = i < 136;
+    return { id: 'm' + i, name: i < 10 ? n[0] : n[0].slice(0, 1) + '회원' + i, nickname: j ? (i < 10 ? n[1] || '런앤핏' + i : '러너' + i) : '', phone: '+8210' + String(20000000 + i * 7919).slice(0, 8), total: (i * 37) % 120, lastAttend: i % 5 === 0 ? today : '2026-11-' + String(1 + i % 17).padStart(2, '0'), gymExp: '2027-0' + (1 + i % 9) + '-15', uid: j ? 'u' + i : null, appJoinedAt: j ? T(i * 200) : null }; });
+  S.help = [
+    { id: 'h1', kind: 'guide', pick: 'want', coach: '가온코치', times: ['평일 점심', '평일 저녁'], text: '스쿼트할 때 무릎이 아파요. 하체 기구 사용법도 같이 알려주세요!', name: '김민수', nickname: '달리는민수', phone: '+821012345678', memberId: 'm0', status: 'new', createdAt: T(4) },
+    { id: 'h2', kind: 'pt', pick: 'rec', coach: null, times: ['주말'], text: '3개월 안에 5kg 빼고 싶어요. 허리가 조금 안 좋아요.', name: '이지은', nickname: '새싹러너', phone: '+821055556666', memberId: 'm1', status: 'new', createdAt: T(52) },
+    { id: 'h3', kind: 'guide', pick: 'want', coach: '로라코치', times: ['평일 오전'], text: '', name: '윤서아', nickname: '아침형인간', phone: '+821077778888', memberId: 'm7', status: 'done', memo: '11/19 오전 10시 로라코치 배정', handledBy: '런관장', createdAt: T(60 * 26) },
+  ];
+  S.voice = [
+    { id: 'v1', category: '불편해요', text: '저녁 7시쯤 러닝머신이 항상 꽉 차 있어요. 시간 제한이 있으면 좋겠어요.', status: 'new', createdAt: T(60 * 30) },
+    { id: 'v2', category: '칭찬해요', text: '하루코치님이 지나가다 자세 봐주셔서 너무 감사했어요!', status: 'new', createdAt: T(130) },
+  ];
+  S.inq = [{ id: 'q1', name: '박서준', phone: '01033334444', kind: '무료 체험', src: 'pixel-gym', createdAt: T(18) }];
+  S.people = Array.from({ length: 6 }, (_, i)=> ({ ts: T(0), staff: i === 0 }));
+  api = { who: '예시', save: async (kind, id, patch)=>{ const L = S[kind], x = L.find((y)=> y.id === id); Object.assign(x, patch, patch.answeredAt || patch.handledAt ? { answeredAt: T(0), handledAt: T(0) } : {}); paint(); } };
+  showShell('예시 직원'); $('demoTag').classList.remove('hidden'); $('logout').onclick = ()=> location.href = './';
+  paint();
+} else {
+  // ---------- 실제 연결 ----------
+  const app = initializeApp({ apiKey: 'AIzaSyBbE0ktG6f5t-1xvVEg56f18DE_QdtIrts', authDomain: 'runnfit-member.firebaseapp.com', projectId: 'runnfit-member', storageBucket: 'runnfit-member.firebasestorage.app', messagingSenderId: '1029886465637', appId: '1:1029886465637:web:36ac86705e3504f6c0588c' });
+  const auth = getAuth(app), db = getFirestore(app);
+  const COL = { help: 'help_requests', voice: 'voices', inq: 'inquiries' };
+  let unsubs = [];
+  $('loginForm').onsubmit = async (e)=>{ e.preventDefault(); const m = $('loginMsg'); m.textContent = ''; $('loginBtn').disabled = true;
+    try{ await signInWithEmailAndPassword(auth, $('em').value.trim(), $('pw').value); }
+    catch(err){ m.textContent = /invalid|wrong|not-found|credential/i.test(err.code || '') ? '이메일 또는 비밀번호가 맞지 않아요.' : /too-many/.test(err.code || '') ? '시도가 너무 많아요. 잠시 후 다시 해주세요.' : '들어가지 못했어요. (' + (err.code || err.message) + ')'; }
+    $('loginBtn').disabled = false; };
+  $('logout').onclick = ()=> signOut(auth);
+  onAuthStateChanged(auth, async (u)=>{
+    unsubs.forEach((f)=> f()); unsubs = [];
+    if(!u || !u.email){ $('shell').classList.add('hidden'); $('login').classList.remove('hidden'); return; }
+    let role = null;
+    try{ const s = await getDoc(doc(db, 'staff', u.uid)); role = s.exists() ? (s.data().role || 'staff') : null; }catch(e){}
+    if(!role){ $('loginMsg').textContent = '이 계정은 회원앱 직원으로 등록되어 있지 않아요.'; await signOut(auth); return; }
+    const who = (u.email || '').split('@')[0];
+    api = { who, save: (kind, id, patch)=> updateDoc(doc(db, COL[kind], id), patch) };
+    showShell(who + (role === 'owner' ? ' (대표)' : ''));
+    paint();
+    const listen = (key, q)=> unsubs.push(onSnapshot(q, (s)=>{ S[key] = s.docs.map((d)=> ({ id: d.id, ...d.data() })); paint(); }, (e)=> console.warn(key, e)));
+    listen('help', query(collection(db, 'help_requests'), orderBy('createdAt', 'desc'), limit(200)));
+    listen('voice', query(collection(db, 'voices'), orderBy('createdAt', 'desc'), limit(200)));
+    listen('inq', query(collection(db, 'inquiries'), orderBy('createdAt', 'desc'), limit(200)));
+    listen('people', collection(db, 'gym_people'));
+    const loadMembers = async ()=>{ try{ const s = await getDocs(collection(db, 'members')); S.members = s.docs.map((d)=> ({ id: d.id, ...d.data() })); paint(); }catch(e){ console.warn('members', e); } };
+    loadMembers(); const t = setInterval(loadMembers, 5 * 60e3); unsubs.push(()=> clearInterval(t));
+  });
+}
+</script>
+</body>
+</html>

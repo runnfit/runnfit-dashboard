@@ -76,7 +76,7 @@ let helpOpen = false;
 let helpKind = 'guide';   // guide | pt
 let helpDone = null;
 // 코치 목록 (Firestore config/coaches 문서가 있으면 그걸 씀)
-let COACHES = [{ name: '런관장', desc: '대표 코치 · 재활 · 체형' }, { name: '김코치', desc: '다이어트 · 근력' }, { name: '박코치', desc: '러닝 · 체력' }];
+let COACHES = [{ name: '런관장', desc: '런앤핏 대표', photo: './coaches/run.jpg' }, { name: '가온코치', desc: '런앤핏 코치', photo: './coaches/gaon.jpg' }, { name: '하루코치', desc: '런앤핏 코치', photo: './coaches/haru.jpg' }, { name: '로라코치', desc: '런앤핏 코치', photo: './coaches/laura.jpg' }];
 const HELP_TIMES = ['평일 오전', '평일 점심', '평일 저녁', '주말', '아무 때나'];
 const HELP_KINDS = {
   guide: { title: '1:1 운동가이드 받기', sub: '코치님이 기구 · 자세를 직접 봐드려요', icon: 'coach' },
@@ -275,22 +275,11 @@ function renderHome(){
       '<div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px">' + journey + '</div>' +
     '</div>' +
     '<div class="m" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">' + left + right + '</div>' +
-    '<div class="m" style="background:' + B + ';color:#fff;border-radius:14px;padding:12px 14px">' +
-      '<div style="font-size:12px;font-weight:700;color:var(--y)">런앤핏 오늘의 운동</div>' +
-      '<a href="#" data-go="workout" style="display:flex;align-items:center;justify-content:space-between;color:#fff;text-decoration:none;margin-top:4px;min-height:32px"><span style="font-size:16px;font-weight:900" id="wTitle">오늘의 운동 불러오는 중…</span><span style="font-size:13px;color:#E3E9FF;white-space:nowrap">방법 보기 ›</span></a>' +
-      '<div style="display:flex;gap:8px;margin-top:8px">' +
-        (done ? '<button type="button" disabled style="flex:1;height:44px;border:0;border-radius:10px;background:rgba(255,255,255,.18);color:#fff;font-weight:900;font-size:14px;display:flex;align-items:center;justify-content:center;gap:6px">완료했어요 ' + CHECK('#FFD54A') + '</button>'
-              : '<button type="button" id="doneBtn" style="flex:1;height:44px;border:0;border-radius:10px;background:#fff;color:' + B + ';font-weight:900;font-size:14px;cursor:pointer">운동 완료하기</button>') +
-        '<button type="button" id="coachBtn" style="height:44px;padding:0 12px;border:0;border-radius:10px;background:transparent;color:#fff;font-size:13px;font-weight:700;box-shadow:inset 0 0 0 2px rgba(255,255,255,.5);cursor:pointer">코치에게 물어보기</button>' +
-      '</div></div>' +
     '<div style="height:18px"></div>';
   document.getElementById('bellBtn').onclick = showNotices;
   document.getElementById('helpToggle').onclick = ()=>{ helpOpen = !helpOpen; const y = window.scrollY; renderHome(); window.scrollTo(0, y); };
   $app.querySelectorAll('[data-help]').forEach((b)=> b.onclick = ()=>{ helpKind = b.dataset.help; go('help'); });
-  const db1 = document.getElementById('doneBtn'); if(db1) db1.onclick = ()=>{ localStorage.setItem(workoutDoneKey(), '1'); toast('멋져요! 오늘의 운동 완료 💪 런앤핏이 응원할게요!'); renderHome(); };
-  document.getElementById('coachBtn').onclick = coach;
   const gb = document.getElementById('goalBtn'); if(gb) gb.onclick = (e)=>{ e.preventDefault(); changeGoal(); };
-  loadWorkout().then((w)=>{ const el = document.getElementById('wTitle'); if(el) el.textContent = w.title; });
 }
 function showNotices(){
   sheet('<div class="ttl">공지</div>' + (notices.length ? notices.map((n)=> '<div style="padding:12px 0;border-top:1px solid #E5E7EB"><div style="font-weight:900">' + esc(n.title || '') + '</div><div class="muted" style="font-size:12px;margin-top:2px">' + (n.createdAt && n.createdAt.toDate ? dotDate(kstDate(n.createdAt.toDate().getTime())) : '') + '</div><div style="font-size:14px;margin-top:6px;white-space:pre-line">' + esc(n.body || '') + '</div></div>').join('') : '<div class="muted" style="margin-top:12px">아직 공지가 없어요.</div>'));
@@ -438,7 +427,7 @@ function renderHelp(){
   if(helpDone){ return renderHelpDone(); }
   const h = HELP_KINDS[helpKind], guide = helpKind === 'guide';
   const coachRows = COACHES.map((c, i)=>{ const on = hCoach === c.name;
-    return '<button type="button" data-coach="' + esc(c.name) + '" style="width:100%;display:flex;align-items:center;gap:10px;padding:10px 12px;border:0;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 ' + (on ? '2.5px ' + B : '1.5px #D5DCE8') + ';margin-top:6px;text-align:left;cursor:pointer;font-family:inherit">' + AVATAR(34) +
+    return '<button type="button" data-coach="' + esc(c.name) + '" style="width:100%;display:flex;align-items:center;gap:10px;padding:10px 12px;border:0;border-radius:12px;background:#fff;box-shadow:inset 0 0 0 ' + (on ? '2.5px ' + B : '1.5px #D5DCE8') + ';margin-top:6px;text-align:left;cursor:pointer;font-family:inherit">' + (c.photo ? '<img src="' + esc(c.photo) + '" alt="" width="44" height="44" style="width:44px;height:44px;border-radius:50%;object-fit:cover;flex:none;background:' + B + '">' : AVATAR(34)) +
       '<span style="flex:1"><span style="display:block;font-size:14.5px;font-weight:900;color:#111827">' + esc(c.name) + '</span><span style="display:block;font-size:12px;color:#4B5563">' + esc(c.desc || '') + '</span></span>' +
       '<span style="width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 ' + (on ? '7px ' + B : '2px #9CA3AF') + '"></span></button>'; }).join('');
   const seg = (v, t)=> '<button type="button" data-pick="' + v + '" style="flex:1;height:40px;border:0;border-radius:10px;font-family:inherit;font-size:13.5px;cursor:pointer;' + (hPick === v ? 'background:' + B + ';color:#fff;font-weight:900' : 'background:#fff;color:#111827;font-weight:700;box-shadow:inset 0 0 0 1.5px #D5DCE8') + '">' + t + '</button>';
