@@ -82,9 +82,12 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 #peopleList button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:#F6F8FC;border-radius:10px;padding:10px 12px;margin-top:6px;font-family:inherit;font-size:14px;text-align:left;cursor:pointer;color:#111827}
 #feed div.old{opacity:.45}
 #feedBtn{left:10px;bottom:calc(72px + env(safe-area-inset-bottom));z-index:6;border:0;border-radius:999px;background:rgba(15,23,42,.55);color:#fff;font-family:inherit;font-size:12px;font-weight:900;padding:6px 11px;backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px)}
-#feedAll{left:10px;right:10px;bottom:calc(108px + env(safe-area-inset-bottom));max-height:42vh;overflow-y:auto;background:rgba(15,23,42,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:14px;padding:8px 10px;display:none;z-index:6;-webkit-overflow-scrolling:touch}
+#feedAll{left:10px;right:10px;bottom:calc(108px + env(safe-area-inset-bottom));max-height:62vh;overflow-y:auto;background:rgba(15,23,42,.72);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);border-radius:14px;padding:8px 10px;display:none;z-index:6;-webkit-overflow-scrolling:touch}
 #feedAll .r{display:flex;gap:8px;color:#fff;font-size:12.5px;line-height:1.45;padding:3px 0;border-bottom:1px solid rgba(255,255,255,.08)}
-#feedAll .r i{font-style:normal;color:#94A3B8;font-size:11px;flex:none;width:36px}
+#feedAll .r i{font-style:normal;color:#94A3B8;font-size:11px;flex:none;min-width:36px}
+#feedAll .day{display:flex;align-items:center;gap:8px;color:#94A3B8;font-size:11px;font-weight:700;margin:10px 0 6px}
+#feedAll .day::before,#feedAll .day::after{content:'';flex:1;height:1px;background:rgba(148,163,184,.35)}
+#feedAll .more{text-align:center;color:#94A3B8;font-size:11.5px;padding:6px 0}
 #feedAll .r b{color:#fff;margin-right:6px;border-bottom:3px solid #F3F4F6;padding-bottom:1px}
 .wish{background:#F8FAFC;border-radius:12px;padding:10px;margin-bottom:8px}
 .wish .w1{font-size:14px;font-weight:900;line-height:1.45}
@@ -174,7 +177,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
 import { getAuth, onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js';
-import { getFirestore, collection, query, where, limit, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, orderBy, serverTimestamp, increment } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { getFirestore, collection, query, where, limit, getDocs, doc, setDoc, addDoc, updateDoc, deleteDoc, onSnapshot, orderBy, serverTimestamp, increment, startAfter } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 const DEMO = /[?&]demo/.test(location.search);   // ?demo 를 붙이면 예시 회원이 나오는 체험판
 const fbApp = initializeApp({ apiKey: 'AIzaSyBbE0ktG6f5t-1xvVEg56f18DE_QdtIrts', authDomain: 'runnfit-member.firebaseapp.com', projectId: 'runnfit-member', storageBucket: 'runnfit-member.firebasestorage.app', messagingSenderId: '1029886465637', appId: '1:1029886465637:web:36ac86705e3504f6c0588c' });
 const auth = getAuth(fbApp), db = getFirestore(fbApp);
@@ -370,7 +373,7 @@ for (let k = 0; k < 8; k++) room(Z(k * .91), Z((k + 1) * .91), "", 0x6B7280, tru
 
 // ── 기구 (실제 모양에 가깝게)
 function G(x, z) { const g = new THREE.Group(); g.position.set(x, 0, z); scene.add(g); return g; }
-const treadmills = [];
+const treadmills = [], BIKES = [], STEPS = [];
 function treadmill(x, z, n, curved) {
   const g = G(x, z);
   if (curved) { for (let i = 0; i < 9; i++) { const y = .18 + Math.pow((i - 4) / 4, 2) * .25; box(g, .05, y, .45 + i * .2, .75, .06, .2, 0x111827); } box(g, 0, 0, .35, .85, .2, 1.9, 0x374151); }
@@ -389,10 +392,12 @@ function bike(x, z, n, upright) {
   else { box(g, .25, .08, .65, .2, .7, .15, 0xD1D5DB); box(g, .18, .78, .6, .34, .08, .28, 0x111827); }
   rod(g, .35, .38, .25, .3, .14, 0xE5E7EB, 'x');
   box(g, .27, .08, .05, .16, .95, .12, 0x9CA3AF); box(g, .1, 1.0, 0, .5, .07, .14, 0x374151); box(g, .17, 1.07, .05, .36, .2, .06, 0x60A5FA, { basic: 1 });
+  BIKES.push({ x: x + .35, z: z + (upright ? .74 : .9), y: upright ? .82 : .56, ax: x + .35, az: z + 1.6 });
   solid(x + .1, z, .5, 1.1); label(g, String(n), .35, 1.5, .3, { bg: 'rgba(255,255,255,.9)', fg: '#111827', size: 30, scale: .01 });
 }
 function stepmill(x, z) {
   const g = G(x, z);
+  STEPS.push({ x: x + .43, z: z + 1.29, y: .84, ax: x + .43, az: z + 2.5 });
   for (let i = 0; i < 6; i++) box(g, 0, 0, .35 + i * .27, .85, .3 + (5 - i) * .27, .27, 0x111827);
   for (let i = 0; i < 6; i++) box(g, .02, .3 + (5 - i) * .27, .35 + i * .27, .81, .02, .27, 0x4B5563);
   box(g, -.06, 0, .3, .06, 2.0, 1.6, 0x1F2937); box(g, .85, 0, .3, .06, 2.0, 1.6, 0x1F2937);
@@ -673,8 +678,8 @@ function avatar(name, shirt, hair, me, staff, belt) {
   scene.add(g); return g;
 }
 // 직접 쓴 한마디만 대화로, 동작에서 나온 말은 회색 안내로
-function say(av, txt, sec = 3.5, chat = false) {
-  if (av === me) { if (chat) feed(myName, txt, 'me'); else feed('', `${myName} · ${txt}`, 'sys'); if (LIVE) pubMe({ say: String(txt).slice(0, 40), sayT: Date.now() }); } else if (DEMO) showFeed(av.userData.name, txt);
+function say(av, txt, sec = 3.5, chat = false, quiet = false) {
+  if (av === me) { if (chat) feed(myName, txt, 'me'); else if (!quiet) queueMine('say', txt); if (LIVE) pubMe({ say: String(txt).slice(0, 40), sayT: Date.now() }); } else if (DEMO) showFeed(av.userData.name, txt);
   if (av.userData.bubble) av.remove(av.userData.bubble);
   const bt = String(txt).length > 22 ? String(txt).slice(0, 21) + '…' : String(txt);   // 말풍선은 짧게, 전체 글은 아래 이야기 창에
   const b = textSprite(bt, { bg: '#fff', fg: '#111827', size: 32, scale: .011, border: '#111827' });
@@ -682,7 +687,8 @@ function say(av, txt, sec = 3.5, chat = false) {
 }
 function pose(av, mode, dt) {
   const u = av.userData, act = u.act, tm = act === 'tmrun' || act === 'tmwalk';
-  u.phase += dt * (mode === 'run' || act === 'tmrun' ? 14 : mode === 'walk' || act === 'tmwalk' ? 9 : 2);
+  const PH = { cycle: 8, stairs: 6, sprint: 26, puff: 5, mclimb: 11, burpee: 4, circle: 7, shL: 3, shR: 3 };
+  u.phase += dt * (!mode && PH[act] ? PH[act] : mode === 'run' || act === 'tmrun' ? 14 : mode === 'walk' || act === 'tmwalk' ? 9 : 2);
   const body = u.body, tor = u.torso;
   body.rotation.set(0, 0, 0); body.position.set(0, 0, 0); tor.rotation.set(0, 0, 0);
   u.legL.rotation.set(0, 0, 0); u.legR.rotation.set(0, 0, 0); u.armL.rotation.set(0, 0, 0); u.armR.rotation.set(0, 0, 0);
@@ -717,6 +723,20 @@ function pose(av, mode, dt) {
   if (act === 'clap') { const k = Math.abs(Math.sin(u.phase * 3.5)); u.armL.rotation.x = u.armR.rotation.x = -1.35; u.armL.rotation.z = k * .55; u.armR.rotation.z = -k * .55; }
   if (act === 'hi5') { u.armR.rotation.x = -2.6; u.armR.rotation.z = -.2; tor.rotation.x = -.08; }
   if (act === 'best') { u.armR.rotation.x = -1.4; u.armL.rotation.x = -1.4; body.position.y = Math.abs(Math.sin(u.phase * 2)) * .08; }
+  if (act === 'cycle') { const k = Math.sin(u.phase); body.position.y = -.42; tor.rotation.x = .35; u.armL.rotation.x = u.armR.rotation.x = -1.25; u.legL.rotation.x = -1.15 + k * .55; u.legR.rotation.x = -1.15 - k * .55; u.tag.position.y = 1.6; }
+  if (act === 'stairs') { const k = Math.sin(u.phase); u.legL.rotation.x = -Math.max(0, k) * 1.25; u.legR.rotation.x = -Math.max(0, -k) * 1.25; u.armL.rotation.x = k * .7; u.armR.rotation.x = -k * .7; tor.rotation.x = .15; body.position.y = Math.abs(k) * .1; }
+  if (act === 'sprint') { const k = Math.sin(u.phase); u.legL.rotation.x = k * 1.45; u.legR.rotation.x = -k * 1.45; u.armL.rotation.x = -k * 1.4; u.armR.rotation.x = k * 1.4; tor.rotation.x = .45; body.position.y = Math.abs(k) * .13; }
+  if (act === 'puff') { tor.rotation.x = .95; u.armL.rotation.x = u.armR.rotation.x = -.55; u.legL.rotation.x = u.legR.rotation.x = -.25; body.position.y = -.06 - Math.abs(Math.sin(u.phase)) * .04; }
+  if (act === 'mclimb') { const k = Math.sin(u.phase); body.rotation.x = Math.PI / 2 - .08; body.position.set(0, .42, .55); u.armL.rotation.x = u.armR.rotation.x = -1.57; u.legL.rotation.x = -Math.max(0, k) * 1.45; u.legR.rotation.x = -Math.max(0, -k) * 1.45; u.tag.position.y = 1.2; }
+  if (act === 'burpee') { const st = Math.floor((u.phase * .65) % 4), fr = (u.phase * .65) % 1;
+    if (st === 0 || st === 2) { body.position.y = -.3; u.legL.rotation.x = u.legR.rotation.x = -1.1; tor.rotation.x = .55; u.armL.rotation.x = u.armR.rotation.x = -.5; }
+    else if (st === 1) { body.rotation.x = Math.PI / 2 - .08; body.position.set(0, .42, .55); u.armL.rotation.x = u.armR.rotation.x = -1.57; u.tag.position.y = 1.2; }
+    else { body.position.y = Math.sin(fr * Math.PI) * .45; u.armL.rotation.z = -2.8; u.armR.rotation.z = 2.8; } }
+  if (act === 'shL' || act === 'shR') { const k = Math.sin(u.phase * 1.6), L = act === 'shL'; if (L) { u.armR.rotation.z = 2.25; u.armR.rotation.x = -.15; } else { u.armL.rotation.z = -2.25; u.armL.rotation.x = -.15; }
+    body.rotation.z = k * .16; tor.rotation.z = k * .12; body.position.y = Math.abs(Math.sin(u.phase * 3.2)) * .14; u.legL.rotation.z = -.12; u.legR.rotation.z = .12; }
+  if (act === 'fist') { u.armR.rotation.x = -1.57; tor.rotation.x = -.05; }
+  if (act === 'vpose') { u.armR.rotation.z = 2.6; u.armR.rotation.x = -.3; u.armL.rotation.x = -.5; u.armL.rotation.z = .5; body.rotation.y = .25; }
+  if (act === 'circle') { const k = Math.sin(u.phase); u.armL.rotation.z = -1.3; u.armR.rotation.z = 1.3; u.legL.rotation.x = k * .5; u.legR.rotation.x = -k * .5; body.position.y = Math.abs(k) * .05; }
   if (act === 'jjang') { u.armL.rotation.z = -2.6 - Math.sin(u.phase * 4) * .3; u.armR.rotation.z = 2.6 + Math.sin(u.phase * 4) * .3; body.position.y = Math.abs(Math.sin(u.phase * 3)) * .25; }
   if (act === 'rope') { const k = Math.sin(u.phase * 3.2); body.position.y = Math.abs(k) * .22; u.armL.rotation.x = u.armR.rotation.x = -.5; u.armL.rotation.z = -.5; u.armR.rotation.z = .5; if (!u.ropeM) { u.ropeM = new THREE.Mesh(new THREE.TorusGeometry(.62, .015, 4, 24), M(0xF97316)); u.ropeM.position.set(0, .75, 0); u.ropeM.rotation.y = Math.PI / 2; body.add(u.ropeM); } u.ropeM.rotation.x = u.phase * 3.2; }
   else if (u.ropeM) { body.remove(u.ropeM); u.ropeM = null; }
@@ -913,6 +933,32 @@ function onTreadmill(run) {
   toast(run ? '빈 러닝머신으로 가서 달려요' : '빈 러닝머신으로 가서 걸어요');
   goTo(t.x, t.z + 1.4, () => { me.position.set(t.x, .27, t.z); me.rotation.y = Math.PI; me.userData.act = run ? 'tmrun' : 'tmwalk'; feed('', `${myName}님이 러닝머신 ${run ? '달리기' : '걷기'} 시작 🏃`, 'sys'); say(me, run ? '달린다!' : '천천히 걷기~', 2); });
 }
+function rideSpot(list, act, nm, msg, line) {
+  const free = list.filter(t => !NPCS.some(n => Math.hypot(n.a.position.x - t.x, n.a.position.z - t.z) < .35));
+  const t = nearest(free); if (!t) { toast(`지금 빈 ${nm}가 없어요`); return; }
+  toast(`빈 ${nm}로 가요`);
+  goTo(t.ax, t.az, () => { me.position.set(t.x, t.y, t.z); me.rotation.y = Math.PI; me.userData.act = act; feed('', msg, 'sys'); say(me, line, 2.5); });
+}
+let sprintTk = 0;
+function doSprint() {
+  const t = { x: s(5.05) + .43, z: .4 + 1.25, y: .24 };
+  if (NPCS.some(n => Math.hypot(n.a.position.x - t.x, n.a.position.z - t.z) < .35)) { toast('무동력 트레드밀을 누가 쓰고 있어요'); return; }
+  toast('무동력 트레드밀로 가요 🔥');
+  goTo(t.x, t.z + 1.4, () => {
+    me.position.set(t.x, t.y, t.z); me.rotation.y = Math.PI; me.userData.act = 'sprint';
+    feed('', `${myName}님이 무동력 트레드밀 전력질주 시작 🔥`, 'sys'); say(me, '전력질주!! 🔥', 2);
+    const tk = ++sprintTk; let i = 0;
+    const iv = setInterval(() => {
+      if (tk !== sprintTk || me.userData.act !== 'sprint') { clearInterval(iv); return; }
+      i++; burst(me.position.x, .9, me.position.z + .6, ['💨', '💦'], 4);
+      if (i === 4) say(me, '시속 16km!', 1.3, false, true);
+      if (i === 8) say(me, '18km!!', 1.3, false, true);
+      if (i === 12) say(me, '22km!!! 🔥', 1.5, false, true);
+      if (i >= 16) { clearInterval(iv); me.userData.act = 'puff'; say(me, '헉헉… 🥵', 2.5, false, true); setTimeout(() => { if (me.userData.act === 'puff') me.userData.act = null; }, 2600); }
+    }, 500);
+  });
+}
+function doMove(act, msg, line) { me.userData.act = act; feed('', msg, 'sys'); say(me, line, 2.5); }
 const ACTS = [
   ['👋', '인사', () => { me.userData.wave = 1.6; say(me, '안녕하세요! 👋', 2.5); setTimeout(() => { const n = NPCS[Math.floor(Math.random() * NPCS.length)]; n.a.userData.wave = 1.3; say(n.a, '반가워요!'); }, 700); }],
   ['🏃', '달리기', () => onTreadmill(true)],
@@ -926,6 +972,11 @@ const ACTS = [
   ['🧱', '플랭크', () => { me.userData.act = 'plank'; say(me, '30초 버티기…', 2.5); }],
   ['🤸', '팔벌려뛰기', () => { me.userData.act = 'jack'; say(me, '하나 둘 셋 넷!', 2); }],
   ['🪢', '줄넘기', () => { me.userData.act = 'rope'; say(me, '쌩쌩~ 줄넘기!', 2); }],
+  ['🚴', '사이클', () => rideSpot(BIKES, 'cycle', '사이클', `${myName}님이 사이클 타기 시작 🚴`, '페달 밟기~ 🚴')],
+  ['🪜', '천국의 계단', () => rideSpot(STEPS, 'stairs', '천국의 계단', `${myName}님이 천국의 계단 오르는 중 🪜`, '한 계단씩! 🪜')],
+  ['🔥', '전력질주', () => doSprint()],
+  ['🤸', '버피', () => doMove('burpee', `${myName}님 버피 도전 중 🤸`, '버피 10개! 🔥')],
+  ['⛰️', '마운틴클라이머', () => doMove('mclimb', `${myName}님 마운틴클라이머 중 ⛰️`, '다다다다! ⛰️')],
   ['🙌', '만세', () => { me.userData.act = 'hooray'; say(me, '오운완 만세!! 🎉', 2.5); burst(me.position.x, 2.4, me.position.z, ['🎉', '✨', '💙'], 10, '만세!'); feed('', `${myName}님 오운완 만세! 🎉`, 'sys'); }],
   ['🕺', '춤추기', () => { me.userData.act = 'dance'; say(me, '🎵 신난다~', 2.5); feed('', `${myName}님이 춤추는 중 🕺`, 'sys'); }],
   ['👏', '박수', () => emote('clap')],
@@ -933,6 +984,10 @@ const ACTS = [
   ['✨', '짱짱', () => emote('jjang')],
   ['🫶', '하트', () => emote('heart')],
   ['🙌', '하이파이브', () => { const n = nearestNpc(); if (n) highFive(n); else toast('근처에 회원이 없어요'); }],
+  ['🫂', '어깨동무', () => pairReq('sh')],
+  ['🤜', '주먹 인사', () => pairReq('fist')],
+  ['📸', '같이 포즈', () => pairReq('pose')],
+  ['💃', '둥글게 둥글게', () => pairReq('circle')],
   ['💪', '파이팅', () => { me.userData.act = 'fight'; say(me, '파이팅!!', 2); setTimeout(() => { if (me.userData.act === 'fight') me.userData.act = null; }, 1800); }],
 ];
 ACTS.forEach(([ic, nm, fn]) => { const b = document.createElement('button'); b.innerHTML = `<span>${ic}</span>${nm}`; b.onclick = () => { closeAll(); if (!entered) return; fn(); }; $('actGrid').appendChild(b); });
@@ -983,6 +1038,90 @@ function highFive(n) {
   if (n.remote) { addDoc(collection(db, 'gym_hi5'), { from: myUid, fromNick: myName, to: n.uid, st: 'req', ts: serverTimestamp() }).then(() => toast(`${n.a.userData.name}님에게 하이파이브 요청을 보냈어요 🙌`)).catch(() => toast('잠시 후 다시 해주세요')); return; }
   hi5Anim(n, true);
 }
+const PAIR = { sh: ['🫂', '어깨동무', '어깨동무 해요!'], fist: ['🤜', '주먹 인사', '쾅! 할래요'], pose: ['📸', '같이 포즈', '찰칵! 찍어요'], circle: ['💃', '둥글게 둥글게', '같이 돌아요!'] };
+function pairReq(k) {
+  if (k === 'circle') { circleStart(); return; }
+  const n = nearestNpc(4), [ic, nm] = PAIR[k];
+  if (!n) { toast(`가까이 있는 회원에게 다가가서 ${nm}를 눌러 주세요`); return; }
+  if (n.remote) { addDoc(collection(db, 'gym_hi5'), { from: myUid, fromNick: myName, to: n.uid, st: 'req', k, ts: serverTimestamp() }).then(() => toast(`${n.a.userData.name}님에게 ${ic} ${nm} 요청을 보냈어요`)).catch(() => toast('잠시 후 다시 해주세요')); return; }
+  toast(`${n.a.userData.name}님에게 ${ic} ${nm} 요청!`);
+  n.busy = 99; if (!n.restore) n.restore = { act: n.a.userData.act, rot: n.a.rotation.y, p: n.a.position.clone() };
+  setTimeout(() => { say(n.a, '좋아요! ' + ic, 1.3); pairAnim(n, k, true, true); }, 900);
+}
+function flash() { const f = document.createElement('div'); f.style.cssText = 'position:fixed;inset:0;background:#fff;opacity:.85;z-index:9;pointer-events:none;transition:opacity .5s'; document.body.appendChild(f); requestAnimationFrame(() => requestAnimationFrame(() => { f.style.opacity = '0'; })); setTimeout(() => f.remove(), 600); }
+function pairAnim(n, k, mover, post) {
+  const [ic, nm] = PAIR[k], other = n.a.userData.name;
+  const D = k === 'fist' ? .8 : .62;
+  const bx = mover ? n.a.position.x : me.position.x, bz = mover ? n.a.position.z : me.position.z;
+  const side = isBlocked(bx - D, bz, .3) ? 1 : -1, rx = bx + side * D;
+  const reqAct = k === 'sh' ? (side < 0 ? 'shL' : 'shR') : k === 'fist' ? 'fist' : 'vpose';
+  const accAct = k === 'sh' ? (side < 0 ? 'shR' : 'shL') : k === 'fist' ? 'fist' : 'vpose';
+  const reqRot = k === 'fist' ? Math.atan2(-side, 0) : 0, accRot = k === 'fist' ? Math.atan2(side, 0) : 0;
+  const myAct = mover ? reqAct : accAct, cx = (bx + rx) / 2, local = !n.remote;
+  const play = () => {
+    me.rotation.y = mover ? reqRot : accRot; me.userData.act = myAct;
+    if (local) { n.a.position.set(bx, n.a.position.y, bz); n.a.rotation.y = accRot; n.a.userData.act = accAct; }
+    if (post) feed('', `${myName}님과 ${other}님이 ${ic} ${nm}!`, 'sys');
+    let dur = 2200;
+    if (k === 'sh') { dur = 5800; say(me, '어깨동무~ 🫂', 2, false, true);
+      setTimeout(() => { if (me.userData.act !== myAct) return; me.userData.act = 'hooray'; say(me, '런앤핏 최고!!', 2.2, false, true); burst(cx, 2.5, bz, ['💙', '❤️', '✨', '🎉'], 18, '런앤핏 최고!!'); if (local) { n.a.userData.act = 'hooray'; say(n.a, '런앤핏 최고!!', 2.2); } }, 3600); }
+    if (k === 'fist') setTimeout(() => { burst(cx, 1.5, bz, ['🤜', '💥', '🤛', '✨'], 14, '쾅!'); say(me, '쾅! 🤜🤛', 1.6, false, true); }, 600);
+    if (k === 'pose') { dur = 2800; say(me, '하나, 둘, 셋!', 1.2, false, true); setTimeout(() => { flash(); burst(cx, 2.3, bz, ['📸', '✨', '💙'], 14, '찰칵!'); }, 1100); }
+    setTimeout(() => { if (me.userData.act === myAct || me.userData.act === 'hooray') me.userData.act = null; if (local) n.busy = .3; }, dur);
+  };
+  if (mover) { if (Math.hypot(rx - me.position.x, bz - me.position.z) > .2) goTo(rx, bz, play); else play(); }
+  else setTimeout(play, Math.min(4000, Math.hypot(n.a.position.x - rx, n.a.position.z - bz) / 3.4 * 1000));
+}
+// 둥글게 둥글게: 같은 원 중심 · 시작 시간을 나눠 갖고 각자 자리에서 함께 돎
+function cirStep(h, a) {
+  const c = h.cir; if (!c) return false;
+  const el = (Date.now() - c.t0) / 1000;
+  if (el < 0) return false;
+  if (el > 12) { h.cir = null; a.position.y = 0; a.userData.act = 'hooray'; burst(a.position.x, 2.3, a.position.z, ['🎉', '💙', '✨'], 6);
+    if (a === me) say(me, '둥글게 둥글게 끝! 🎉', 2, false, true);
+    setTimeout(() => { if (a.userData.act === 'hooray') a.userData.act = null; }, 2200); if (h.busy !== undefined && !h.remote) h.busy = 2.3; return false; }
+  if (c.fx === undefined) { c.fx = a.position.x; c.fz = a.position.z; }
+  const ang = c.a0 + .9 * el, R = 1.35, tx = c.cx + R * Math.sin(ang), tz = c.cz + R * Math.cos(ang), q = Math.min(1, el / 1.2);
+  a.position.set(c.fx + (tx - c.fx) * q, 0, c.fz + (tz - c.fz) * q); a.rotation.y = ang + Math.PI; a.userData.act = 'circle';
+  return true;
+}
+function circleStart() {
+  const ppl = NPCS.filter(n => Math.hypot(n.a.position.x - me.position.x, n.a.position.z - me.position.z) < 10);
+  if (!ppl.length) { toast('근처에 회원이 없어요. 가까이 가서 눌러 주세요'); return; }
+  const cx = me.position.x + Math.sin(me.rotation.y) * 1.4, cz = me.position.z + Math.cos(me.rotation.y) * 1.4, t0 = Date.now() + 5000;
+  route = null; marker.visible = false; me.userData.act = null; me.position.y = 0;
+  me.userData.cir = { cx, cz, t0, a0: 0 };
+  let idx = 1;
+  ppl.forEach(n => {
+    if (n.remote) { addDoc(collection(db, 'gym_hi5'), { from: myUid, fromNick: myName, to: n.uid, st: 'req', k: 'circle', cx: +cx.toFixed(2), cz: +cz.toFixed(2), t0, ts: serverTimestamp() }).catch(() => {}); return; }
+    if (idx > 5) return;
+    n.restore = n.restore || { act: n.a.userData.act, rot: n.a.rotation.y, p: n.a.position.clone() };
+    n.a.position.y = 0; n.a.userData.act = null; n.cir = { cx, cz, t0, a0: idx++ * Math.PI * 2 / 6 }; n.busy = 99;
+    setTimeout(() => say(n.a, '저도 같이 해요! 💃', 1.8), 600 + idx * 250);
+  });
+  feed('', `${myName}님이 둥글게 둥글게를 시작했어요 💃 근처 회원님 함께해요!`, 'sys'); say(me, '다 같이 둥글게 둥글게~ 💃', 3);
+  toast('5초 뒤 다 같이 돌아요! 💃', 2600);
+}
+function joinCircle(d) {
+  if (Date.now() - d.t0 > 8000) { toast('이미 끝났어요. 다음에 함께해요 🙂'); return; }
+  route = null; marker.visible = false; me.userData.act = null; me.position.y = 0;
+  me.userData.cir = { cx: d.cx, cz: d.cz, t0: d.t0, a0: (hashc(myUid) % 6 + .5) * Math.PI / 3 };
+  say(me, '저도 같이 해요! 💃', 2, false, true); toast('둥글게 둥글게 함께해요! 💃');
+}
+// 근처에서 힘든 운동하는 사람에게 박수 보내기
+const CHEER_ACTS = { sprint: '전력질주', burpee: '버피', mclimb: '마운틴클라이머', cycle: '사이클', stairs: '천국의 계단' };
+const cheered = new Map();
+{ const cb = document.createElement('button'); cb.id = 'cheerBtn'; cb.className = 'ui';
+  cb.style.cssText = 'position:fixed;left:50%;transform:translateX(-50%);bottom:calc(176px + env(safe-area-inset-bottom));z-index:6;display:none;background:#153189;color:#fff;border:0;border-radius:999px;padding:11px 18px;font-weight:800;font-size:14px;box-shadow:0 6px 16px rgba(0,0,0,.3);white-space:nowrap';
+  document.body.appendChild(cb); }
+setInterval(() => {
+  const el = $('cheerBtn'); if (!entered) { el.style.display = 'none'; return; }
+  let b = null, bd = 7;
+  for (const n of NPCS) { const ac = n.a.userData.act; if (!CHEER_ACTS[ac] || Date.now() - (cheered.get(n) || 0) < 20000) continue; const d = Math.hypot(n.a.position.x - me.position.x, n.a.position.z - me.position.z); if (d < bd) { bd = d; b = n; } }
+  if (!b) { el.style.display = 'none'; return; }
+  el.style.display = 'block'; el.textContent = `👏 ${b.a.userData.name}님 ${CHEER_ACTS[b.a.userData.act]} 응원하기`;
+  el.onclick = () => { cheered.set(b, Date.now()); el.style.display = 'none'; const keep = { act: b.a.userData.act, rot: b.a.rotation.y }; emote('clap', b); if (!b.remote) { b.restore = keep; } };
+}, 500);
 function hi5Anim(n, post) {
   toast(`${n.a.userData.name}님과 하이파이브! 🙌`);
   n.busy = 99; if (!n.restore) n.restore = { act: n.a.userData.act, rot: n.a.rotation.y };
@@ -1161,13 +1300,15 @@ function loop() {
       if (d < .08) { route.shift(); if (!route.length) { route = null; marker.visible = false; const cb = arrive; arrive = null; if (cb) cb(); } }
       else { const st = Math.min(d, sp); me.position.x += dx / d * st; me.position.z += dz / d * st; me.rotation.y = Math.atan2(dx, dz); mode = fast ? 'run' : 'walk'; }
     }
+    if (ix || iy) me.userData.cir = null; else if (!route) cirStep(me.userData, me);
     pose(me, mode, dt); follow(mode ? .2 : .1); updateCard();
     if (marker.visible) marker.material.opacity = .6 + Math.sin(clock.elapsedTime * 6) * .4;
   } else pose(me, null, dt);
   for (const n of NPCS) {
     if (n.remote) { remoteStep(n, dt); continue; }
     const { a, path } = n; let mv = null;
-    if (n.busy > 0) { n.busy -= dt; if (n.busy <= 0 && n.restore) { n.a.userData.act = n.restore.act; n.a.rotation.y = n.restore.rot; n.restore = null; } }
+    if (n.cir && cirStep(n, a)) { pose(a, null, dt); continue; }
+    if (n.busy > 0) { n.busy -= dt; if (n.busy <= 0 && n.restore) { if (n.restore.p) n.a.position.copy(n.restore.p); n.a.userData.act = n.restore.act; n.a.rotation.y = n.restore.rot; n.restore = null; } }
     else if (path.length > 1) { if (n.wait > 0) n.wait -= dt; else { const [tx, tz] = path[n.i], dx = tx - a.position.x, dz = tz - a.position.z, d = Math.hypot(dx, dz); if (d < .1) { n.i = (n.i + 1) % path.length; n.wait = Math.random() * 2; } else { const st = Math.min(d, n.speed * dt); a.position.x += dx / d * st; a.position.z += dz / d * st; a.rotation.y = Math.atan2(dx, dz); mv = 'walk'; } } }
     pose(a, mv, dt);
     n.talkT -= dt; if (n.talkT < 0) { n.talkT = 8 + Math.random() * 12; if (n.lines.length) say(a, n.lines[Math.floor(Math.random() * n.lines.length)]); }
@@ -1197,14 +1338,44 @@ const feedLog = [];
 function esc(t) { return String(t).replace(/[&<>]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c])); }
 function hhmm() { const d = new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
 function nameHtml(n, belt, staff) { if (staff === 'coach') return `<b class="co">${esc(n)}</b>`; if (staff || (staff === undefined && STAFF.has(n))) return `<b class="st">${esc(n)}</b>`; const b = belt !== undefined ? belt : n === myName ? MYBELT : BELTOF[n]; const c = BELTHEX[b] || '#F3F4F6'; return `<b style="border-bottom-color:${c}${b === '검' ? ';box-shadow:0 2px 0 #F5B301' : ''}">${esc(n)}</b>`; }
-function renderFeedAll() { const el = $('feedAll'); el.innerHTML = feedLog.map(f => `<div class="r${f.n ? '' : ' sys'}"><i>${f.t}</i><div>${f.n ? nameHtml(f.n, f.b, f.s) : ''}${esc(f.x)}</div></div>`).join('') || '<div class="r">아직 이야기가 없어요</div>'; el.scrollTop = el.scrollHeight; }
+// 지난 이야기: 위로 올리면 더 예전 이야기를 계속 불러옴
+let feedOldest = null, feedEnd = false, feedLoading = false;
+async function loadOlderFeed() {
+  if (!LIVE || feedEnd || feedLoading || !feedOldest) return;
+  feedLoading = true;
+  try {
+    const snap = await getDocs(query(collection(db, 'gym_feed'), orderBy('ts', 'desc'), startAfter(feedOldest), limit(80)));
+    if (snap.docs.length < 80) feedEnd = true;
+    if (snap.docs.length) feedOldest = snap.docs[snap.docs.length - 1];
+    const older = snap.docs.slice().reverse().map(dd => { const d = dd.data(); return { t: tsTime(d.ts), d: tsDay(d.ts), n: d.sys ? '' : d.nick, x: d.text, b: d.belt, s: d.staff }; });
+    const el = $('feedAll'), h = el.scrollHeight;
+    feedLog.unshift(...older);
+    renderFeedAll(true);
+    el.scrollTop = el.scrollHeight - h;
+  } catch (e) { feedEnd = true; }
+  feedLoading = false;
+}
+$('feedAll').addEventListener('scroll', () => { if ($('feedAll').scrollTop < 40) loadOlderFeed(); });
+function renderFeedAll(keep) { const el = $('feedAll'); let pd = ''; el.innerHTML = feedLog.map(f => (f.d && f.d !== pd ? (pd = f.d, `<div class="day"><span>${f.d}</span></div>`) : '') + `<div class="r${f.n ? '' : ' sys'}"><i>${f.t}</i><div>${f.n ? nameHtml(f.n, f.b, f.s) : ''}${esc(f.x)}</div></div>`).join('') || '<div class="r">아직 이야기가 없어요</div>'; if (LIVE) el.insertAdjacentHTML('afterbegin', `<div class="more">${feedEnd ? '처음 이야기까지 다 봤어요' : '↑ 위로 올리면 예전 이야기가 더 나와요'}</div>`); if (!keep) el.scrollTop = el.scrollHeight; }
 $('feedBtn').onclick = () => { const el = $('feedAll'), open = el.style.display !== 'block'; el.style.display = open ? 'block' : 'none'; $('feed').style.display = open ? 'none' : 'flex'; $('feedBtn').textContent = open ? '💬 접기 ▾' : '💬 지난 이야기 ▴'; if (open) renderFeedAll(); };
+// 내 동작 안내 + 자동으로 나온 말은 한 줄로 묶어서 보냄
+let pendMine = null;
+function queueMine(kind, txt) {
+  if (!pendMine) { pendMine = {}; setTimeout(flushMine, 160); }
+  pendMine[kind] = txt;
+}
+function flushMine() {
+  const p = pendMine; pendMine = null; if (!p) return;
+  const line = p.sys ? p.sys + (p.say ? ` "${p.say}"` : '') : `${myName} · ${p.say}`;
+  feed.raw = true; feed('', line, 'sys'); feed.raw = false;
+}
 function feed(name, txt, cls = '') {
+  if (!name && !feed.raw && String(txt).startsWith(myName + '님')) { queueMine('sys', txt); return; }
   if (LIVE) { addDoc(collection(db, 'gym_feed'), { uid: myUid, nick: name || '', text: String(txt).slice(0, 200), sys: !name, belt: MYBELT, staff: ME.staff || false, ts: serverTimestamp() }).catch(() => {}); return; }
   showFeed(name, txt, cls);
 }
-function showFeed(name, txt, cls = '', belt, staff, t) {
-  feedLog.push({ t: t || hhmm(), n: name, x: txt, b: belt, s: staff }); if (feedLog.length > 300) feedLog.shift(); if ($('feedAll').style.display === 'block') renderFeedAll();
+function showFeed(name, txt, cls = '', belt, staff, t, day) {
+  feedLog.push({ t: t || hhmm(), d: day || tsDay(), n: name, x: txt, b: belt, s: staff }); if (feedLog.length > 3000) feedLog.shift(); if ($('feedAll').style.display === 'block') renderFeedAll();
   const box = $('feed'), d = document.createElement('div'); if (cls) d.className = cls;
   d.innerHTML = name ? nameHtml(name, belt, staff) + esc(txt) : esc(txt);
   box.appendChild(d); while (box.children.length > 5) box.removeChild(box.firstChild);
@@ -1220,7 +1391,8 @@ const STAFF_PHONES = ['+821096091607', '+821028774334', '+821041224441', '+82107
 const COACH_PHONES = ['+821082522866', '+821091458865', '+821051015969'];
 let GUEST = false;
 const KSTd = () => new Date(Date.now() + 9 * 3600e3).toISOString().slice(0, 10);
-const tsTime = t => { const d = t && t.toDate ? t.toDate() : new Date(); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); };
+const tsTime = t => { const d = t && t.toDate ? t.toDate() : new Date(), hm = String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); return hm; };
+function tsDay(t) { const d = t && t.toDate ? t.toDate() : new Date(); return (d.getMonth() + 1) + '월 ' + d.getDate() + '일 (' + '일월화수목금토'[d.getDay()] + ')'; }
 $('helpToggle').onclick = (e) => { e.stopPropagation(); const o = $('helpRows').style.display === 'none'; $('helpRows').style.display = o ? 'block' : 'none'; $('helpArrow').style.transform = o ? 'rotate(180deg)' : ''; };
 function startMember() { $('startMsg').innerHTML = `<b style="color:#153189">${esc(myName)}</b>님, 반가워요!`; $('enter').disabled = false; $('enter').textContent = '입장하기'; $('startSmall').textContent = ''; $('helpCard').style.display = 'block'; }
 function startGuest(msg) {
@@ -1251,6 +1423,8 @@ function dropRemote(uid) { const r = remotes.get(uid); if (!r) return; scene.rem
 function setFinal(r, f) { r.a.position.set(f.x, f.y, f.z); r.a.rotation.y = f.rot; const u = r.a.userData; u.act = f.act; u.mtype = f.mt; u.mstand = f.ms; }
 function applyRemote(r, d) {
   r.seen = Date.now();
+  if (d.cir && d.cir.t0 && (!r.cir || r.cir.t0 !== d.cir.t0) && Date.now() - d.cir.t0 < 12000) { r.cir = { cx: d.cir.cx, cz: d.cir.cz, t0: d.cir.t0, a0: d.cir.a0 }; r.route = null; r.final = null; }
+  if (r.cir && r.init) { if (d.sayT && d.sayT !== r.sayT) { say(r.a, d.say || ''); r.sayT = d.sayT; } return; }
   if (d.mv) { if (!r.route || r.tx !== d.tx || r.tz !== d.tz) { r.tx = d.tx; r.tz = d.tz; r.a.userData.act = null; r.a.position.y = 0; r.route = findPath(r.a.position.x, r.a.position.z, d.tx, d.tz) || [[d.tx, d.tz]]; } r.final = null; }
   else { const f = { x: d.x, y: d.y || 0, z: d.z, rot: d.rot || 0, act: d.act || null, mt: d.mt || null, ms: !!d.ms };
     if (!r.init) setFinal(r, f);
@@ -1262,6 +1436,7 @@ function applyRemote(r, d) {
 }
 function remoteStep(r, dt) {
   let mode = null;
+  if (r.cir && !r.route && cirStep(r, r.a)) { pose(r.a, null, dt); return; }
   if (r.route && r.route.length) {
     const [tx, tz] = r.route[0], dx = tx - r.a.position.x, dz = tz - r.a.position.z, d = Math.hypot(dx, dz);
     let rest = d; for (let i = 1; i < r.route.length; i++) rest += Math.hypot(r.route[i][0] - r.route[i - 1][0], r.route[i][1] - r.route[i - 1][1]);
@@ -1278,9 +1453,10 @@ function remoteEmo(r, e) {
 }
 // 내 상태 보내기 (이동 목표 · 도착 자리 · 동작)
 let lastPub = '', lastPubT = 0, lastBeat = 0;
-function myState() { if (route && route.length) { const l = route[route.length - 1]; return { mv: 1, tx: +l[0].toFixed(2), tz: +l[1].toFixed(2) }; }
+function myState() { const mc = me.userData.cir; if (mc && Date.now() - mc.t0 < 12000) return { mv: 0, x: +mc.cx.toFixed(2), y: 0, z: +mc.cz.toFixed(2), rot: 0, act: 'circle', cir: { cx: mc.cx, cz: mc.cz, t0: mc.t0, a0: mc.a0 } };
+  if (route && route.length) { const l = route[route.length - 1]; return { mv: 1, tx: +l[0].toFixed(2), tz: +l[1].toFixed(2) }; }
   const u = me.userData; return { mv: 0, x: +me.position.x.toFixed(2), y: +me.position.y.toFixed(2), z: +me.position.z.toFixed(2), rot: +me.rotation.y.toFixed(2), act: u.act || null, mt: u.mtype || null, ms: !!u.mstand }; }
-function pubMe(extra = {}) { if (!LIVE) return; setDoc(doc(db, 'gym_people', myUid), { nick: myName, belt: MYBELT, staff: ME.staff || false, ...myState(), ...extra, ts: serverTimestamp() }, { merge: true }).catch(() => {}); }
+function pubMe(extra = {}) { if (!LIVE) return; setDoc(doc(db, 'gym_people', myUid), { nick: myName, belt: MYBELT, staff: ME.staff || false, cir: null, ...myState(), ...extra, ts: serverTimestamp() }, { merge: true }).catch(() => {}); }
 function pubEmo(k, to) { if (LIVE) pubMe({ emo: { k, to: to || null, t: Date.now() } }); }
 function liveTick() {
   if (!entered) return; const now = Date.now(), k = JSON.stringify(myState());
@@ -1306,7 +1482,9 @@ function startListeners() {
   let first = true;
   onSnapshot(query(collection(db, 'gym_feed'), orderBy('ts', 'desc'), limit(60)), snap => {
     const add = first ? snap.docs.slice().reverse() : snap.docChanges().filter(c => c.type === 'added').map(c => c.doc).reverse();
-    add.forEach(dd => { const d = dd.data(); showFeed(d.sys ? '' : d.nick, d.text, d.sys ? 'sys' : (d.uid === myUid ? 'me' : ''), d.belt, d.staff, tsTime(d.ts)); });
+    if (first && snap.docs.length) feedOldest = snap.docs[snap.docs.length - 1];
+    if (first && snap.docs.length < 60) feedEnd = true;
+    add.forEach(dd => { const d = dd.data(); showFeed(d.sys ? '' : d.nick, d.text, d.sys ? 'sys' : (d.uid === myUid ? 'me' : ''), d.belt, d.staff, tsTime(d.ts), tsDay(d.ts)); });
     first = false;
   }, () => {});
   // 방명록
@@ -1337,15 +1515,17 @@ function startListeners() {
     if (d.st !== 'req' || Date.now() - t > 60000 || $('req')) return;
     const r = remotes.get(d.from); const box = document.createElement('div'); box.id = 'req'; box.className = 'ui';
     box.style.cssText = 'left:50%;transform:translateX(-50%);top:calc(176px + env(safe-area-inset-top));width:min(330px,calc(100% - 24px));background:#fff;border-radius:14px;padding:10px 12px;box-shadow:0 8px 20px rgba(0,0,0,.3);z-index:6';
-    box.innerHTML = `<div style="font-size:14px;font-weight:900">🙌 ${esc(d.fromNick)}님이 하이파이브를 요청했어요</div><div style="display:flex;gap:6px;margin-top:8px"><button class="btn p" style="flex:1;height:40px" id="rOk">하이파이브!</button><button class="btn g" style="flex:1;height:40px" id="rNo">나중에</button></div>`;
+    const P = d.k && PAIR[d.k], q = P ? `${P[0]} ${esc(d.fromNick)}님이 ${P[1]}${d.k === 'circle' ? '에 초대했어요' : '를 요청했어요'}` : `🙌 ${esc(d.fromNick)}님이 하이파이브를 요청했어요`;
+    box.innerHTML = `<div style="font-size:14px;font-weight:900">${q}</div><div style="display:flex;gap:6px;margin-top:8px"><button class="btn p" style="flex:1;height:40px" id="rOk">${P ? P[2] : '하이파이브!'}</button><button class="btn g" style="flex:1;height:40px" id="rNo">나중에</button></div>`;
     document.body.appendChild(box);
-    $('rOk').onclick = () => { box.remove(); updateDoc(ch.doc.ref, { st: 'ok' }).catch(() => {}); const rr = remotes.get(d.from); if (rr) hi5Anim(rr, true); };
+    $('rOk').onclick = () => { box.remove(); updateDoc(ch.doc.ref, { st: 'ok' }).catch(() => {}); const rr = remotes.get(d.from); if (d.k === 'circle') joinCircle(d); else if (rr) { if (d.k && PAIR[d.k]) pairAnim(rr, d.k, false, true); else hi5Anim(rr, true); } };
     $('rNo').onclick = () => { box.remove(); updateDoc(ch.doc.ref, { st: 'no' }).catch(() => {}); };
     setTimeout(() => { if (box.isConnected) box.remove(); }, 15000);
   }), () => {});
   onSnapshot(query(collection(db, 'gym_hi5'), where('from', '==', myUid), limit(20)), snap => snap.docChanges().forEach(ch => {
     if (ch.type !== 'modified') return; const d = ch.doc.data(), r = remotes.get(d.to);
-    if (d.st === 'ok' && r) hi5Anim(r, false); else if (d.st === 'no') toast('다음에 하이파이브해요 🙂');
+    if (d.k === 'circle') { if (d.st === 'ok' && r) toast(`${r.a.userData.name}님이 함께 돌아요! 💃`); return; }
+    if (d.st === 'ok' && r) { if (d.k && PAIR[d.k]) pairAnim(r, d.k, true, false); else hi5Anim(r, false); } else if (d.st === 'no') toast(d.k ? '다음에 함께해요 🙂' : '다음에 하이파이브해요 🙂');
   }), () => {});
 }
 if (DEMO) { $('nick').style.display = 'block'; $('enter').disabled = false; $('enter').textContent = '입장하기'; $('startSmall').textContent = '체험판 · 다른 회원은 예시 캐릭터예요'; $('startMsg').innerHTML = '<b style="color:#153189">체험판</b>으로 둘러봐요! 닉네임을 정해 주세요'; $('helpCard').style.display = 'block'; }
