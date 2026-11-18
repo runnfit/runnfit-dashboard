@@ -826,7 +826,7 @@ const MACHINES = [['01', '레그프레스(머신)'], ['02', '이너타이'], ['0
 const myMachines = ()=> Array.isArray(me.machines) ? me.machines.filter((n)=> MACHINES.some((m)=> m[0] === n)) : [];
 function masterBar(n, dark){ return '<div style="height:8px;border-radius:4px;background:' + (dark ? 'rgba(255,255,255,.2)' : '#E9EEF6') + ';margin-top:8px;overflow:hidden"><i style="display:block;height:100%;width:' + (n / MACHINES.length * 100) + '%;background:' + (dark ? 'var(--y)' : B) + '"></i></div>'; }
 function masterHomeCard(){
-  const n = myMachines().length; if(n >= MACHINES.length) return '';
+  const n = myMachines().length; if(n >= MACHINES.length || (Number(me.total) || 0) >= 30) return '';   // 흰 띠 · 노란 띠만
   return '<div class="m" style="background:' + B + ';color:#fff;border-radius:14px;padding:14px 16px">' +
     '<div style="font-size:12px;font-weight:700;color:var(--y)">머신 마스터</div>' +
     '<div style="font-size:17px;font-weight:900;margin-top:4px">센터 머신 ' + MACHINES.length + '개, 하나씩 내 것으로!</div>' +
