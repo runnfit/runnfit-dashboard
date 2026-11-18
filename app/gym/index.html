@@ -43,6 +43,12 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 #gB .row button:disabled:not(.on){opacity:.4}
 #gTap{width:100%;height:170px;border:0;border-radius:18px;font-size:30px;font-weight:900;font-family:inherit;background:#E5E7EB;color:#6B7280;margin-top:6px}
 #gTap.go{background:#153189;color:#fff}
+#gTap.go:active{transform:scale(.97)}
+#gB .tr{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px;font-weight:800}
+#gB .tr .nm{width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#gB .tr .bg{flex:1;height:12px;border-radius:6px;background:#EEF2FB;overflow:hidden}
+#gB .tr .bg i{display:block;height:100%;background:#153189;border-radius:6px;transition:width .2s}
+#gB .tr .ct{width:30px;text-align:right;color:#153189}
 .btn.p{background:var(--b2);color:#fff}.btn.g{background:#E3E9FF;color:var(--b)}
 .modal{position:fixed;inset:0;z-index:20;display:none;align-items:flex-end;justify-content:center;background:rgba(3,8,25,.45)}
 .sheet{width:min(420px,100%);background:#fff;border-radius:18px 18px 0 0;padding:16px 14px calc(14px + env(safe-area-inset-bottom));max-height:78vh;overflow:auto}
@@ -146,8 +152,8 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 <button data-g="react"><span class="i">⚡</span><span><b>반응속도 대결</b><small>"지금!" 뜨면 먼저 누르기</small></span></button>
 <button data-g="num"><span class="i">🎯</span><span><b>숫자 맞히기</b><small>같은 숫자 고르면 통했다 💙</small></span></button></div>
 <div class="gsec">여럿이 · 연타</div><div class="gl">
-<button disabled><span class="i">🏃</span><span><b>러닝머신 레이스</b><small>곧 열려요</small></span></button>
-<button disabled><span class="i">🦵</span><span><b>스쿼트 많이 하기</b><small>곧 열려요</small></span></button></div>
+<button data-g="race"><span class="i">🏃</span><span><b>러닝머신 레이스</b><small>10초 동안 [달려!] 연타 · 혼자도 OK</small></span></button>
+<button data-g="sqt"><span class="i">🦵</span><span><b>스쿼트 많이 하기</b><small>10초 동안 [앉아!] 연타 · 혼자도 OK</small></span></button></div>
 <button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
 <div id="mGame" class="modal"><div class="sheet"><h3 id="gT">미니게임</h3><div id="gB"></div><button class="btn g" style="width:100%;margin-top:12px" data-close id="gClose">닫기</button></div></div>
 <div id="mTalk" class="modal"><div class="sheet"><h3>접속한 회원에게 한마디</h3><div class="inrow"><input id="msg" maxlength="200" placeholder="예) 오늘도 파이팅!"><button class="btn p" id="send" style="width:76px">보내기</button></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
@@ -1156,6 +1162,7 @@ const HAND = ['✌️', '✊', '🖐'];
 let GM = null;
 function gShow(t, html) { $('gT').textContent = t; $('gB').innerHTML = html; openM('mGame'); }
 function gameReq(k) {
+  if (TAPG[k]) { tapStart(k); return; }
   const n = nearestNpc(6), [ic, nm] = GAMES[k];
   if (!n) { toast('가까이 있는 회원에게 다가가서 눌러 주세요'); return; }
   faceEach(n);
@@ -1232,6 +1239,62 @@ function gCheck() {
   if (local) setTimeout(() => { if (GM !== g || GM.done) g.n.busy = .3; }, 3500);
   GM = null;
 }
+// ── 연타 게임: 러닝머신 레이스 · 스쿼트 많이 하기 (여럿이 · 혼자도 가능)
+const TAPG = { race: ['🏃', '러닝머신 레이스', '참가!', '달려!', 'sprint', 'm'], sqt: ['🦵', '스쿼트 많이 하기', '참가!', '앉아!', 'squat', '개'] };
+let GT = null;
+function tapStart(k) {
+  const t0 = Date.now() + 5000, id = myUid + ':' + t0, [ic, nm] = TAPG[k];
+  const ppl = NPCS.filter(n => Math.hypot(n.a.position.x - me.position.x, n.a.position.z - me.position.z) < 10);
+  tapJoin(k, id, t0, true);
+  let idx = 0;
+  ppl.forEach(n => {
+    if (n.remote) { addDoc(collection(db, 'gym_hi5'), { from: myUid, fromNick: myName, to: n.uid, st: 'req', k, gid: id, t0, ts: serverTimestamp() }).catch(() => {}); return; }
+    if (idx++ >= 3) return;
+    GT.ppl.set('npc' + idx, { name: n.a.userData.name, n: 0, npc: n, sp: 4 + Math.random() * 3 });
+    n.busy = 18; n.restore = n.restore || { act: n.a.userData.act, rot: n.a.rotation.y };
+    setTimeout(() => say(n.a, '저도 참가! ' + ic, 1.6), 400 + idx * 300);
+  });
+  feed('', `${myName}님이 ${ic} ${nm}를 시작했어요! 근처 회원님 함께해요`, 'sys');
+}
+function tapJoin(k, id, t0, host) {
+  if (Date.now() > t0 + 3000) { toast('이미 시작했어요. 다음에 함께해요 🙂'); return; }
+  const [ic, nm, , btn, act] = TAPG[k];
+  GT = { k, id, t0, host, ppl: new Map([['me', { name: myName, n: 0, me: true }]]), last: -1, done: false };
+  if (k === 'race') { const free = treadmills.filter(t => !NPCS.some(n => Math.hypot(n.a.position.x - t.x, n.a.position.z - t.z) < .3)), t = nearest(free, 12);
+    if (t) goTo(t.x, t.z + 1.4, () => { me.position.set(t.x, .27, t.z); me.rotation.y = Math.PI; }); }
+  gShow(`${ic} ${nm}`, `<div class="big" id="gCd">5</div><button id="gTap">곧 시작해요</button><div id="gTr" style="margin-top:10px"></div>`);
+  const g = GT;
+  $('gTap').onclick = () => { if (GT !== g || g.done) return; const el = Date.now() - g.t0; if (el < 0 || el > 10000) return; const m = g.ppl.get('me'); m.n++;
+    me.userData.act = act; };
+  const iv = setInterval(() => {
+    if (GT !== g) { clearInterval(iv); return; }
+    const el = Date.now() - g.t0, cd = $('gCd'), tb = $('gTap');
+    if (el < 0) { if (cd) cd.textContent = Math.ceil(-el / 1000); }
+    else if (el <= 10000) { if (cd) cd.textContent = ((10000 - el) / 1000).toFixed(1); if (tb && !tb.classList.contains('go')) { tb.classList.add('go'); tb.textContent = btn + ' ' + TAPG[k][0]; say(me, '시작!! ' + ic, 1.2, false, true); }
+      for (const p of g.ppl.values()) if (p.npc) { p.n = Math.round(el / 1000 * p.sp); p.npc.a.userData.act = act; } }
+    else if (tb && tb.classList.contains('go')) { tb.classList.remove('go'); tb.textContent = '끝!'; if (cd) cd.textContent = '0.0'; }
+    const mine = g.ppl.get('me').n;
+    if (!g.solo && mine !== g.last && Date.now() - (g.pubT || 0) > 400) { g.last = mine; g.pubT = Date.now(); pubMe({ tap: { id: g.id, n: mine } }); }
+    const list = [...g.ppl.values()].sort((a, b) => b.n - a.n), mx = Math.max(10, ...list.map(p => p.n));
+    if ($('gTr')) $('gTr').innerHTML = list.map(p => `<div class="tr"><span class="nm" style="${p.me ? 'color:#153189' : ''}">${esc(p.name)}</span><span class="bg"><i style="width:${p.n / mx * 100}%"></i></span><span class="ct">${p.n}</span></div>`).join('');
+    if (el > 11500) { clearInterval(iv); tapEnd(g); }
+  }, 150);
+}
+function tapEnd(g) {
+  g.done = true; GT = null; pubMe({ tap: { id: g.id, n: g.ppl.get('me').n } });
+  const [ic, nm, , , act, unit] = TAPG[g.k], list = [...g.ppl.values()].sort((a, b) => b.n - a.n);
+  const score = p => g.k === 'race' ? p.n * 2 : p.n, rank = list.findIndex(p => p.me) + 1, mine = score(g.ppl.get('me'));
+  if (me.userData.act === act) me.userData.act = null;
+  if (rank === 1) { me.userData.act = 'hooray'; burst(me.position.x, 2.3, me.position.z, ['🎉', '🏆', '✨'], 14, '1등!'); setTimeout(() => { if (me.userData.act === 'hooray') me.userData.act = null; }, 2500); }
+  say(me, `${mine}${unit}! ${rank === 1 ? '🏆' : '💪'}`, 2.5, false, true);
+  for (const p of list) if (p.npc) { p.npc.a.userData.act = p === list[0] ? 'hooray' : null; p.npc.busy = 2.5; }
+  if (g.host) { feed.raw = true; feed('', list.length > 1 ? `${ic} ${nm} 결과 · ` + list.slice(0, 3).map((p, i) => `${i + 1}등 ${p.name} ${score(p)}${unit}`).join(' · ') : `${myName}님 ${ic} ${nm} ${mine}${unit}!`, 'sys'); feed.raw = false; }
+  gShow(`${ic} ${nm}`, `<div class="big">${mine}${unit}</div><div class="msg">${list.length > 1 ? (rank === 1 ? '🏆 1등이에요!' : rank + '등! 다음엔 1등 가봐요 💪') : '좋아요! 다음엔 기록 깨봐요 💪'}</div>`
+    + list.map((p, i) => `<div class="tr"><span class="nm" style="${p.me ? 'color:#153189' : ''}">${i + 1}. ${esc(p.name)}</span><span class="ct" style="width:auto;margin-left:auto">${score(p)}${unit}</span></div>`).join('')
+    + `<div class="row"><button id="gAgain" style="font-size:16px;height:48px">한 판 더</button></div>`);
+  $('gAgain').onclick = () => { closeAll(); tapStart(g.k); };
+}
+function tapRemote(r, t) { if (!GT || !t || t.id !== GT.id) return; const p = GT.ppl.get(r.uid) || { name: r.a.userData.name, n: 0 }; p.n = t.n; GT.ppl.set(r.uid, p); if (!GT.done) r.a.userData.act = TAPG[GT.k][4]; }
 function hi5Anim(n, post) {
   toast(`${n.a.userData.name}님과 하이파이브! 🙌`);
   n.busy = 99; if (!n.restore) n.restore = { act: n.a.userData.act, rot: n.a.rotation.y };
@@ -1533,6 +1596,7 @@ function dropRemote(uid) { const r = remotes.get(uid); if (!r) return; scene.rem
 function setFinal(r, f) { r.a.position.set(f.x, f.y, f.z); r.a.rotation.y = f.rot; const u = r.a.userData; u.act = f.act; u.mtype = f.mt; u.mstand = f.ms; }
 function applyRemote(r, d) {
   r.seen = Date.now();
+  if (d.tap) tapRemote(r, d.tap);
   if (d.game && d.game.id && d.game.id !== r.gameSeen) { r.gameSeen = d.game.id; gRemote(r, d.game); }
   if (d.cir && d.cir.t0 && (!r.cir || r.cir.t0 !== d.cir.t0) && Date.now() - d.cir.t0 < 12000) { r.cir = { cx: d.cir.cx, cz: d.cir.cz, t0: d.cir.t0, a0: d.cir.a0 }; r.route = null; r.final = null; }
   if (r.cir && r.init) { if (d.sayT && d.sayT !== r.sayT) { say(r.a, d.say || ''); r.sayT = d.sayT; } return; }
@@ -1626,15 +1690,16 @@ function startListeners() {
     if (d.st !== 'req' || Date.now() - t > 60000 || $('req')) return;
     const r = remotes.get(d.from); const box = document.createElement('div'); box.id = 'req'; box.className = 'ui';
     box.style.cssText = 'left:50%;transform:translateX(-50%);top:calc(176px + env(safe-area-inset-top));width:min(330px,calc(100% - 24px));background:#fff;border-radius:14px;padding:10px 12px;box-shadow:0 8px 20px rgba(0,0,0,.3);z-index:6';
-    const P = d.k && (PAIR[d.k] || GAMES[d.k]), q = P ? `${P[0]} ${esc(d.fromNick)}님이 ${P[1]}${d.k === 'circle' ? '에 초대했어요' : GAMES[d.k] ? '을 신청했어요' : '를 요청했어요'}` : `🙌 ${esc(d.fromNick)}님이 하이파이브를 요청했어요`;
+    const P = d.k && (PAIR[d.k] || GAMES[d.k] || TAPG[d.k]), q = P ? `${P[0]} ${esc(d.fromNick)}님이 ${P[1]}${d.k === 'circle' || TAPG[d.k] ? '에 초대했어요' : GAMES[d.k] ? '을 신청했어요' : '를 요청했어요'}` : `🙌 ${esc(d.fromNick)}님이 하이파이브를 요청했어요`;
     box.innerHTML = `<div style="font-size:14px;font-weight:900">${q}</div><div style="display:flex;gap:6px;margin-top:8px"><button class="btn p" style="flex:1;height:40px" id="rOk">${P ? P[2] : '하이파이브!'}</button><button class="btn g" style="flex:1;height:40px" id="rNo">나중에</button></div>`;
     document.body.appendChild(box);
-    $('rOk').onclick = () => { box.remove(); updateDoc(ch.doc.ref, { st: 'ok' }).catch(() => {}); const rr = remotes.get(d.from); if (d.k === 'circle') joinCircle(d); else if (GAMES[d.k]) { if (rr) { faceEach(rr); startGame(d.k, ch.doc.id, rr, false); } } else if (rr) { if (d.k && PAIR[d.k]) pairAnim(rr, d.k, false, true); else hi5Anim(rr, true); } };
+    $('rOk').onclick = () => { box.remove(); updateDoc(ch.doc.ref, { st: 'ok' }).catch(() => {}); const rr = remotes.get(d.from); if (d.k === 'circle') joinCircle(d); else if (TAPG[d.k]) { tapJoin(d.k, d.gid, d.t0, false); const rr2 = remotes.get(d.from); if (GT && rr2) GT.ppl.set(d.from, { name: rr2.a.userData.name, n: 0 }); } else if (GAMES[d.k]) { if (rr) { faceEach(rr); startGame(d.k, ch.doc.id, rr, false); } } else if (rr) { if (d.k && PAIR[d.k]) pairAnim(rr, d.k, false, true); else hi5Anim(rr, true); } };
     $('rNo').onclick = () => { box.remove(); updateDoc(ch.doc.ref, { st: 'no' }).catch(() => {}); };
     setTimeout(() => { if (box.isConnected) box.remove(); }, 15000);
   }), () => {});
   onSnapshot(query(collection(db, 'gym_hi5'), where('from', '==', myUid), limit(20)), snap => snap.docChanges().forEach(ch => {
     if (ch.type !== 'modified') return; const d = ch.doc.data(), r = remotes.get(d.to);
+    if (TAPG[d.k]) { if (d.st === 'ok' && r) { toast(`${r.a.userData.name}님 참가! ${TAPG[d.k][0]}`); if (GT && GT.id === d.gid && !GT.ppl.has(d.to)) GT.ppl.set(d.to, { name: r.a.userData.name, n: 0 }); } return; }
     if (GAMES[d.k]) { if (!GM || GM.wait !== ch.doc.id) return; if (d.st === 'ok' && r) startGame(d.k, ch.doc.id, r, true); else if (d.st === 'no') { GM = null; closeAll(); toast('다음에 같이 해요 🙂'); } return; }
     if (d.k === 'circle') { if (d.st === 'ok' && r) toast(`${r.a.userData.name}님이 함께 돌아요! 💃`); return; }
     if (d.st === 'ok' && r) { if (d.k && PAIR[d.k]) pairAnim(r, d.k, true, false); else hi5Anim(r, false); } else if (d.st === 'no') toast(d.k ? '다음에 함께해요 🙂' : '다음에 하이파이브해요 🙂');
