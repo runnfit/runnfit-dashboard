@@ -204,9 +204,9 @@ function go(t){
   tab = t;
   if(t === 'pixel'){ location.href = './gym/'; return; }
   $tabs.classList.remove('hidden'); $app.classList.remove('nonav');
-  const active = { wod: 'home', session: 'home', done: 'home', help: 'home', home: 'home', challenge: 'challenge', workout: 'challenge', voice: 'voice', me: 'me' }[t];
+  const active = { master: 'home', wod: 'home', session: 'home', done: 'home', help: 'home', home: 'home', challenge: 'challenge', workout: 'challenge', voice: 'voice', me: 'me' }[t];
   $tabs.querySelectorAll('button').forEach((b)=> b.classList.toggle('on', b.dataset.tab === active));
-  ({ wod: renderWod, session: renderSession, done: renderDone, help: renderHelp, home: renderHome, challenge: renderChallenge, workout: renderWorkout, voice: renderVoice, me: renderMe })[t]();
+  ({ master: renderMaster, wod: renderWod, session: renderSession, done: renderDone, help: renderHelp, home: renderHome, challenge: renderChallenge, workout: renderWorkout, voice: renderVoice, me: renderMe })[t]();
   window.scrollTo(0, 0);
 }
 $tabs.addEventListener('click', (e)=>{ const b = e.target.closest('button[data-tab]'); if(b) go(b.dataset.tab); });
@@ -275,6 +275,7 @@ function renderHome(){
       '<div style="display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:4px">' + journey + '</div>' +
     '</div>' +
     '<div class="m" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px">' + left + right + '</div>' +
+    masterHomeCard() +
     wodHomeCard() +
     '<div style="height:18px"></div>';
   document.getElementById('bellBtn').onclick = showNotices;
@@ -817,6 +818,43 @@ async function paintMyWod(){
   // 응원 받은 기록 알림 (한 번만)
   const seen = JSON.parse(localStorage.getItem('rfWod.cheerSeen') || '[]'); const nw = myLogs.filter((l)=> l.cheer && !seen.includes(l.id));
   if(nw.length){ toast('런앤핏이 ' + dotDate(nw[0].date).slice(5) + ' 운동을 응원했어요! 💙'); localStorage.setItem('rfWod.cheerSeen', JSON.stringify(seen.concat(nw.map((l)=> l.id)).slice(-100))); }
+}
+
+
+// ---------- 머신 마스터 (회원이 직접 체크 · 23개 다 할 때까지 홈에 보임) ----------
+const MACHINES = [['01', '레그프레스(머신)'], ['02', '이너타이'], ['03', '레그컬'], ['04', '레그익스텐션'], ['05', '몬스터글루트'], ['06', '롱풀'], ['07', '어시스트 풀업'], ['08', '랫풀다운'], ['09', '시티드로우'], ['10', '와이드풀다운'], ['11', '팩덱플라이'], ['12', '체스트프레스'], ['13', '암컬'], ['14', '숄더프레스'], ['15', '싯업보드'], ['16', '백익스텐션'], ['17', '인클라인 벤치프레스'], ['18', '벤치프레스'], ['19', '레그프레스'], ['20', '브이스쿼트'], ['21', '케이블'], ['22', '스미스머신'], ['23', '랙']];
+const myMachines = ()=> Array.isArray(me.machines) ? me.machines.filter((n)=> MACHINES.some((m)=> m[0] === n)) : [];
+function masterBar(n, dark){ return '<div style="height:8px;border-radius:4px;background:' + (dark ? 'rgba(255,255,255,.2)' : '#E9EEF6') + ';margin-top:8px;overflow:hidden"><i style="display:block;height:100%;width:' + (n / MACHINES.length * 100) + '%;background:' + (dark ? 'var(--y)' : B) + '"></i></div>'; }
+function masterHomeCard(){
+  const n = myMachines().length; if(n >= MACHINES.length) return '';
+  return '<div class="m" style="background:' + B + ';color:#fff;border-radius:14px;padding:14px 16px">' +
+    '<div style="font-size:12px;font-weight:700;color:var(--y)">머신 마스터</div>' +
+    '<div style="font-size:17px;font-weight:900;margin-top:4px">센터 머신 ' + MACHINES.length + '개, 하나씩 내 것으로!</div>' +
+    '<div style="display:flex;justify-content:space-between;font-size:13px;margin-top:6px"><span style="opacity:.9">런앤핏 머신에는 번호가 붙어있어요</span><b style="color:var(--y)">' + n + ' / ' + MACHINES.length + '</b></div>' + masterBar(n, true) +
+    '<button type="button" data-go="master" style="width:100%;margin-top:12px;height:44px;border:0;border-radius:10px;background:#fff;color:' + B + ';font-weight:900;font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:4px;cursor:pointer;font-family:inherit">머신 마스터 체크하기 ' + ARROW + '</button></div>';
+}
+let masterSave = null;
+function renderMaster(){
+  const have = new Set(myMachines()), n = have.size, all = n >= MACHINES.length;
+  const tiles = MACHINES.map(([no, nm])=>{ const on = have.has(no);
+    return '<button type="button" data-mc="' + no + '" aria-pressed="' + on + '" style="height:78px;border:0;border-radius:12px;padding:8px;box-sizing:border-box;display:flex;flex-direction:column;justify-content:space-between;text-align:left;font-family:inherit;cursor:pointer;' +
+      (on ? 'background:' + B + ';color:#fff' : 'background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1.5px #D5DCE8') + '"><span style="display:flex;justify-content:space-between;width:100%"><b style="font-size:13px">' + no + '</b>' + (on ? CHK('#FFD54A', 15) : '') + '</span><span style="font-size:11.5px;font-weight:700;line-height:1.25">' + nm + '</span></button>'; }).join('');
+  $app.innerHTML = topbar('머신 마스터') +
+    '<div class="card m" style="padding:12px 14px"><div style="display:flex;justify-content:space-between;align-items:baseline"><b style="font-size:15px">' + (all ? '머신 마스터 완료! 짱!' : '내 머신 마스터') + '</b><span><b style="font-size:22px;color:' + B + '">' + n + '</b><span style="color:var(--muted)"> / ' + MACHINES.length + '</span></span></div>' + masterBar(n) +
+      '<div style="font-size:12.5px;color:#374151;margin-top:8px;line-height:1.6">할 줄 아는 머신은 체크! 모르는 건 코치님께 배우고 체크해요.</div></div>' +
+    '<div class="m" style="font-size:12px;color:var(--muted)">눌러서 체크 · 한 번 더 누르면 취소</div>' +
+    '<div class="m" style="margin-top:8px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px">' + tiles + '</div>' +
+    '<div class="m" style="background:#E3E9FF;border-radius:12px;padding:12px 14px;display:flex;align-items:center;gap:10px"><span style="flex:1;font-size:13.5px;color:' + B + ';font-weight:700;line-height:1.5">모르는 건 언제든 코치님께 물어보세요!</span><button type="button" id="mcHelp" style="border:0;background:' + B + ';color:#fff;border-radius:9px;padding:8px 12px;font-family:inherit;font-size:12.5px;font-weight:900;cursor:pointer;white-space:nowrap">1:1 운동가이드 받기</button></div>' +
+    '<div style="height:18px"></div>';
+  document.getElementById('mcHelp').onclick = ()=>{ helpKind = 'guide'; go('help'); };
+  $app.querySelectorAll('[data-mc]').forEach((b)=> b.onclick = ()=>{
+    const no = b.dataset.mc, list = myMachines(), was = list.length;
+    me.machines = list.includes(no) ? list.filter((x)=> x !== no) : list.concat(no).sort();
+    const y = window.scrollY; renderMaster(); window.scrollTo(0, y);
+    if(me.machines.length >= MACHINES.length && was < MACHINES.length) toast('머신 마스터 완료! 짱! 런앤핏이 함께 축하해요 💙');
+    clearTimeout(masterSave);
+    masterSave = setTimeout(()=> updateDoc(doc(db, 'members', me.id), { machines: me.machines, machinesAt: serverTimestamp() }).catch((e)=>{ console.warn(e); toast('저장하지 못했어요. 잠시 후 다시 눌러 주세요.'); }), 700);
+  });
 }
 
 // ---------- 내 정보 ----------

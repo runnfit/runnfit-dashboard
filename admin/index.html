@@ -123,7 +123,7 @@
           <div class="lhead"><b>할 일</b>
             <button class="chip on" data-f="new">처리 전</button><button class="chip" data-f="done">처리 완료</button><button class="chip" data-f="all">전체</button></div>
           <div class="lhead" style="padding-top:0">
-            <button class="chip on" data-k="all">모두</button><button class="chip" data-k="help">도움 요청</button><button class="chip" data-k="voice">런앤핏에 한마디</button><button class="chip" data-k="inq">체험·상담</button><button class="chip" data-k="goal">출석 목표</button></div>
+            <button class="chip on" data-k="all">모두</button><button class="chip" data-k="help">도움 요청</button><button class="chip" data-k="voice">런앤핏에 한마디</button><button class="chip" data-k="inq">체험·상담</button><button class="chip" data-k="goal">출석 목표</button><button class="chip" data-k="master">머신 마스터</button></div>
           <div id="items"></div>
         </div>
         <div class="card panel" id="panel"></div>
@@ -187,6 +187,11 @@ function weekCount(m){
   const days = new Set(Array.isArray(m.recentDays) ? m.recentDays : []); if(m.lastAttend === t) days.add(t);
   return [...days].filter((d)=> d >= mon && d <= t).length;
 }
+
+const MC_TOTAL = 23;
+const mcN = (m)=> Array.isArray(m.machines) ? m.machines.filter((n)=> /^\d+$/.test(n) && Number(n) >= 1 && Number(n) <= MC_TOTAL).length : 0;
+function mcCell(m){ const n = mcN(m); if(!n) return '<span style="color:#9CA3AF">-</span>';
+  return n >= MC_TOTAL ? '<b style="color:#15803D">완료 ✓</b>' : '<span style="display:inline-flex;align-items:center;gap:6px"><b style="color:' + B + '">' + n + '/' + MC_TOTAL + '</b><i style="display:inline-block;width:50px;height:5px;border-radius:3px;background:#E9EEF6;overflow:hidden"><i style="display:block;height:100%;width:' + (n / MC_TOTAL * 100) + '%;background:' + B + '"></i></i></span>'; }
 const COACH_PHOTO = { '런관장': 'run.jpg', '가온코치': 'gaon.jpg', '하루코치': 'haru.jpg', '로라코치': 'laura.jpg' };
 const ICON = {
   help: '<path d="M12 3.5a3.2 3.2 0 1 1 0 6.4 3.2 3.2 0 0 1 0-6.4z"/><path d="M5.5 20c.6-3.8 3.2-6 6.5-6s5.9 2.2 6.5 6"/><path d="M3 11h3M18 11h3M4.5 9.5v3M19.5 9.5v3"/>',
@@ -217,6 +222,7 @@ function todos(){
     ...S.voice.map((x)=> ({ k: 'voice', id: x.id, x, done: x.status === 'answered' || !!x.reply, at: tsMs(x.createdAt) })),
     ...S.inq.map((x)=> ({ k: 'inq', id: x.id, x, done: x.status === 'done', at: tsMs(x.createdAt) })),
     ...S.goal.map((x)=> ({ k: 'goal', id: x.id, x, done: x.status === 'done', at: tsMs(x.createdAt) })),
+    ...S.members.filter((m)=> mcN(m) >= MC_TOTAL).map((m)=> ({ k: 'master', id: m.id, x: m, done: !!m.masterAck, at: tsMs(m.machinesAt) })),
   ];
   return all.sort((a, b)=> (b.at || 9e15) - (a.at || 9e15));
 }
@@ -226,6 +232,7 @@ function itemText(t){
     return { ic: ico(pt ? 'pt' : 'help'), t: (pt ? 'PT 상담 신청' : '1:1 운동가이드 신청') + ' · ' + esc(x.nickname || x.name || '회원'),
       d: esc((x.coach || '런관장 추천') + ' · ' + (x.times || []).join(', ') + (x.text ? ' · ' + x.text : '')) }; }
   if(t.k === 'voice') return { ic: ico('voice'), t: '런앤핏에 한마디' + (x.category ? ' · ' + esc(x.category) : '') + (x.nickname ? ' · ' + esc(x.nickname) : ''), d: esc(x.text || '') };
+  if(t.k === 'master') return { ic: ico('goal', '#FFF4CC'), t: '머신 마스터 완료 · ' + esc(x.nickname || x.name || '회원'), d: '센터 머신 ' + MC_TOTAL + '개를 모두 할 줄 알아요!' };
   if(t.k === 'goal') return { ic: ico('goal', '#E8F7EE'), t: '출석 목표 · ' + esc(x.nickname || x.name || '회원') + ' 주 ' + x.goal + '회', d: x.prev ? '주 ' + x.prev + '회 → 주 ' + x.goal + '회로 바꿨어요' : '처음으로 목표를 정했어요' };
   return { ic: ico('inq', '#FFF4CC'), t: '비회원 ' + esc(x.kind || '문의') + ' · ' + esc(x.name || ''), d: esc(phoneFmt(x.phone) + ' · 미니런앤핏에서 신청') };
 }
@@ -240,7 +247,7 @@ function paintStats(){
     '<div class="stat"><div class="l">앱 가입 회원</div><div class="v" style="color:' + B + '">' + joined + '명</div><div class="s">유효 회원 ' + total + '명 중 ' + pct + '% · 오늘 +' + todayJoin + '</div><div class="bar"><i style="width:' + pct + '%"></i></div></div>' +
     '<div class="stat"><div class="l">오늘 출석</div><div class="v">' + att + '명</div><div class="s">그중 앱 가입 ' + attApp + '명</div></div>' +
     '<div class="stat"><div class="l">미니런앤핏에 지금</div><div class="v" style="color:' + B + '">' + now.length + '명</div><div class="s">회원 ' + (now.length - staffNow) + ' · 직원 ' + staffNow + '</div></div>' +
-    '<div class="stat"><div class="l">처리 전 할 일</div><div class="v" style="color:' + (open ? '#B91C32' : '#15803D') + '">' + open + '개</div><div class="s">도움 요청 ' + S.help.filter((x)=> x.status !== 'done').length + ' · 한마디 ' + S.voice.filter((x)=> !(x.status === 'answered' || x.reply)).length + ' · 체험·상담 ' + S.inq.filter((x)=> x.status !== 'done').length + ' · 목표 ' + S.goal.filter((x)=> x.status !== 'done').length + '</div></div>' +
+    '<div class="stat"><div class="l">처리 전 할 일</div><div class="v" style="color:' + (open ? '#B91C32' : '#15803D') + '">' + open + '개</div><div class="s">도움 요청 ' + S.help.filter((x)=> x.status !== 'done').length + ' · 한마디 ' + S.voice.filter((x)=> !(x.status === 'answered' || x.reply)).length + ' · 체험·상담 ' + S.inq.filter((x)=> x.status !== 'done').length + ' · 목표 ' + S.goal.filter((x)=> x.status !== 'done').length + ' · 머신 ' + S.members.filter((m)=> mcN(m) >= MC_TOTAL && !m.masterAck).length + '</div></div>' +
     '<div class="stat"><div class="l">오늘 운동 완료</div><div class="v" style="color:' + B + '">' + S.logs.filter((l)=> l.date === today).length + '명</div><div class="s">오늘 ' + S.logs.filter((l)=> l.date === today).reduce((a, l)=> a + (l.kg || 0), 0).toLocaleString() + 'kg · 이번 주 ' + S.logs.filter((l)=> l.date >= weekStart()).length + '회</div></div>';
   const lb = $('logBadge'), ln = S.logs.filter((l)=> tsMs(l.createdAt) > S.logSeen && l.date === today).length; lb.textContent = ln; lb.classList.toggle('hidden', !ln || !$('v-logs').classList.contains('hidden'));
   const b = $('todoBadge'); b.textContent = open; b.classList.toggle('hidden', !open);
@@ -279,6 +286,14 @@ function paintPanel(t){
       '<div class="row">' + (t.done ? '<button class="btn sec" id="undo">처리 전으로 되돌리기</button><button class="btn sec" id="saveMemo">메모 저장</button>' : '<button class="btn sec" id="saveMemo">메모 저장</button><button class="btn" id="doneBtn">연락 완료로 바꾸기</button>') + '<span class="msg" id="pMsg"></span></div>' +
       '<div style="font-size:12px;color:var(--muted);margin-top:10px">연락 완료로 바꾸면 회원앱의 \'내 신청\'에 "연락 완료"로 보여요.' + (x.handledBy ? ' · 처리: ' + esc(x.handledBy) : '') + '</div>';
     bind('help', t.id, { status: 'done' }, { status: 'new' });
+  } else if(t.k === 'master'){
+    P.innerHTML = '<div style="display:flex;align-items:center;gap:10px">' + ico('goal', '#FFF4CC') + '<h2>머신 마스터 완료!</h2>' + (t.done ? '<span class="tag t-done">축하 완료</span>' : '<span class="tag t-new">확인 전</span>') + '<span style="margin-left:auto;color:var(--muted);font-size:12.5px">' + ago(t.at) + '</span></div>' +
+      '<div style="margin-top:16px;background:' + B + ';color:#fff;border-radius:12px;padding:16px 18px"><div style="font-size:28px;font-weight:900">' + MC_TOTAL + ' / ' + MC_TOTAL + '</div><div style="font-size:13.5px;opacity:.9;margin-top:4px">센터 머신을 모두 할 줄 안다고 체크했어요</div></div>' +
+      '<dl class="kv"><dt>회원</dt><dd><b>' + esc(x.name || '') + '</b> · 닉네임 ' + esc(x.nickname || '-') + '</dd><dt>전화</dt><dd>' + phoneFmt(x.phone) + '</dd><dt>출석</dt><dd>총 ' + (x.total || 0) + '회 · ' + belt(x.total)[1] + ' 띠</dd></dl>' +
+      '<div class="quote" style="font-size:14px">💡 센터에서 만나면 "머신 마스터 축하해요!" 한마디 해 주세요. 이제 띠 프로그램을 더 자신 있게 할 수 있어요.</div>' +
+      '<div class="row">' + (t.done ? '<button class="btn sec" id="undo">확인 전으로 되돌리기</button>' : '<button class="btn" id="doneBtn">확인했어요</button>') + '<span class="msg" id="pMsg"></span></div>';
+    if($('doneBtn')) $('doneBtn').onclick = ()=> save('members', t.id, { masterAck: true }, '확인했어요.');
+    if($('undo')) $('undo').onclick = ()=> save('members', t.id, { masterAck: false }, '되돌렸어요.');
   } else if(t.k === 'goal'){
     const m = memberOf(x) || {}, wk = weekCount(m);
     P.innerHTML = '<div style="display:flex;align-items:center;gap:10px">' + ico('goal', '#E8F7EE') + '<h2>출석 목표를 정했어요</h2>' + (t.done ? '<span class="tag t-done">확인 완료</span>' : '<span class="tag t-new">확인 전</span>') + '<span style="margin-left:auto;color:var(--muted);font-size:12.5px">' + ago(t.at) + '</span></div>' +
@@ -320,24 +335,24 @@ async function save(kind, id, patch, ok){
 }
 
 // 가입 회원
-const COLS = [['nick', '닉네임'], ['staff', '직원'], ['goal', '주 목표'], ['name', '이름'], ['phone', '전화'], ['joined', '앱 가입일'], ['total', '총 출석'], ['last', '최근 출석'], ['exp', '회원권']];
+const COLS = [['nick', '닉네임'], ['staff', '직원'], ['goal', '주 목표'], ['mc', '머신 마스터'], ['name', '이름'], ['phone', '전화'], ['joined', '앱 가입일'], ['total', '총 출석'], ['last', '최근 출석'], ['exp', '회원권']];
 function paintMembers(){
   const joinedOnly = S.mView === 'joined', q = S.q.trim();
   let rows = S.members.filter((m)=> !!(m.uid || m.appJoinedAt) === joinedOnly);
   if(q) rows = rows.filter((m)=> (m.name || '').includes(q) || (m.nickname || '').includes(q) || String(m.phone || '').slice(-4) === q);
-  const key = { staff: (m)=> m.staff ? 0 : 1, goal: (m)=> -(m.weeklyGoal || 0), nick: (m)=> m.nickname || '', name: (m)=> m.name || '', phone: (m)=> m.phone || '', joined: (m)=> -tsMs(m.appJoinedAt), total: (m)=> -(m.total || 0), last: (m)=> -(Date.parse(m.lastAttend || 0) || 0), exp: (m)=> m.gymExp || '' }[S.mSort];
+  const key = { mc: (m)=> -mcN(m), staff: (m)=> m.staff ? 0 : 1, goal: (m)=> -(m.weeklyGoal || 0), nick: (m)=> m.nickname || '', name: (m)=> m.name || '', phone: (m)=> m.phone || '', joined: (m)=> -tsMs(m.appJoinedAt), total: (m)=> -(m.total || 0), last: (m)=> -(Date.parse(m.lastAttend || 0) || 0), exp: (m)=> m.gymExp || '' }[S.mSort];
   rows.sort((a, b)=>{ const x = key(a), y = key(b); return x < y ? -1 : x > y ? 1 : 0; });
   const jn = S.members.filter((m)=> m.uid || m.appJoinedAt).length;
   $('mCount').textContent = jn + '명 / 유효 ' + S.members.length + '명';
-  $('mHead').innerHTML = '<tr>' + COLS.filter((c)=> joinedOnly || !['nick', 'joined', 'goal', 'staff'].includes(c[0])).map((c)=> '<th data-sort="' + c[0] + '">' + c[1] + (S.mSort === c[0] ? ' ▾' : '') + '</th>').join('') + '</tr>';
+  $('mHead').innerHTML = '<tr>' + COLS.filter((c)=> joinedOnly || !['nick', 'joined', 'goal', 'staff', 'mc'].includes(c[0])).map((c)=> '<th data-sort="' + c[0] + '">' + c[1] + (S.mSort === c[0] ? ' ▾' : '') + '</th>').join('') + '</tr>';
   const today = KST();
   $('mBody').innerHTML = rows.length ? rows.map((m)=>{ const bl = belt(m.total);
-    return '<tr>' + (joinedOnly ? '<td><span class="nick"><i class="dot" title="' + bl[1] + ' 띠" style="background:' + bl[2] + (bl[1] === '흰' ? ';box-shadow:inset 0 0 0 1.5px #9CA3AF;background:#fff' : '') + '"></i>' + esc(m.nickname || '-') + '</span></td><td>' + (m.staff ? '<button class="chip" data-staff="' + m.id + '" data-on="1" style="background:' + B + ';color:#fff">블루 이름표 ✓</button>' : '<button class="chip" data-staff="' + m.id + '">직원으로</button>') + '</td><td>' + (m.weeklyGoal ? '<b style="color:' + B + '">주 ' + m.weeklyGoal + '회</b> <span style="color:var(--muted);font-size:12px">이번 주 ' + weekCount(m) + '회</span>' : '<span style="color:#9CA3AF">-</span>') + '</td>' : '') +
+    return '<tr>' + (joinedOnly ? '<td><span class="nick"><i class="dot" title="' + bl[1] + ' 띠" style="background:' + bl[2] + (bl[1] === '흰' ? ';box-shadow:inset 0 0 0 1.5px #9CA3AF;background:#fff' : '') + '"></i>' + esc(m.nickname || '-') + '</span></td><td>' + (m.staff ? '<button class="chip" data-staff="' + m.id + '" data-on="1" style="background:' + B + ';color:#fff">블루 이름표 ✓</button>' : '<button class="chip" data-staff="' + m.id + '">직원으로</button>') + '</td><td>' + (m.weeklyGoal ? '<b style="color:' + B + '">주 ' + m.weeklyGoal + '회</b> <span style="color:var(--muted);font-size:12px">이번 주 ' + weekCount(m) + '회</span>' : '<span style="color:#9CA3AF">-</span>') + '</td><td>' + mcCell(m) + '</td>' : '') +
       '<td>' + (joinedOnly ? '' : '<span class="nick" style="font-weight:500"><i class="dot" style="background:' + bl[2] + (bl[1] === '흰' ? ';box-shadow:inset 0 0 0 1.5px #9CA3AF;background:#fff' : '') + '"></i>') + esc(m.name || '') + (joinedOnly ? '' : '</span>') + '</td><td>' + phoneFmt(m.phone) + '</td>' +
       (joinedOnly ? '<td>' + ymd(tsMs(m.appJoinedAt)) + '</td>' : '') +
       '<td>' + (m.total || 0) + '회 <span style="color:var(--muted);font-size:12px">' + bl[1] + ' 띠</span></td>' +
       '<td>' + (m.lastAttend === today ? '<b style="color:#15803D">오늘 ✓</b>' : esc(m.lastAttend || '-')) + '</td><td>' + esc(m.gymExp || '-') + '</td></tr>'; }).join('')
-    : '<tr><td colspan="9" class="empty">' + (q ? '찾는 회원이 없어요' : joinedOnly ? '아직 가입한 회원이 없어요' : '모두 가입했어요 🎉') + '</td></tr>';
+    : '<tr><td colspan="10" class="empty">' + (q ? '찾는 회원이 없어요' : joinedOnly ? '아직 가입한 회원이 없어요' : '모두 가입했어요 🎉') + '</td></tr>';
   $('mHead').querySelectorAll('[data-sort]').forEach((th)=> th.onclick = ()=>{ S.mSort = th.dataset.sort; paintMembers(); });
   $('mBody').querySelectorAll('[data-staff]').forEach((b)=> b.onclick = async ()=>{
     const m = S.members.find((x)=> x.id === b.dataset.staff); if(!m) return; const on = !m.staff;
@@ -353,7 +368,7 @@ function notifyNew(){
   if(!primed){ list.forEach((t)=> seen.add(t.k + t.id)); if(S.members.length || list.length) primed = true; return; }
   list.filter((t)=> !t.done && !seen.has(t.k + t.id)).forEach((t)=>{
     seen.add(t.k + t.id); const x = t.x, who = x.nickname || x.name || '회원';
-    const text = t.k === 'log' ? who + '님이 ' + beltName(x.belt) + ' ' + x.prog + ' 운동을 완료했어요 · ' + (x.kg || 0).toLocaleString() + 'kg' : t.k === 'goal' ? who + '님이 출석 목표를 주 ' + x.goal + '회로 정했어요' : t.k === 'help' ? who + '님이 ' + (x.kind === 'pt' ? 'PT 상담' : '1:1 운동가이드') + '을 신청했어요' : t.k === 'voice' ? '런앤핏에 한마디가 도착했어요' : '비회원 ' + (x.kind || '문의') + ' 신청이 왔어요';
+    const text = t.k === 'master' ? who + '님이 머신 마스터를 완료했어요! (' + MC_TOTAL + '/' + MC_TOTAL + ')' : t.k === 'log' ? who + '님이 ' + beltName(x.belt) + ' ' + x.prog + ' 운동을 완료했어요 · ' + (x.kg || 0).toLocaleString() + 'kg' : t.k === 'goal' ? who + '님이 출석 목표를 주 ' + x.goal + '회로 정했어요' : t.k === 'help' ? who + '님이 ' + (x.kind === 'pt' ? 'PT 상담' : '1:1 운동가이드') + '을 신청했어요' : t.k === 'voice' ? '런앤핏에 한마디가 도착했어요' : '비회원 ' + (x.kind || '문의') + ' 신청이 왔어요';
     if(EMBED){ try{ window.parent.postMessage({ rfAdminNew: text }, '*'); }catch(e){} }
   });
 }
@@ -451,7 +466,7 @@ if(DEMO){
   const now = Date.now(), T = (min)=> ({ seconds: Math.floor((now - min * 60e3) / 1000) }), today = KST();
   const NAMES = [['김민수', '달리는민수', 12], ['이지은', '새싹러너', 4], ['박하나', '스쿼트요정', 57], ['최도윤', '꾸준이', 31], ['정유진', '오운완요정', 104], ['한지민', '', 24], ['오세훈', '정릉불꽃', 9], ['윤서아', '아침형인간', 18], ['강태호', '', 3], ['서지우', '헬린이', 1]];
   S.members = Array.from({ length: 488 }, (_, i)=>{ const n = NAMES[i % NAMES.length], j = i < 136;
-    return { id: 'm' + i, name: i < 10 ? n[0] : n[0].slice(0, 1) + '회원' + i, nickname: j ? (i < 10 ? n[1] || '런앤핏' + i : '러너' + i) : '', phone: '+8210' + String(20000000 + i * 7919).slice(0, 8), total: (i * 37) % 120, lastAttend: i % 5 === 0 ? today : '2026-11-' + String(1 + i % 17).padStart(2, '0'), gymExp: '2027-0' + (1 + i % 9) + '-15', uid: j ? 'u' + i : null, appJoinedAt: j ? T(i * 200) : null, weeklyGoal: j && i % 3 !== 2 ? 1 + (i % 5) : 0, recentDays: [today] }; });
+    return { id: 'm' + i, name: i < 10 ? n[0] : n[0].slice(0, 1) + '회원' + i, nickname: j ? (i < 10 ? n[1] || '런앤핏' + i : '러너' + i) : '', phone: '+8210' + String(20000000 + i * 7919).slice(0, 8), total: (i * 37) % 120, lastAttend: i % 5 === 0 ? today : '2026-11-' + String(1 + i % 17).padStart(2, '0'), gymExp: '2027-0' + (1 + i % 9) + '-15', uid: j ? 'u' + i : null, appJoinedAt: j ? T(i * 200) : null, weeklyGoal: j && i % 3 !== 2 ? 1 + (i % 5) : 0, recentDays: [today], machines: j ? Array.from({ length: i === 4 ? 23 : Math.min((i * 7) % 24, 22) }, (_, k)=> String(k + 1).padStart(2, '0')) : [], machinesAt: T(30) }; });
   S.help = [
     { id: 'h1', kind: 'guide', pick: 'want', coach: '가온코치', times: ['평일 점심', '평일 저녁'], text: '스쿼트할 때 무릎이 아파요. 하체 기구 사용법도 같이 알려주세요!', name: '김민수', nickname: '달리는민수', phone: '+821012345678', memberId: 'm0', status: 'new', createdAt: T(4) },
     { id: 'h2', kind: 'pt', pick: 'rec', coach: null, times: ['주말'], text: '3개월 안에 5kg 빼고 싶어요. 허리가 조금 안 좋아요.', name: '이지은', nickname: '새싹러너', phone: '+821055556666', memberId: 'm1', status: 'new', createdAt: T(52) },
