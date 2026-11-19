@@ -1550,11 +1550,11 @@ function dogTap(cx, cy) {
 }
 function dogClear() { if (DOGG) { DOGG.dogs.forEach(d => scene.remove(d.g)); DOGG = null; } document.body.classList.remove('dogmode'); }
 // 5) 원판 합치기 · 수박게임식 (같은 무게끼리 닿으면 다음 무게로)
-const PLT = [[1.25, '#9CA3AF', '#E5E7EB', '#111827'], [2.5, '#111827', '#4B5563', '#fff'], [5, '#E2E8F0', '#FFFFFF', '#111827'], [10, '#15803D', '#4ADE80', '#fff'], [15, '#CA8A04', '#FDE047', '#fff'], [20, '#1D4ED8', '#60A5FA', '#fff'], [25, '#B91C1C', '#F87171', '#fff'], ['BAR', '#B45309', '#FDE68A', '#153189']];
-const PR = [20, 26, 33, 42, 52, 63, 75, 88], PPT = [1, 3, 6, 10, 15, 21, 28, 50];
+const PLT = [[1.25, '#9CA3AF', '#E5E7EB', '#111827'], [2.5, '#111827', '#4B5563', '#fff'], [5, '#E2E8F0', '#FFFFFF', '#111827'], [10, '#15803D', '#4ADE80', '#fff'], [15, '#CA8A04', '#FDE047', '#fff'], [20, '#1D4ED8', '#60A5FA', '#fff'], [25, '#B91C1C', '#F87171', '#fff'], [60, '#334155', '#94A3B8', '#fff'], [100, '#0F2366', '#3B5BD9', '#FFD54A'], [140, '#6B21A8', '#C084FC', '#fff'], ['BAR', '#B45309', '#FDE68A', '#153189']];
+const PR = [15, 19, 24, 31, 38, 46, 55, 63, 71, 80, 90], PPT = [1, 3, 6, 10, 15, 21, 28, 40, 60, 90, 150];
 function gMerge(run) {
   const S = $('soS');
-  S.innerHTML = `<canvas id="mgC" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none"></canvas><div class="sbig" style="top:calc(60px + env(safe-area-inset-top));font-size:42px"><span id="mgS">0</span><span style="font-size:16px">점</span></div><div class="sbig" id="mgK" style="top:calc(112px + env(safe-area-inset-top));font-size:20px;color:#FFD54A;opacity:0;transition:opacity .2s"></div><img src="./img/s_idle.png" id="mgR" alt="" style="position:absolute;right:2px;top:calc(56px + env(safe-area-inset-top));height:96px;pointer-events:none"><div class="sbub" id="mgB" style="display:none;right:70px;top:calc(70px + env(safe-area-inset-top))">들어볼게요! 💪</div><div class="sbig" style="top:auto;bottom:calc(16px + env(safe-area-inset-bottom));font-size:12.5px;color:#153189;text-shadow:none;font-weight:800">시간 제한 없어요 · 빨간 선 넘으면 끝! · 1.25→2.5→5→10→15→20→25kg→🏆</div>`;
+  S.innerHTML = `<canvas id="mgC" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none"></canvas><div class="sbig" style="top:calc(60px + env(safe-area-inset-top));font-size:42px"><span id="mgS">0</span><span style="font-size:16px">점</span></div><div class="sbig" id="mgK" style="top:calc(112px + env(safe-area-inset-top));font-size:20px;color:#FFD54A;opacity:0;transition:opacity .2s"></div><img src="./img/s_idle.png" id="mgR" alt="" style="position:absolute;right:2px;top:calc(56px + env(safe-area-inset-top));height:96px;pointer-events:none"><div class="sbub" id="mgB" style="display:none;right:70px;top:calc(70px + env(safe-area-inset-top))">들어볼게요! 💪</div><div class="sbig" style="top:auto;bottom:calc(16px + env(safe-area-inset-bottom));font-size:12.5px;color:#153189;text-shadow:none;font-weight:800">시간 제한 없어요 · 빨간 선 넘으면 끝! · 1.25→2.5→5→10→15→20→25→60→100→140→🏆200kg</div>`;
   const c = $('mgC'), dpr = Math.min(2, devicePixelRatio || 1), W = innerWidth, H = innerHeight; c.width = W * dpr; c.height = H * dpr; const x = c.getContext('2d'); x.scale(dpr, dpr);
   const bw = Math.min(W - 24, 380), bx = (W - bw) / 2, bb = H - 54, bt = Math.max(190, H * .26), k = bw / 360, danger = bt + 46 * k;
   let balls = [], score = 0, next = 0, cur = 0, aimX = W / 2, can = true, over = false, combo = 0, lastMerge = 0, rest = .15;
@@ -1563,12 +1563,12 @@ function gMerge(run) {
   const drawPlate = (px, py, t, al) => { const r = PR[t] * k, [kg, c1, c2, tc] = PLT[t]; x.globalAlpha = al == null ? 1 : al; const g = x.createRadialGradient(px - r * .3, py - r * .35, r * .1, px, py, r); g.addColorStop(0, c2); g.addColorStop(.75, c1); g.addColorStop(1, '#0B1020'); x.fillStyle = g; x.beginPath(); x.arc(px, py, r, 0, 7); x.fill();
     x.strokeStyle = 'rgba(255,255,255,.18)'; x.lineWidth = 1; x.beginPath(); x.arc(px, py, r * .86, 0, 7); x.stroke();
     const m = x.createLinearGradient(px - r * .35, py - r * .35, px + r * .35, py + r * .35); m.addColorStop(0, '#F8FAFC'); m.addColorStop(.5, '#94A3B8'); m.addColorStop(1, '#E2E8F0'); x.fillStyle = m; x.beginPath(); x.arc(px, py, r * .34, 0, 7); x.fill(); x.fillStyle = '#1E293B'; x.beginPath(); x.arc(px, py, r * .13, 0, 7); x.fill();
-    if (r > 17) { x.fillStyle = tc; x.font = `900 ${Math.max(8, r * .28)}px sans-serif`; x.textAlign = 'center'; x.fillText(kg === 'BAR' ? '🏆' : kg + (r > 30 ? 'KG' : ''), px, py + r * .72); }
+    if (r > 17) { x.fillStyle = tc; x.font = `900 ${Math.max(8, r * .28)}px sans-serif`; x.textAlign = 'center'; x.fillText(kg === 'BAR' ? '🏆200' : kg + (r > 30 ? 'KG' : ''), px, py + r * .72); }
     x.globalAlpha = 1; };
   const merge = (a, b) => { const t = a.t + 1, nx = (a.x + b.x) / 2, ny = (a.y + b.y) / 2; balls = balls.filter(q => q !== a && q !== b); if (t < PLT.length) balls.push({ x: nx, y: ny, vx: 0, vy: -1, t, born: performance.now(), pop: 1 });
-    const now = performance.now(); combo = now - lastMerge < 1200 ? combo + 1 : 1; lastMerge = now; const pts = PPT[Math.min(t, 7)] * combo; score += pts; $('mgS').textContent = score;
+    const now = performance.now(); combo = now - lastMerge < 1200 ? combo + 1 : 1; lastMerge = now; const pts = PPT[Math.min(t, PPT.length - 1)] * combo; score += pts; $('mgS').textContent = score;
     if (combo > 1) { $('mgK').textContent = `COMBO x${combo}!`; $('mgK').style.opacity = 1; setTimeout(() => { $('mgK').style.opacity = 0; }, 700); }
-    if (t >= 5) { $('mgR').src = t >= 7 ? './img/s_hooray.png' : './img/s_best.png'; $('mgB').textContent = t >= 7 ? '바벨 완성!! 들어볼게요 💪' : PLT[t][0] + 'kg 완성! 👍'; $('mgB').style.display = 'block'; setTimeout(() => { $('mgR').src = './img/s_idle.png'; $('mgB').style.display = 'none'; }, 1400); }
+    if (t >= 5) { const top = t >= PLT.length - 1; $('mgR').src = t >= 7 ? './img/s_hooray.png' : './img/s_best.png'; $('mgB').textContent = top ? '200kg 바벨 완성!! 전설 💪' : PLT[t][0] + 'kg 완성! 👍'; $('mgB').style.display = 'block'; setTimeout(() => { $('mgR').src = './img/s_idle.png'; $('mgB').style.display = 'none'; }, 1400); }
     rest = Math.min(.42, .15 + score / 4000); };
   const step = () => {
     const g = .32 * k;
@@ -1590,7 +1590,7 @@ function gMerge(run) {
     for (const b of balls) { if (b.pop) { b.pop = Math.max(0, b.pop - .06); } drawPlate(b.x, b.y, b.t); }
     if (!over) { const r = PR[cur] * k, ax = Math.max(bx + r, Math.min(bx + bw - r, aimX)); x.strokeStyle = 'rgba(21,49,137,.35)'; x.setLineDash([4, 6]); x.beginPath(); x.moveTo(ax, bt - 40 + r); x.lineTo(ax, bb); x.stroke(); x.setLineDash([]); drawPlate(ax, bt - 40, cur, can ? 1 : .5);
       x.fillStyle = '#153189'; x.font = '800 11px sans-serif'; x.textAlign = 'left'; x.fillText('다음', bx + 2, bt - 66); drawPlate(bx + 40, bt - 70, next, .9); }
-    if (!over && dangerT > 150) { over = true; setTimeout(() => soloResult('merge', score, null, balls.some(b => b.t >= 7) ? '바벨까지 완성! 전설이에요 🏆' : score >= 800 ? '대단해요! 💪' : '다음엔 더 무겁게! 🏋️'), 600); }
+    if (!over && dangerT > 150) { over = true; setTimeout(() => soloResult('merge', score, null, balls.some(b => b.t >= PLT.length - 1) ? '200kg 바벨까지 완성! 전설이에요 🏆' : balls.some(b => b.t >= 8) ? '100kg 넘겼어요! 괴물 💪' : score >= 800 ? '대단해요! 💪' : '다음엔 더 무겁게! 🏋️'), 600); }
     requestAnimationFrame(frame);
   };
   const aim = e => { aimX = e.clientX; };
