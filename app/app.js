@@ -171,7 +171,7 @@ async function loadMe(user){
   me = Object.assign({ id: d.id }, d.data());
   const typed = sessionStorage.getItem('rfName');
   if(typed && normName(typed) !== normName(me.name)){ me = null; await signOut(auth); renderLogin('센터에 등록된 이름과 달라요. 이름을 다시 확인해 주세요.'); return; }
-  const active = (me.gymExp && me.gymExp >= today()) || (me.holdEnd && me.holdEnd >= today());
+  const active = (me.gymExp && me.gymExp >= today()) || (me.holdEnd && me.holdEnd >= today()) || STAFF_PH.includes(user.phoneNumber) || COACH_PH.includes(user.phoneNumber) || me.staff === true;
   if(!active){ const exp = me.gymExp; me = null; await signOut(auth); renderLogin('회원권이 ' + dotDate(exp) + '에 끝났어요. 다시 등록하시면 바로 이어서 쓸 수 있어요.'); return; }
   const nick = sessionStorage.getItem('rfNick');
   const patch = {};
