@@ -43,9 +43,9 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 #gB .row button:disabled:not(.on){opacity:.4}
 #gTap{width:100%;height:170px;border:0;border-radius:18px;font-size:30px;font-weight:900;font-family:inherit;background:#E5E7EB;color:#6B7280;margin-top:6px}
 #gTap.go{background:#153189;color:#fff}
-#solo{position:fixed;inset:0;z-index:40;display:none;background:radial-gradient(120% 70% at 50% 0%,#2C4BB8 0%,#0B1430 70%);color:#fff;user-select:none;-webkit-user-select:none;touch-action:manipulation;overflow:hidden}
+#solo{position:fixed;inset:0;z-index:40;display:none;background:linear-gradient(#4F86EE 0%,#8DB6F7 45%,#DCEBFF 100%);color:#fff;user-select:none;-webkit-user-select:none;touch-action:manipulation;overflow:hidden}
 #solo .sh{position:absolute;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top));display:flex;gap:8px;align-items:center;z-index:3}
-#solo .sp{background:rgba(11,20,48,.7);border-radius:999px;padding:6px 12px;font-weight:900;font-size:13px}
+#solo .sp{background:#153189;border-radius:999px;padding:6px 12px;font-weight:900;font-size:13px}
 #solo .sp.w{background:#fff;color:#153189;margin-left:auto}
 #soX{width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.18);color:#fff;font-size:16px;font-weight:900;cursor:pointer}
 #soS{position:absolute;inset:0}
@@ -1529,7 +1529,7 @@ function gTen(run) {
 <svg style="position:absolute;left:50%;top:calc(250px + env(safe-area-inset-top));transform:translateX(-50%)" width="250" height="260" viewBox="0 0 240 250"><defs><radialGradient id="tf" cx="45%" cy="40%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#DCE4F5"/></radialGradient><linearGradient id="tc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F1F5F9"/><stop offset=".5" stop-color="#94A3B8"/><stop offset="1" stop-color="#E2E8F0"/></linearGradient></defs>
 <rect x="104" y="0" width="32" height="22" rx="6" fill="url(#tc)"/><rect x="96" y="14" width="48" height="12" rx="4" fill="#B91C32"/><circle cx="120" cy="140" r="104" fill="url(#tc)"/><circle cx="120" cy="140" r="92" fill="url(#tf)"/>${ticks}<line id="tHand" x1="120" y1="140" x2="120" y2="70" stroke="#B91C32" stroke-width="5" stroke-linecap="round"/><circle cx="120" cy="140" r="8" fill="#B91C32"/></svg>
 <div class="sbig" id="tNum" style="top:calc(418px + env(safe-area-inset-top));font-size:40px;color:#153189;text-shadow:none">0.00</div>
-<div class="sbig" id="tMsg" style="top:calc(530px + env(safe-area-inset-top));font-size:14px;color:#C7D4F5;font-weight:700">START를 누르면 시작해요. 3초 뒤 숫자가 사라져요!</div>
+<div class="sbig" id="tMsg" style="top:calc(530px + env(safe-area-inset-top));font-size:14px;color:#153189;font-weight:800;text-shadow:none">START를 누르면 시작해요. 3초 뒤 숫자가 사라져요!</div>
 <button class="scta" id="tGo">START</button>`;
   const btn = $('tGo');
   const tick = () => { if (run !== soloRun || stopped) return; const e = performance.now() - t0; $('tNum').innerHTML = e < 3000 ? (e / 1000).toFixed(2) : '?.<span style="color:#94A3B8">??</span>'; const a = (e / 1000) * Math.PI / 5; $('tHand').setAttribute('x2', 120 + 70 * Math.sin(a)); $('tHand').setAttribute('y2', 140 - 70 * Math.cos(a)); if (e > 20000) { stop(); return; } raf = requestAnimationFrame(tick); };
@@ -1541,9 +1541,9 @@ function gTen(run) {
 // 3) 몇 번 사물함이었지?
 function gLocker(run) {
   const S = $('soS');
-  S.innerHTML = `<div class="sbig" id="lkM" style="top:calc(64px + env(safe-area-inset-top));font-size:17px;color:#93C5FD">잘 봐요! 파랑 불빛 순서대로 ✨</div>
+  S.innerHTML = `<div class="sbig" id="lkM" style="top:calc(64px + env(safe-area-inset-top));font-size:17px;color:#fff">잘 봐요! 파랑 불빛 순서대로 ✨</div>
 <div id="lkG" style="position:absolute;left:14px;right:14px;top:calc(100px + env(safe-area-inset-top));padding:10px;border-radius:14px;background:#1E293B;box-shadow:inset 0 0 0 3px #334155;display:grid;grid-template-columns:repeat(6,1fr);gap:5px">${Array.from({ length: 36 }, (_, i) => `<button class="lk" data-i="${i}"><span>${i + 1}</span></button>`).join('')}</div>
-<div class="sbig" id="lkD" style="top:auto;bottom:100px;font-size:14px;color:#C7D4F5"></div><button class="scta w" id="lkGo" disabled>잘 보고 기억해요…</button>`;
+<div class="sbig" id="lkD" style="top:auto;bottom:100px;font-size:14px;color:#153189;text-shadow:none"></div><button class="scta w" id="lkGo" disabled>잘 보고 기억해요…</button>`;
   const L = [...S.querySelectorAll('.lk')], seq = []; let lv = 3, pos = 0, input = false;
   const glow = (i, cls, ms) => { L[i].classList.add(cls); setTimeout(() => L[i].classList.remove(cls), ms); };
   const add = () => { let n; do { n = Math.floor(Math.random() * 36); } while (n === seq[seq.length - 1]); seq.push(n); };
