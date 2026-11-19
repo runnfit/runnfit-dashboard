@@ -43,7 +43,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 #gB .row button:disabled:not(.on){opacity:.4}
 #gTap{width:100%;height:170px;border:0;border-radius:18px;font-size:30px;font-weight:900;font-family:inherit;background:#E5E7EB;color:#6B7280;margin-top:6px}
 #gTap.go{background:#153189;color:#fff}
-#solo{position:fixed;inset:0;z-index:40;display:none;background:linear-gradient(#4F86EE 0%,#8DB6F7 45%,#DCEBFF 100%);color:#fff;user-select:none;-webkit-user-select:none;touch-action:manipulation;overflow:hidden}
+#solo{position:fixed;inset:0;z-index:40;display:none;background:linear-gradient(rgba(70,128,236,.86) 0%,rgba(132,178,246,.78) 45%,rgba(220,235,255,.86) 100%);backdrop-filter:blur(3px);-webkit-backdrop-filter:blur(3px);color:#fff;user-select:none;-webkit-user-select:none;touch-action:manipulation;overflow:hidden}
 #solo .sh{position:absolute;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top));display:flex;gap:8px;align-items:center;z-index:3}
 #solo .sp{background:#153189;border-radius:999px;padding:6px 12px;font-weight:900;font-size:13px}
 #solo .sp.w{background:#fff;color:#153189;margin-left:auto}
@@ -67,11 +67,22 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 .sres .sr span{width:22px;font-weight:900;color:#153189}.sres .sr b{flex:1}.sres .sr i{font-style:normal;font-weight:900;color:#153189}
 .sb2{flex:1;height:50px;border:0;border-radius:14px;background:#153189;color:#fff;font-weight:900;font-size:16px;font-family:inherit;cursor:pointer}
 .sb3{flex:1;height:50px;border:2px solid #D5DCE8;border-radius:14px;background:#fff;color:#153189;font-weight:900;font-size:16px;font-family:inherit;cursor:pointer}
-#solo.clear{background:transparent;pointer-events:none}#solo.clear .sh,#solo.clear .sres,#solo.clear .dhud{pointer-events:auto}
+#solo.clear{background:transparent;pointer-events:none;backdrop-filter:none;-webkit-backdrop-filter:none}#solo.clear .clouds{display:none}
+.clouds{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.cl{position:absolute;left:0;height:34px;background:#fff;border-radius:40px;opacity:.92;box-shadow:0 8px 16px rgba(30,64,175,.12);animation:drift linear infinite}
+.cl:before,.cl:after{content:'';position:absolute;background:#fff;border-radius:50%}
+.cl:before{width:52%;height:150%;left:14%;top:-62%}.cl:after{width:38%;height:118%;right:14%;top:-42%}
+@keyframes drift{from{transform:translateX(-40vw)}to{transform:translateX(120vw)}}#solo.clear .sh,#solo.clear .sres,#solo.clear .dhud{pointer-events:auto}
 body.dogmode #bar,body.dogmode #feed,body.dogmode #feedBtn,body.dogmode #feedAll,body.dogmode #card,body.dogmode #cheerBtn,body.dogmode #top{display:none!important}
 .dhud{position:absolute;left:12px;top:calc(58px + env(safe-area-inset-top));background:rgba(11,20,48,.78);border-radius:14px;padding:6px 12px 6px 6px;display:flex;gap:8px;align-items:center;color:#fff}
 .dhud b{display:block;font-size:14px}.dhud small{font-size:12px;color:#FFD54A;font-weight:800}
 .dtip{position:absolute;left:12px;right:12px;bottom:calc(20px + env(safe-area-inset-bottom));background:rgba(11,20,48,.82);color:#fff;border-radius:16px;padding:11px 14px;font-size:13px;line-height:1.5;font-weight:700;text-align:center}
+#solo.clear .dtray,#solo.clear .dreq{pointer-events:auto}
+.dreq{position:absolute;left:12px;right:12px;top:calc(122px + env(safe-area-inset-top));background:#fff;color:#153189;border-radius:14px;padding:9px 12px;font-weight:900;font-size:14px;box-shadow:0 6px 16px rgba(0,0,0,.25)}
+.pbar{height:6px;border-radius:3px;background:#E2E8F0;margin-top:6px;overflow:hidden}.pbar i{display:block;height:100%;width:0;background:#FFD54A;transition:width .1s linear}
+.dtray{position:absolute;left:12px;right:12px;bottom:calc(16px + env(safe-area-inset-bottom));display:flex;gap:8px;background:rgba(11,20,48,.82);border-radius:18px;padding:10px}
+.dtray button{flex:1;border:0;background:#fff;border-radius:14px;padding:8px 0 6px;box-shadow:0 5px 0 #C7D2EA;font-family:inherit;cursor:pointer}.dtray button:active{transform:translateY(3px);box-shadow:0 2px 0 #C7D2EA}
+.dtray span{display:block;font-size:28px}.dtray b{font-size:11.5px;color:#153189}.dtray button.bad{background:#FECACA}
 .gtab{display:flex;background:#EEF2FB;border-radius:14px;padding:4px;margin:4px 0 12px}
 .gtab button{flex:1;border:0;background:none;padding:10px 0;border-radius:11px;font-weight:900;font-size:14px;color:#64748B;font-family:inherit;cursor:pointer}
 .gtab button.on{background:#153189;color:#fff;box-shadow:0 3px 8px rgba(21,49,137,.35)}
@@ -207,11 +218,11 @@ body.dogmode #bar,body.dogmode #feed,body.dogmode #feedBtn,body.dogmode #feedAll
 <button data-solo="tower"><span class="i">🏋️</span><span class="t"><b>원판 탑 쌓기</b><small class="cr" id="crTower">오늘 첫 1등에 도전!</small></span><span class="go">도전</span></button>
 <button data-solo="ten"><span class="i">⏱️</span><span class="t"><b>런관장의 10초</b><small class="cr" id="crTen">오늘 첫 1등에 도전!</small></span><span class="go">도전</span></button>
 <button data-solo="dog"><span class="i">🐶</span><span class="t"><b>복덩이 찾기</b><small class="cr" id="crDog">오늘 첫 1등에 도전!</small></span><span class="go">도전</span></button>
-<button disabled><span class="i">🥏</span><span class="t"><b>원판 합치기</b><small class="cr">곧 열려요</small></span><span class="go">도전</span></button>
-<button disabled><span class="i">🛎️</span><span class="t"><b>오늘은 내가 관장!</b><small class="cr">곧 열려요</small></span><span class="go">도전</span></button>
+<button data-solo="merge"><span class="i">🥏</span><span class="t"><b>원판 합치기</b><small class="cr" id="crMerge">오늘 첫 1등에 도전!</small></span><span class="go">도전</span></button>
+<button data-solo="desk"><span class="i">🛎️</span><span class="t"><b>오늘은 내가 관장!</b><small class="cr" id="crDesk">오늘 첫 1등에 도전!</small></span><span class="go">도전</span></button>
 <button data-solo="locker"><span class="i">🔵</span><span class="t"><b>몇 번 사물함?</b><small class="cr" id="crLocker">오늘 첫 1등에 도전!</small></span><span class="go">도전</span></button></div>
 <button class="btn g" id="gHall" style="width:100%;margin-top:12px">🏆 명예의 전당 보기</button><button class="btn g" style="width:100%;margin-top:8px" data-close>닫기</button></div></div>
-<div id="solo"><div class="sh"><span class="sp" id="soT"></span><span class="sp w" id="soB"></span><button type="button" id="soX" aria-label="닫기">✕</button></div><div id="soS"></div></div>
+<div id="solo"><div class="clouds"><i class="cl" style="top:12%;width:120px;animation-duration:70s;animation-delay:-10s"></i><i class="cl" style="top:22%;width:80px;animation-duration:55s;animation-delay:-38s;opacity:.8"></i><i class="cl" style="top:34%;width:150px;animation-duration:90s;animation-delay:-60s"></i><i class="cl" style="top:52%;width:96px;animation-duration:65s;animation-delay:-20s;opacity:.7"></i><i class="cl" style="top:70%;width:130px;animation-duration:85s;animation-delay:-45s;opacity:.75"></i></div><div class="sh"><span class="sp" id="soT"></span><span class="sp w" id="soB"></span><button type="button" id="soX" aria-label="닫기">✕</button></div><div id="soS"></div></div>
 <div id="mGame" class="modal"><div class="sheet"><h3 id="gT">미니게임</h3><div id="gB"></div><button class="btn g" style="width:100%;margin-top:12px" data-close id="gClose">닫기</button></div></div>
 <div id="mTalk" class="modal"><div class="sheet"><h3>접속한 회원에게 한마디</h3><div class="inrow"><input id="msg" maxlength="200" placeholder="예) 오늘도 파이팅!"><button class="btn p" id="send" style="width:76px">보내기</button></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
 <div id="mTerr" class="modal"><div class="sheet"><h3>🌿 테라스 어디로 갈까요?</h3><div id="terrList"></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
@@ -916,7 +927,7 @@ let entered = false, cutscene = null;
 me.position.set(GX + 1.3, 0, GZ + 1.9); me.rotation.y = Math.PI;
 camera.position.set(me.position.x + 1.5, 7.5, me.position.z + 6.5);
 controls.target.set(me.position.x, 1, me.position.z);
-function follow(k = 1) { const dx = (me.position.x - controls.target.x) * k, dz = (me.position.z - controls.target.z) * k; camera.position.x += dx; camera.position.z += dz; controls.target.x += dx; controls.target.z += dz; }
+function follow(k = 1) { if (DESK) return; const dx = (me.position.x - controls.target.x) * k, dz = (me.position.z - controls.target.z) * k; camera.position.x += dx; camera.position.z += dz; controls.target.x += dx; controls.target.z += dz; }
 
 // ── 길찾기 (누른 곳까지 기구를 피해서 걸어가기)
 const CELL = .4, GX0 = -1, GZ0 = -TD - 1, GW = Math.ceil((WW + RW + 2) / CELL), GH = Math.ceil((CZ1 + 1 - GZ0) / CELL);
@@ -1015,7 +1026,7 @@ document.querySelectorAll('[data-close]').forEach(b => b.onclick = closeAll);
 document.querySelectorAll('.modal').forEach(m => m.addEventListener('pointerdown', e => { if (e.target === m) closeAll(); }));
 $('bFind').onclick = () => openM('mFind');
 $('bAct').onclick = () => openM('mAct');
-$('bGame').onclick = async () => { openM('mGames'); await loadDaily(); const d = kstDay(0); [['dog', 'crDog'], ['tower', 'crTower'], ['ten', 'crTen'], ['locker', 'crLocker']].forEach(([g, id]) => { const t = rankOf(g, d)[0]; if ($(id)) $(id).textContent = t ? '👑 오늘 1등 ' + t.nick + ' ' + soloFmt(g, t) : '오늘 첫 1등에 도전!'; }); };
+$('bGame').onclick = async () => { openM('mGames'); await loadDaily(); const d = kstDay(0); [['merge', 'crMerge'], ['desk', 'crDesk'], ['dog', 'crDog'], ['tower', 'crTower'], ['ten', 'crTen'], ['locker', 'crLocker']].forEach(([g, id]) => { const t = rankOf(g, d)[0]; if ($(id)) $(id).textContent = t ? '👑 오늘 1등 ' + t.nick + ' ' + soloFmt(g, t) : '오늘 첫 1등에 도전!'; }); };
 document.querySelectorAll('[data-solo]').forEach(b => b.onclick = () => { if (entered) soloOpen(b.dataset.solo); });
 document.querySelectorAll('[data-gt]').forEach(b => b.onclick = () => { document.querySelectorAll('[data-gt]').forEach(x => x.classList.toggle('on', x === b)); $('gpT').style.display = b.dataset.gt === 't' ? '' : 'none'; $('gpS').style.display = b.dataset.gt === 's' ? '' : 'none'; });
 $('gHall').onclick = () => { closeAll(); openHall(); };
@@ -1445,9 +1456,9 @@ function openHall() {
 }
 function tapRemote(r, t) { if (!GT || !t || t.id !== GT.id) return; const p = GT.ppl.get(r.uid) || { name: r.a.userData.name, n: 0 }; p.n = t.n; GT.ppl.set(r.uid, p); if (!GT.done) r.a.userData.act = TAPG[GT.k][4]; }
 // ── 혼자 하기 미니게임 · 오늘의 순위 · 1등 왕관
-const SOLO = { dog: { ic: '🐶', nm: '복덩이 찾기', low: false }, tower: { ic: '🏋️', nm: '원판 탑 쌓기', low: false }, ten: { ic: '⏱️', nm: '런관장의 10초', low: true }, locker: { ic: '🔵', nm: '몇 번 사물함?', low: false } };
+const SOLO = { dog: { ic: '🐶', nm: '복덩이 찾기', low: false }, merge: { ic: '🥏', nm: '원판 합치기', low: false }, desk: { ic: '🛎️', nm: '오늘은 내가 관장!', low: false }, tower: { ic: '🏋️', nm: '원판 탑 쌓기', low: false }, ten: { ic: '⏱️', nm: '런관장의 10초', low: true }, locker: { ic: '🔵', nm: '몇 번 사물함?', low: false } };
 const kstDay = (o = 0) => new Date(Date.now() + 9 * 3600e3 - o * 864e5).toISOString().slice(0, 10);
-const soloFmt = (g, r) => g === 'ten' ? (r.v / 1000).toFixed(2) + '초' : g === 'tower' ? r.score + '단' : g === 'dog' ? r.score + '마리' : r.score + '단계';
+const soloFmt = (g, r) => g === 'ten' ? (r.v / 1000).toFixed(2) + '초' : g === 'tower' ? r.score + '단' : g === 'dog' ? r.score + '마리' : g === 'merge' || g === 'desk' ? Number(r.score).toLocaleString() + '점' : r.score + '단계';
 let DAILY = [], soloRun = 0;
 async function loadDaily(force) {
   if (!LIVE) return DAILY;
@@ -1539,13 +1550,107 @@ function dogTap(cx, cy) {
   return true;
 }
 function dogClear() { if (DOGG) { DOGG.dogs.forEach(d => scene.remove(d.g)); DOGG = null; } document.body.classList.remove('dogmode'); }
+// 5) 원판 합치기 · 수박게임식 (같은 무게끼리 닿으면 다음 무게로)
+const PLT = [[1.25, '#9CA3AF', '#E5E7EB', '#111827'], [2.5, '#111827', '#4B5563', '#fff'], [5, '#E2E8F0', '#FFFFFF', '#111827'], [10, '#15803D', '#4ADE80', '#fff'], [15, '#CA8A04', '#FDE047', '#fff'], [20, '#1D4ED8', '#60A5FA', '#fff'], [25, '#B91C1C', '#F87171', '#fff'], ['BAR', '#B45309', '#FDE68A', '#153189']];
+const PR = [15, 19, 24, 31, 38, 46, 55, 64], PPT = [1, 3, 6, 10, 15, 21, 28, 50];
+function gMerge(run) {
+  const S = $('soS');
+  S.innerHTML = `<canvas id="mgC" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none"></canvas><div class="sbig" style="top:calc(60px + env(safe-area-inset-top));font-size:42px"><span id="mgS">0</span><span style="font-size:16px">점</span></div><div class="sbig" id="mgK" style="top:calc(112px + env(safe-area-inset-top));font-size:20px;color:#FFD54A;opacity:0;transition:opacity .2s"></div><img src="./img/s_idle.png" id="mgR" alt="" style="position:absolute;right:2px;top:calc(56px + env(safe-area-inset-top));height:96px;pointer-events:none"><div class="sbub" id="mgB" style="display:none;right:70px;top:calc(70px + env(safe-area-inset-top))">들어볼게요! 💪</div><div class="sbig" style="top:auto;bottom:calc(16px + env(safe-area-inset-bottom));font-size:12.5px;color:#153189;text-shadow:none;font-weight:800">밀고 떼면 쏙! · 1.25→2.5→5→10→15→20→25kg→🏆</div>`;
+  const c = $('mgC'), dpr = Math.min(2, devicePixelRatio || 1), W = innerWidth, H = innerHeight; c.width = W * dpr; c.height = H * dpr; const x = c.getContext('2d'); x.scale(dpr, dpr);
+  const bw = Math.min(W - 24, 380), bx = (W - bw) / 2, bb = H - 54, bt = Math.max(190, H * .26), k = bw / 360, danger = bt + 46 * k;
+  let balls = [], score = 0, next = 0, cur = 0, aimX = W / 2, can = true, over = false, combo = 0, lastMerge = 0, rest = .15;
+  const rnd = () => { const r = Math.random(), t = score > 600 ? (r < .3 ? 0 : r < .6 ? 1 : r < .85 ? 2 : 3) : (r < .45 ? 0 : r < .8 ? 1 : 2); return t; };
+  cur = rnd(); next = rnd();
+  const drawPlate = (px, py, t, al) => { const r = PR[t] * k, [kg, c1, c2, tc] = PLT[t]; x.globalAlpha = al == null ? 1 : al; const g = x.createRadialGradient(px - r * .3, py - r * .35, r * .1, px, py, r); g.addColorStop(0, c2); g.addColorStop(.75, c1); g.addColorStop(1, '#0B1020'); x.fillStyle = g; x.beginPath(); x.arc(px, py, r, 0, 7); x.fill();
+    x.strokeStyle = 'rgba(255,255,255,.18)'; x.lineWidth = 1; x.beginPath(); x.arc(px, py, r * .86, 0, 7); x.stroke();
+    const m = x.createLinearGradient(px - r * .35, py - r * .35, px + r * .35, py + r * .35); m.addColorStop(0, '#F8FAFC'); m.addColorStop(.5, '#94A3B8'); m.addColorStop(1, '#E2E8F0'); x.fillStyle = m; x.beginPath(); x.arc(px, py, r * .34, 0, 7); x.fill(); x.fillStyle = '#1E293B'; x.beginPath(); x.arc(px, py, r * .13, 0, 7); x.fill();
+    if (r > 17) { x.fillStyle = tc; x.font = `900 ${Math.max(8, r * .28)}px sans-serif`; x.textAlign = 'center'; x.fillText(kg === 'BAR' ? '🏆' : kg + (r > 30 ? 'KG' : ''), px, py + r * .72); }
+    x.globalAlpha = 1; };
+  const merge = (a, b) => { const t = a.t + 1, nx = (a.x + b.x) / 2, ny = (a.y + b.y) / 2; balls = balls.filter(q => q !== a && q !== b); if (t < PLT.length) balls.push({ x: nx, y: ny, vx: 0, vy: -1, t, born: performance.now(), pop: 1 });
+    const now = performance.now(); combo = now - lastMerge < 1200 ? combo + 1 : 1; lastMerge = now; const pts = PPT[Math.min(t, 7)] * combo; score += pts; $('mgS').textContent = score;
+    if (combo > 1) { $('mgK').textContent = `COMBO x${combo}!`; $('mgK').style.opacity = 1; setTimeout(() => { $('mgK').style.opacity = 0; }, 700); }
+    if (t >= 5) { $('mgR').src = t >= 7 ? './img/s_hooray.png' : './img/s_best.png'; $('mgB').textContent = t >= 7 ? '바벨 완성!! 들어볼게요 💪' : PLT[t][0] + 'kg 완성! 👍'; $('mgB').style.display = 'block'; setTimeout(() => { $('mgR').src = './img/s_idle.png'; $('mgB').style.display = 'none'; }, 1400); }
+    rest = Math.min(.42, .15 + score / 4000); };
+  const step = () => {
+    const g = .32 * k;
+    for (const b of balls) { b.vy += g; b.vx *= .995; b.x += b.vx; b.y += b.vy; const r = PR[b.t] * k;
+      if (b.x - r < bx) { b.x = bx + r; b.vx = -b.vx * rest; } if (b.x + r > bx + bw) { b.x = bx + bw - r; b.vx = -b.vx * rest; } if (b.y + r > bb) { b.y = bb - r; b.vy = -b.vy * rest; b.vx *= .92; } }
+    for (let it = 0; it < 3; it++) for (let i = 0; i < balls.length; i++) for (let j = i + 1; j < balls.length; j++) { const a = balls[i], b = balls[j]; if (!a || !b) continue; const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || .01, rr = (PR[a.t] + PR[b.t]) * k;
+      if (d < rr) { if (a.t === b.t && a.t < PLT.length - 1) { merge(a, b); return; } const o = (rr - d) / 2, nx = dx / d, ny = dy / d; a.x -= nx * o; a.y -= ny * o; b.x += nx * o; b.y += ny * o; const rv = (b.vx - a.vx) * nx + (b.vy - a.vy) * ny; if (rv < 0) { const im = -(1 + rest) * rv / 2; a.vx -= im * nx; a.vy -= im * ny; b.vx += im * nx; b.vy += im * ny; } } }
+  };
+  let dangerT = 0;
+  const frame = () => {
+    if (run !== soloRun) return;
+    if (!over) step();
+    x.clearRect(0, 0, W, H);
+    x.fillStyle = 'rgba(255,255,255,.35)'; x.beginPath(); x.roundRect ? x.roundRect(bx - 4, bt - 6, bw + 8, bb - bt + 10, 18) : x.rect(bx - 4, bt - 6, bw + 8, bb - bt + 10); x.fill();
+    x.strokeStyle = '#153189'; x.lineWidth = 3; x.beginPath(); x.moveTo(bx - 4, bt); x.lineTo(bx - 4, bb + 4); x.lineTo(bx + bw + 4, bb + 4); x.lineTo(bx + bw + 4, bt); x.stroke();
+    const hot = balls.some(b => performance.now() - b.born > 1200 && b.y - PR[b.t] * k < danger);
+    dangerT = hot ? dangerT + 1 : 0;
+    x.setLineDash([8, 6]); x.strokeStyle = hot ? (Math.floor(performance.now() / 150) % 2 ? '#EF4444' : '#FCA5A5') : 'rgba(239,68,68,.55)'; x.lineWidth = 2; x.beginPath(); x.moveTo(bx, danger); x.lineTo(bx + bw, danger); x.stroke(); x.setLineDash([]);
+    for (const b of balls) { if (b.pop) { b.pop = Math.max(0, b.pop - .06); } drawPlate(b.x, b.y, b.t); }
+    if (!over) { const r = PR[cur] * k, ax = Math.max(bx + r, Math.min(bx + bw - r, aimX)); x.strokeStyle = 'rgba(21,49,137,.35)'; x.setLineDash([4, 6]); x.beginPath(); x.moveTo(ax, bt - 40 + r); x.lineTo(ax, bb); x.stroke(); x.setLineDash([]); drawPlate(ax, bt - 40, cur, can ? 1 : .5);
+      x.fillStyle = '#153189'; x.font = '800 11px sans-serif'; x.textAlign = 'left'; x.fillText('다음', bx + 2, bt - 66); drawPlate(bx + 40, bt - 70, next, .9); }
+    if (!over && dangerT > 150) { over = true; setTimeout(() => soloResult('merge', score, null, balls.some(b => b.t >= 7) ? '바벨까지 완성! 전설이에요 🏆' : score >= 800 ? '대단해요! 💪' : '다음엔 더 무겁게! 🏋️'), 600); }
+    requestAnimationFrame(frame);
+  };
+  const aim = e => { aimX = e.clientX; };
+  const drop = e => { if (over || !can) return; aimX = e.clientX; const r = PR[cur] * k; balls.push({ x: Math.max(bx + r, Math.min(bx + bw - r, aimX)), y: bt - 40, vx: (Math.random() - .5) * .3, vy: 0, t: cur, born: performance.now() }); cur = next; next = rnd(); can = false; setTimeout(() => { can = true; }, 450); };
+  c.addEventListener('pointerdown', aim); c.addEventListener('pointermove', aim); c.addEventListener('pointerup', drop);
+  frame();
+}
+// 6) 오늘은 내가 런앤핏 관장! · 실제 인포 데스크에서 회원 응대
+const DESK_ITEMS = [['👕', '운동복', '운동복이요!'], ['🔑', '사물함 키', '사물함 키 주세요!'], ['🧺', '수건', '수건 하나만요~'], ['🥤', '파워에이드', '']];
+const DESK_NAMES = ['새벽러너', '꾸준왕', '3대500', '걷기왕', '하체러버', '출석요정', '런린이', '오운완러', '스쿼트요정', '아침형인간'];
+let DESK = null;
+function deskStart(run) {
+  closeAll(); document.body.classList.add('dogmode'); $('solo').classList.add('clear');
+  const dx = s(14.05), dz = s(13.3), staff = { x: dx + 1.3, z: dz - .45 };
+  const prev = { x: me.position.x, z: me.position.z, r: me.rotation.y };
+  route = null; me.position.set(staff.x, 0, staff.z); me.rotation.y = 0; me.userData.act = null;
+  controls.target.set(staff.x, .9, staff.z + 2.3); camera.position.set(staff.x + 2.2, 6.2, staff.z - 3.2); controls.update();
+  const S = $('soS');
+  S.innerHTML = `<div class="dhud"><span style="font-size:30px;padding:0 4px">🛎️</span><div><b id="dkN">0점 · 💙 0</b><small id="dkT">⏱ 30초</small></div></div>
+<div class="dreq" id="dkQ"><div id="dkQt">첫 손님이 들어오고 있어요…</div><div class="pbar"><i id="dkP"></i></div></div>
+<div class="dtray">${DESK_ITEMS.map((it, i) => `<button type="button" data-it="${i}"><span>${it[0]}</span><b>${it[1]}</b></button>`).join('')}</div>`;
+  DESK = { run, score: 0, kind: 0, q: [], prev, end: performance.now() + 30000, nextAt: performance.now() + 400, last: performance.now(), staff, dx, dz };
+  const spot = (i) => ({ x: staff.x + (i ? (i % 2 ? .55 : -.45) : 0), z: dz + 1.5 + i * 1.15 });
+  const spawn = () => { const D = DESK; if (D.q.length >= 4) return; const sh = [0x16A34A, 0xB91C32, 0xF59E0B, 0x7C3AED, 0x0891B2, 0xDB2777][Math.floor(Math.random() * 6)], hr = [0x111111, 0x3B2314, 0x5B3A1E][Math.floor(Math.random() * 3)], nm = DESK_NAMES[Math.floor(Math.random() * DESK_NAMES.length)];
+    const a = avatar(nm, sh, hr, false, false, 5 + Math.floor(Math.random() * 60)); a.position.set(GX - .3, 0, GZ + .5); scene.add(a);
+    const special = Math.random() < .22, want = special ? 3 : Math.floor(Math.random() * 3), nth = 10 * (1 + Math.floor(Math.random() * 9));
+    D.q.push({ a, want, text: special ? `저 오늘 ${nth}번째 출석이에요! 🎉` : DESK_ITEMS[want][2], pat: Math.max(3.2, 7 - D.score * .12), t: null, leaving: false }); };
+  const walk = (o, tx, tz, dt, sp = 3.2) => { const ddx = tx - o.position.x, ddz = tz - o.position.z, d = Math.hypot(ddx, ddz); if (d < .05) { pose(o, null, dt); return true; } const m = Math.min(d, sp * dt); o.position.x += ddx / d * m; o.position.z += ddz / d * m; o.rotation.y = Math.atan2(ddx, ddz); pose(o, 'walk', dt); return false; };
+  const leave = (c, msg) => { c.leaving = true; say(c.a, msg, 1.6); };
+  const tick = () => {
+    const D = DESK; if (!D || D.run !== soloRun) { deskClear(); return; }
+    const now = performance.now(), dt = Math.min(.05, (now - D.last) / 1000); D.last = now;
+    if (now > D.nextAt) { spawn(); D.nextAt = now + Math.max(1100, 2600 - D.score * 60); }
+    const live = D.q.filter(c => !c.leaving);
+    live.forEach((c, i) => { const sp = spot(i), arrived = walk(c.a, sp.x, sp.z, dt); if (i === 0 && arrived) { c.a.rotation.y = Math.PI; if (c.t == null) { c.t = now; say(c.a, c.text, c.pat); } } });
+    D.q.filter(c => c.leaving).forEach(c => { if (walk(c.a, GX + 1.2, GZ + 3, dt, 3.6)) { scene.remove(c.a); D.q = D.q.filter(q => q !== c); } });
+    const f = live[0];
+    if (f && f.t != null) { const k = 1 - (now - f.t) / (f.pat * 1000); $('dkQt').textContent = `${f.a.userData.name}님: "${f.text}"`; $('dkP').style.width = Math.max(0, k * 100) + '%'; $('dkP').style.background = k < .3 ? '#EF4444' : '#FFD54A'; if (k <= 0) { leave(f, '에이… 그냥 갈게요 😤'); } }
+    else { $('dkQt').textContent = live.length ? '손님이 데스크로 오고 있어요…' : '다음 손님을 기다리는 중…'; $('dkP').style.width = '0%'; }
+    const left = Math.max(0, Math.ceil((D.end - now) / 1000)); $('dkT').textContent = '⏱ ' + left + '초';
+    if (now >= D.end) { const sc = D.score; deskClear(); $('solo').classList.remove('clear'); soloResult('desk', sc, null, sc >= 25 ? '오늘부터 진짜 관장님! 👑' : sc >= 12 ? '친절 만점 관장님! 💙' : '회원님들이 기다려요 🛎️'); return; }
+    requestAnimationFrame(tick);
+  };
+  S.querySelectorAll('[data-it]').forEach(b => b.onclick = () => {
+    const D = DESK; if (!D) return; const f = D.q.find(c => !c.leaving); if (!f || f.t == null) return; const it = +b.dataset.it;
+    if (it === f.want) { const bonus = f.want === 3; D.score += bonus ? 3 : 1; D.kind++; leave(f, bonus ? '와 감동이에요!! 💙🥤' : ['감사합니다! 💙', '최고예요 👍', '오늘도 파이팅! 🔥'][D.kind % 3]); burst(f.a.position.x, 2.2, f.a.position.z, bonus ? ['💙', '🥤', '✨'] : ['💙', '✨'], bonus ? 12 : 6, bonus ? '+3' : '+1'); say(me, bonus ? '출석 축하드려요! 🎉' : '여기요! 😊', 1.2, false, true); }
+    else { D.end -= 2000; say(f.a, '그거 아닌데요… 😅', 1.4); b.classList.add('bad'); setTimeout(() => b.classList.remove('bad'), 400); }
+    $('dkN').textContent = `${D.score}점 · 💙 ${D.kind}`;
+  });
+  tick();
+}
+function deskClear() { const D = DESK; if (!D) return; D.q.forEach(c => scene.remove(c.a)); me.position.set(D.prev.x, 0, D.prev.z); me.rotation.y = D.prev.r; DESK = null; document.body.classList.remove('dogmode'); }
 function soloOpen(g) {
   closeAll(); soloRun++; $('solo').style.display = 'block'; $('soT').textContent = SOLO[g].ic + ' ' + SOLO[g].nm;
   const day = kstDay(0), uid = myUid || 'me', mine = DAILY.find(r => r.g === g && r.day === day && r.uid === uid);
   $('soB').textContent = mine ? '오늘 최고 ' + soloFmt(g, mine) : '오늘 첫 도전!';
-  $('solo').classList.remove('clear'); dogClear(); ({ tower: gTower, ten: gTen, locker: gLocker, dog: dogStart })[g](soloRun);
+  $('solo').classList.remove('clear'); dogClear(); deskClear(); ({ tower: gTower, ten: gTen, locker: gLocker, dog: dogStart, merge: gMerge, desk: deskStart })[g](soloRun);
 }
-$('soX').onclick = () => { soloRun++; dogClear(); $('solo').classList.remove('clear'); $('solo').style.display = 'none'; $('soS').innerHTML = ''; };
+$('soX').onclick = () => { soloRun++; dogClear(); deskClear(); $('solo').classList.remove('clear'); $('solo').style.display = 'none'; $('soS').innerHTML = ''; };
 async function soloResult(g, score, v, msg) {
   const res = await soloSave(g, score, v), day = kstDay(0), L = rankOf(g, day).slice(0, 5), uid = myUid || 'me', row = { score, v: v == null ? score : v };
   const card = document.createElement('div'); card.className = 'sres';
