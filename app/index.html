@@ -42,6 +42,8 @@
   .chip{ display:inline-block; font-size:12px; font-weight:900; background:var(--y); color:var(--ink); padding:2px 8px; }
   .grid12{ display:grid; grid-template-columns:repeat(12,minmax(0,1fr)); gap:2px; }
   .grid10{ display:grid; grid-template-columns:repeat(10,minmax(0,1fr)); gap:2px; }
+  .cmchip{ border:1.5px solid var(--line); background:#fff; color:#334155; border-radius:999px; padding:7px 13px; font-size:13px; font-weight:900; cursor:pointer; font-family:inherit; }
+  .cmchip.on{ background:var(--b); border-color:var(--b); color:#fff; }
   .seg{ height:8px; background:#D5DCE8; } .seg.on{ background:var(--b); }
   nav.tabs{ position:fixed; left:0; right:0; bottom:0; background:var(--b); padding:10px 6px calc(12px + env(safe-area-inset-bottom)); }
   nav.tabs .in{ max-width:480px; margin:0 auto; display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); }
@@ -64,12 +66,12 @@
 <div class="app nonav" id="app"><div class="loading">불러오는 중…</div></div>
 <nav class="tabs hidden" id="tabs" aria-label="메뉴"><div class="in">
   <button type="button" data-tab="home"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M3 11l9-7 9 7v9H3z"/></svg>홈</button>
-  <button type="button" data-tab="challenge"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M5 4h14v16H5z"/><path d="M9 12l2 2 4-4"/></svg>미션</button>
+  <button type="button" data-tab="community"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="12" cy="12" r="3.2"/><path d="M8 5l1.5-2h5L16 5"/></svg>커뮤니티</button>
   <button type="button" data-tab="pixel"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M3 20V9l9-5 9 5v11"/><path d="M9 20v-6h6v6"/></svg>미니런앤핏</button>
   <button type="button" data-tab="voice"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path d="M4 5h16v11H9l-5 4z"/></svg>소통</button>
-  <button type="button" data-tab="me"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 15-5 16 0"/></svg>내 정보</button>
+  <button type="button" data-tab="me"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-5 15-5 16 0"/></svg>MY</button>
 </div></nav>
 <div id="recaptcha"></div>
-<script type="module" src="./app.js?v=19"></script>
+<script type="module" src="./app.js?v=20"></script>
 </body>
 </html>
