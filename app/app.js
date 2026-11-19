@@ -964,13 +964,33 @@ async function renderCommunity(){
   const n = notices[0];
   $app.innerHTML = '<div class="top"><div class="ttl" style="font-size:21px">커뮤니티</div></div>' +
     (n ? '<button type="button" id="cmNotice" class="m" style="display:flex;align-items:center;gap:10px;background:' + B + ';color:#fff;border:0;border-radius:14px;padding:11px 14px;text-align:left;font-family:inherit;cursor:pointer;width:calc(100% - 44px)"><span style="background:var(--y);color:' + B + ';font-size:11px;font-weight:900;border-radius:999px;padding:2px 8px;flex:none">공지</span><span style="font-size:13.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">' + esc(n.title || '') + '</span></button>' : '') +
+    '<div id="cmChamp"></div>' +
     '<button type="button" id="cmWrite" class="card m" style="display:flex;align-items:center;gap:10px;border:0;padding:12px 14px;text-align:left;font-family:inherit;cursor:pointer;width:calc(100% - 44px)">' + avHtml(me.nickname || me.name) + '<span style="flex:1;color:#9AA3B5;font-size:14px">오늘 운동 인증해 볼까요?</span><span style="background:' + B + ';color:#fff;font-weight:900;font-size:13px;border-radius:999px;padding:8px 14px">📸 오운완</span></button>' +
     '<div id="feed" style="margin-top:14px"><div class="muted" style="text-align:center;padding:30px 0;font-size:13px">불러오는 중…</div></div><div id="feedMore" style="padding:4px 22px 10px"></div>';
   if(n) document.getElementById('cmNotice').onclick = ()=> showNotice(n);
   document.getElementById('cmWrite').onclick = ()=> startWrite(null);
+  paintChamps();
   if(!posts.length) await loadPosts(true);
   if(tab !== 'community') return;
   paintFeed();
+}
+// 어제의 미니런앤핏 1등 (혼자 하기 미니게임)
+const CHAMP_G = { tower: ['🏋️', '원판 탑 쌓기', false], ten: ['⏱️', '런관장의 10초', true], locker: ['🔵', '몇 번 사물함?', false] };
+let champCache = null;
+async function paintChamps(){
+  const box = document.getElementById('cmChamp'); if(!box) return;
+  const yd = kstDate(Date.now() - 864e5);
+  if(!champCache || champCache.day !== yd){
+    try{ const sn = await getDocs(query(collection(db, 'gym_daily'), where('day', '==', yd), limit(500))); champCache = { day: yd, rows: sn.docs.map((d)=> d.data()) }; }catch(e){ champCache = { day: yd, rows: [] }; }
+  }
+  const fmt = (g, r)=> g === 'ten' ? (r.v / 1000).toFixed(2) + '초' : g === 'tower' ? r.score + '단' : r.score + '단계';
+  const win = Object.keys(CHAMP_G).map((g)=>{ const L = champCache.rows.filter((r)=> r.g === g).sort((a, b)=> CHAMP_G[g][2] ? a.score - b.score : b.score - a.score); return L[0] ? [g, L[0]] : null; }).filter(Boolean);
+  if(!win.length || !document.getElementById('cmChamp')) return;
+  const d = new Date(Date.now() - 864e5 + KST);
+  box.innerHTML = '<div class="card m" style="padding:12px 14px"><div style="display:flex;justify-content:space-between;align-items:center"><b style="color:' + B + ';font-size:15px">👑 어제의 미니런앤핏 1등</b><span style="font-size:11.5px;color:#8A94A8">' + (d.getUTCMonth() + 1) + '.' + d.getUTCDate() + ' (' + '일월화수목금토'[d.getUTCDay()] + ')</span></div>' +
+    win.map(([g, r])=> '<div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-top:1px solid #F0F2F7"><span>' + CHAMP_G[g][0] + ' ' + CHAMP_G[g][1] + '</span><b>' + esc(r.nick || '회원') + ' <span style="color:' + B + '">' + fmt(g, r) + '</span></b></div>').join('') +
+    '<button type="button" class="cmchip" id="chGo" style="width:100%;margin-top:8px">🎮 나도 도전하기 · 미니런앤핏</button></div>';
+  document.getElementById('chGo').onclick = ()=> go('pixel');
 }
 function paintFeed(){
   const f = document.getElementById('feed'); if(!f) return;

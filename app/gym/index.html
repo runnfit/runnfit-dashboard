@@ -43,6 +43,30 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 #gB .row button:disabled:not(.on){opacity:.4}
 #gTap{width:100%;height:170px;border:0;border-radius:18px;font-size:30px;font-weight:900;font-family:inherit;background:#E5E7EB;color:#6B7280;margin-top:6px}
 #gTap.go{background:#153189;color:#fff}
+#solo{position:fixed;inset:0;z-index:40;display:none;background:radial-gradient(120% 70% at 50% 0%,#2C4BB8 0%,#0B1430 70%);color:#fff;user-select:none;-webkit-user-select:none;touch-action:manipulation;overflow:hidden}
+#solo .sh{position:absolute;left:12px;right:12px;top:calc(12px + env(safe-area-inset-top));display:flex;gap:8px;align-items:center;z-index:3}
+#solo .sp{background:rgba(11,20,48,.7);border-radius:999px;padding:6px 12px;font-weight:900;font-size:13px}
+#solo .sp.w{background:#fff;color:#153189;margin-left:auto}
+#soX{width:36px;height:36px;border-radius:50%;border:0;background:rgba(255,255,255,.18);color:#fff;font-size:16px;font-weight:900;cursor:pointer}
+#soS{position:absolute;inset:0}
+.scta{position:absolute;left:16px;right:16px;bottom:calc(22px + env(safe-area-inset-bottom));height:60px;border:0;border-radius:18px;background:linear-gradient(#2148C8,#153189);color:#fff;font-weight:900;font-size:19px;box-shadow:0 8px 0 #0B1F66;font-family:inherit;cursor:pointer;z-index:2}
+.scta:active{transform:translateY(4px);box-shadow:0 4px 0 #0B1F66}
+.scta.red{background:linear-gradient(#E0314A,#B91C32);box-shadow:0 8px 0 #7F1324;letter-spacing:2px;font-size:22px}
+.scta.w{background:#fff;color:#153189;box-shadow:0 8px 0 #93A3C8}.scta:disabled{opacity:.75}
+.sbig{position:absolute;left:0;right:0;text-align:center;font-weight:900;text-shadow:0 4px 18px rgba(0,0,0,.4);pointer-events:none}
+.sbub{position:absolute;background:#fff;color:#111827;border-radius:14px;padding:7px 11px;font-size:13px;font-weight:800;white-space:nowrap;box-shadow:0 6px 14px rgba(0,0,0,.25);z-index:2}
+.lk{position:relative;height:clamp(40px,8.6vh,58px);border:0;border-radius:5px;background:linear-gradient(135deg,#E2E8F0,#94A3B8 60%,#CBD5E1);box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);cursor:pointer;padding:0;transition:background .12s,box-shadow .12s}
+.lk span{position:absolute;left:3px;top:3px;font-size:9px;font-weight:900;color:#1E293B;background:#F8FAFC;border-radius:3px;padding:0 3px}
+.lk:after{content:'';position:absolute;right:5px;top:40%;width:4px;height:12px;background:#334155;border-radius:2px}
+.lk.on{background:linear-gradient(135deg,#BFDBFE,#3B82F6);box-shadow:0 0 16px 4px rgba(59,130,246,.9),inset 0 0 14px rgba(59,130,246,.9)}
+.lk.bad{background:linear-gradient(135deg,#FECACA,#EF4444);box-shadow:0 0 14px 3px rgba(239,68,68,.8)}
+.sres{position:absolute;left:16px;right:16px;top:50%;transform:translateY(-50%);background:#fff;color:#111827;border-radius:22px;padding:20px 18px;box-shadow:0 20px 50px rgba(0,0,0,.45);z-index:5;text-align:center}
+.sres .st{font-weight:900;color:#153189}.sres .sv{font-size:46px;font-weight:900;color:#153189;margin:6px 0}.sres .sm{font-size:13.5px;color:#4B5563;line-height:1.5}
+.sres .sk{font-size:12px;font-weight:900;color:#8A94A8;margin:14px 0 6px;text-align:left}
+.sres .sr{display:flex;align-items:center;gap:10px;padding:7px 10px;border-radius:10px;font-size:14px;text-align:left}.sres .sr.me{background:#EEF2FB}
+.sres .sr span{width:22px;font-weight:900;color:#153189}.sres .sr b{flex:1}.sres .sr i{font-style:normal;font-weight:900;color:#153189}
+.sb2{flex:1;height:50px;border:0;border-radius:14px;background:#153189;color:#fff;font-weight:900;font-size:16px;font-family:inherit;cursor:pointer}
+.sb3{flex:1;height:50px;border:2px solid #D5DCE8;border-radius:14px;background:#fff;color:#153189;font-weight:900;font-size:16px;font-family:inherit;cursor:pointer}
 .gtab{display:flex;background:#EEF2FB;border-radius:14px;padding:4px;margin:4px 0 12px}
 .gtab button{flex:1;border:0;background:none;padding:10px 0;border-radius:11px;font-weight:900;font-size:14px;color:#64748B;font-family:inherit;cursor:pointer}
 .gtab button.on{background:#153189;color:#fff;box-shadow:0 3px 8px rgba(21,49,137,.35)}
@@ -175,13 +199,14 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 <button data-g="race"><span class="i">🏃</span><span class="t"><b>러닝머신 레이스</b><small>여럿이 · 10초 연타</small></span><span class="go">신청</span></button>
 <button data-g="sqt"><span class="i">🦵</span><span class="t"><b>스쿼트 연타</b><small>여럿이 · 10초 연타</small></span><span class="go">신청</span></button></div>
 <div class="gbl" id="gpS" style="display:none">
-<button disabled><span class="i">🏋️</span><span class="t"><b>원판 탑 쌓기</b><small class="cr">곧 열려요</small></span><span class="go">도전</span></button>
-<button disabled><span class="i">⏱️</span><span class="t"><b>런관장의 10초</b><small class="cr">곧 열려요</small></span><span class="go">도전</span></button>
+<button data-solo="tower"><span class="i">🏋️</span><span class="t"><b>원판 탑 쌓기</b><small class="cr" id="crTower">오늘 첫 1등에 도전!</small></span><span class="go">도전</span></button>
+<button data-solo="ten"><span class="i">⏱️</span><span class="t"><b>런관장의 10초</b><small class="cr" id="crTen">오늘 첫 1등에 도전!</small></span><span class="go">도전</span></button>
 <button disabled><span class="i">🐶</span><span class="t"><b>복덩이 찾기</b><small class="cr">곧 열려요</small></span><span class="go">도전</span></button>
 <button disabled><span class="i">🥏</span><span class="t"><b>원판 합치기</b><small class="cr">곧 열려요</small></span><span class="go">도전</span></button>
 <button disabled><span class="i">🛎️</span><span class="t"><b>오늘은 내가 관장!</b><small class="cr">곧 열려요</small></span><span class="go">도전</span></button>
-<button disabled><span class="i">🔵</span><span class="t"><b>몇 번 사물함?</b><small class="cr">곧 열려요</small></span><span class="go">도전</span></button></div>
+<button data-solo="locker"><span class="i">🔵</span><span class="t"><b>몇 번 사물함?</b><small class="cr" id="crLocker">오늘 첫 1등에 도전!</small></span><span class="go">도전</span></button></div>
 <button class="btn g" id="gHall" style="width:100%;margin-top:12px">🏆 명예의 전당 보기</button><button class="btn g" style="width:100%;margin-top:8px" data-close>닫기</button></div></div>
+<div id="solo"><div class="sh"><span class="sp" id="soT"></span><span class="sp w" id="soB"></span><button type="button" id="soX" aria-label="닫기">✕</button></div><div id="soS"></div></div>
 <div id="mGame" class="modal"><div class="sheet"><h3 id="gT">미니게임</h3><div id="gB"></div><button class="btn g" style="width:100%;margin-top:12px" data-close id="gClose">닫기</button></div></div>
 <div id="mTalk" class="modal"><div class="sheet"><h3>접속한 회원에게 한마디</h3><div class="inrow"><input id="msg" maxlength="200" placeholder="예) 오늘도 파이팅!"><button class="btn p" id="send" style="width:76px">보내기</button></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
 <div id="mTerr" class="modal"><div class="sheet"><h3>🌿 테라스 어디로 갈까요?</h3><div id="terrList"></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
@@ -984,7 +1009,8 @@ document.querySelectorAll('[data-close]').forEach(b => b.onclick = closeAll);
 document.querySelectorAll('.modal').forEach(m => m.addEventListener('pointerdown', e => { if (e.target === m) closeAll(); }));
 $('bFind').onclick = () => openM('mFind');
 $('bAct').onclick = () => openM('mAct');
-$('bGame').onclick = () => openM('mGames');
+$('bGame').onclick = async () => { openM('mGames'); await loadDaily(); const d = kstDay(0); [['tower', 'crTower'], ['ten', 'crTen'], ['locker', 'crLocker']].forEach(([g, id]) => { const t = rankOf(g, d)[0]; if ($(id)) $(id).textContent = t ? '👑 오늘 1등 ' + t.nick + ' ' + soloFmt(g, t) : '오늘 첫 1등에 도전!'; }); };
+document.querySelectorAll('[data-solo]').forEach(b => b.onclick = () => { if (entered) soloOpen(b.dataset.solo); });
 document.querySelectorAll('[data-gt]').forEach(b => b.onclick = () => { document.querySelectorAll('[data-gt]').forEach(x => x.classList.toggle('on', x === b)); $('gpT').style.display = b.dataset.gt === 't' ? '' : 'none'; $('gpS').style.display = b.dataset.gt === 's' ? '' : 'none'; });
 $('gHall').onclick = () => { closeAll(); openHall(); };
 document.querySelectorAll('#mGames [data-g]').forEach(b => b.onclick = () => { closeAll(); if (entered) gameReq(b.dataset.g); });
@@ -1412,6 +1438,132 @@ function openHall() {
   $('hR').onclick = () => { closeAll(); tapStart('race'); }; $('hS').onclick = () => { closeAll(); tapStart('sqt'); };
 }
 function tapRemote(r, t) { if (!GT || !t || t.id !== GT.id) return; const p = GT.ppl.get(r.uid) || { name: r.a.userData.name, n: 0 }; p.n = t.n; GT.ppl.set(r.uid, p); if (!GT.done) r.a.userData.act = TAPG[GT.k][4]; }
+// ── 혼자 하기 미니게임 · 오늘의 순위 · 1등 왕관
+const SOLO = { tower: { ic: '🏋️', nm: '원판 탑 쌓기', low: false }, ten: { ic: '⏱️', nm: '런관장의 10초', low: true }, locker: { ic: '🔵', nm: '몇 번 사물함?', low: false } };
+const kstDay = (o = 0) => new Date(Date.now() + 9 * 3600e3 - o * 864e5).toISOString().slice(0, 10);
+const soloFmt = (g, r) => g === 'ten' ? (r.v / 1000).toFixed(2) + '초' : g === 'tower' ? r.score + '단' : r.score + '단계';
+let DAILY = [], soloRun = 0;
+async function loadDaily(force) {
+  if (!LIVE) return DAILY;
+  if (!force && Date.now() - (loadDaily.t || 0) < 30000) return DAILY;
+  try { const sn = await getDocs(query(collection(db, 'gym_daily'), where('day', 'in', [kstDay(0), kstDay(1)]), limit(800))); DAILY = sn.docs.map(d => d.data()); loadDaily.t = Date.now(); applyCrowns(); } catch (e) {}
+  return DAILY;
+}
+function rankOf(g, day) { const L = DAILY.filter(r => r.g === g && r.day === day); L.sort((a, b) => SOLO[g].low ? a.score - b.score : b.score - a.score); return L; }
+function leaders() { const m = new Map(); for (const g in SOLO) for (const day of [kstDay(0), kstDay(1)]) { const t = rankOf(g, day)[0]; if (t) { if (!m.has(t.uid)) m.set(t.uid, []); m.get(t.uid).push(g); } } return m; }
+function setCrown(av, on) {
+  const u = av && av.userData; if (!u || !u.torso || !!u.crown === on) return;
+  if (on) { const g = new THREE.Group(), gold = 0xF5B301; box(g, -.23, 0, -.19, .46, .08, .38, gold); [[-.23, -.19], [.15, -.19], [-.23, .11], [.15, .11]].forEach(([x, z]) => box(g, x, .08, z, .08, .11, .08, gold)); box(g, -.04, .08, .11, .08, .15, .08, 0xFFD54A); box(g, -.035, .03, .19, .07, .05, .01, 0x2563EB); g.position.y = .99; u.torso.add(g); u.crown = g; }
+  else { u.torso.remove(u.crown); u.crown = null; }
+}
+function applyCrowns() { const L = leaders(); setCrown(me, L.has(myUid || 'me')); for (const [uid, r] of remotes) setCrown(r.a, L.has(uid)); }
+setInterval(() => { if (entered) { loadDaily(); applyCrowns(); } }, 60000);
+async function soloSave(g, score, v) {
+  const day = kstDay(0), uid = myUid || 'me', mine = DAILY.find(r => r.g === g && r.day === day && r.uid === uid), prevTop = rankOf(g, day)[0];
+  const better = !mine || (SOLO[g].low ? score < mine.score : score > mine.score);
+  if (!better) return { best: false, rank: rankOf(g, day).findIndex(r => r.uid === uid) + 1 };
+  const row = { g, day, uid, nick: myName, score, v: v == null ? score : v };
+  if (mine) Object.assign(mine, row); else DAILY.push(row);
+  if (LIVE) setDoc(doc(db, 'gym_daily', `${g}_${day}_${uid}`), Object.assign({}, row, { ts: serverTimestamp() })).catch(() => {});
+  const L = rankOf(g, day), rank = L.findIndex(r => r.uid === uid) + 1;
+  if (rank === 1 && (!prevTop || prevTop.uid !== uid)) { feed.raw = true; feed('', `👑 ${myName}님이 ${SOLO[g].ic} ${SOLO[g].nm} 오늘 1등! (${soloFmt(g, row)})`, 'sys'); feed.raw = false; burst(me.position.x, 2.4, me.position.z, ['👑', '✨', '🎉'], 14, '오늘 1등!'); }
+  applyCrowns();
+  return { best: true, rank };
+}
+function soloOpen(g) {
+  closeAll(); soloRun++; $('solo').style.display = 'block'; $('soT').textContent = SOLO[g].ic + ' ' + SOLO[g].nm;
+  const day = kstDay(0), uid = myUid || 'me', mine = DAILY.find(r => r.g === g && r.day === day && r.uid === uid);
+  $('soB').textContent = mine ? '오늘 최고 ' + soloFmt(g, mine) : '오늘 첫 도전!';
+  ({ tower: gTower, ten: gTen, locker: gLocker })[g](soloRun);
+}
+$('soX').onclick = () => { soloRun++; $('solo').style.display = 'none'; $('soS').innerHTML = ''; };
+async function soloResult(g, score, v, msg) {
+  const res = await soloSave(g, score, v), day = kstDay(0), L = rankOf(g, day).slice(0, 5), uid = myUid || 'me', row = { score, v: v == null ? score : v };
+  const card = document.createElement('div'); card.className = 'sres';
+  card.innerHTML = `<div class="st">${SOLO[g].ic} ${SOLO[g].nm}</div><div class="sv">${soloFmt(g, row)}</div><div class="sm">${msg || ''}${res.best ? (res.rank === 1 ? '<br><b style="color:#B45309">👑 오늘 1등이에요!</b>' : '<br><b style="color:#153189">🔥 오늘 내 최고 기록!</b>') : ''}</div>
+<div class="sk">오늘의 순위</div>${L.length ? L.map((r, i) => `<div class="sr${r.uid === uid ? ' me' : ''}"><span>${['👑', '2', '3', '4', '5'][i]}</span><b>${esc(r.nick || '회원')}</b><i>${soloFmt(g, r)}</i></div>`).join('') : '<div class="sm">첫 기록의 주인공이 되어 보세요!</div>'}
+<div style="display:flex;gap:8px;margin-top:14px"><button class="sb2" id="soAgain">다시 하기</button><button class="sb3" id="soOut">닫기</button></div>`;
+  $('soS').appendChild(card);
+  const mine = DAILY.find(r => r.g === g && r.day === day && r.uid === uid); if (mine) $('soB').textContent = '오늘 최고 ' + soloFmt(g, mine);
+  $('soAgain').onclick = () => soloOpen(g); $('soOut').onclick = () => $('soX').onclick();
+}
+// 1) 원판 탑 쌓기
+function gTower(run) {
+  const S = $('soS');
+  S.innerHTML = `<canvas id="twC" style="position:absolute;inset:0;width:100%;height:100%"></canvas><div class="sbig" style="top:calc(64px + env(safe-area-inset-top));font-size:64px"><span id="twN">0</span><span style="font-size:22px">단</span></div><div class="sbig" id="twP" style="top:calc(150px + env(safe-area-inset-top));font-size:28px;color:#FFD54A;opacity:0;transition:opacity .2s">PERFECT!</div><img src="./img/s_idle.png" id="twR" alt="" style="position:absolute;right:4px;bottom:110px;height:150px;pointer-events:none"><div class="sbub" id="twB" style="display:none;right:24px;bottom:270px">정중앙! 따봉 👍</div><button class="scta" id="twGo">톡! 떨어뜨리기</button>`;
+  const c = $('twC'), dpr = Math.min(2, devicePixelRatio || 1), W = innerWidth, H = innerHeight; c.width = W * dpr; c.height = H * dpr; const x = c.getContext('2d'); x.scale(dpr, dpr);
+  const COLS = [['#B91C1C', '#F87171'], ['#1D4ED8', '#60A5FA'], ['#CA8A04', '#FDE047'], ['#15803D', '#4ADE80'], ['#CBD5E1', '#FFFFFF'], ['#111827', '#4B5563']];
+  const PH = 26, baseW = Math.min(240, W * .62), st = [{ x: (W - baseW) / 2, w: baseW, c: 0 }];
+  let cur = { x: 0, w: baseW, c: 1, d: 1 }, sp = 2.6, cam = 0, combo = 0, over = false, fall = null;
+  const plate = (px, py, w, ci, a) => { const [c1, c2] = COLS[ci % COLS.length]; x.globalAlpha = a == null ? 1 : a; const g = x.createLinearGradient(0, py, 0, py + PH); g.addColorStop(0, c2); g.addColorStop(.55, c1); g.addColorStop(1, '#0B1020'); x.fillStyle = g; x.beginPath(); x.roundRect ? x.roundRect(px, py, w, PH - 2, 7) : x.rect(px, py, w, PH - 2); x.fill(); x.fillStyle = 'rgba(226,232,240,.55)'; x.fillRect(px + w / 2 - 14, py, 28, PH - 2); x.fillStyle = 'rgba(255,255,255,.2)'; x.fillRect(px + 3, py + 2, w - 6, 3); x.globalAlpha = 1; };
+  const baseY = H - 150;
+  const frame = () => {
+    if (run !== soloRun) return;
+    x.clearRect(0, 0, W, H);
+    const topY = baseY - st.length * PH, target = Math.max(0, (H * .42) - topY); cam += (target - cam) * .12;
+    x.fillStyle = 'rgba(15,23,42,.6)'; x.fillRect(W / 2 - baseW / 2 - 20, baseY + cam + PH - 2, baseW + 40, 14);
+    st.forEach((p, i) => plate(p.x, baseY - i * PH + cam, p.w, p.c));
+    if (fall) { fall.vy += .6; fall.y += fall.vy; fall.a -= .02; plate(fall.x, fall.y + cam, fall.w, fall.c, Math.max(0, fall.a)); }
+    if (!over) { cur.x += cur.d * sp; if (cur.x < -cur.w * .3) { cur.x = -cur.w * .3; cur.d = 1; } if (cur.x + cur.w > W + cur.w * .3) { cur.x = W + cur.w * .3 - cur.w; cur.d = -1; } plate(cur.x, baseY - st.length * PH + cam - 34, cur.w, cur.c); }
+    requestAnimationFrame(frame);
+  };
+  const drop = () => {
+    if (over || run !== soloRun) return;
+    const top = st[st.length - 1], l = Math.max(cur.x, top.x), r = Math.min(cur.x + cur.w, top.x + top.w), ov = r - l;
+    if (ov <= 0) { over = true; fall = { x: cur.x, y: baseY - st.length * PH - 34, w: cur.w, c: cur.c, vy: 0, a: 1 }; $('twR').src = './img/s_idle.png'; setTimeout(() => soloResult('tower', st.length - 1, null, st.length - 1 >= 15 ? '탑이 엄청 높아요! 🏆' : '다음엔 더 높이! 💪'), 900); return; }
+    let nx = l, nw = ov;
+    if (Math.abs(cur.x - top.x) < 6) { nx = top.x; nw = top.w; combo++; if (combo >= 3) nw = Math.min(baseW, nw + 6); $('twP').textContent = combo > 1 ? `PERFECT x${combo}!` : 'PERFECT!'; $('twP').style.opacity = 1; setTimeout(() => { $('twP').style.opacity = 0; }, 600); $('twR').src = './img/s_best.png'; $('twB').style.display = 'block'; setTimeout(() => { $('twR').src = './img/s_idle.png'; $('twB').style.display = 'none'; }, 900); }
+    else { combo = 0; const cut = cur.x < top.x ? { x: cur.x, w: top.x - cur.x } : { x: r, w: cur.x + cur.w - r }; fall = { x: cut.x, y: baseY - st.length * PH - 34, w: cut.w, c: cur.c, vy: 0, a: 1 }; }
+    st.push({ x: nx, w: nw, c: cur.c }); $('twN').textContent = st.length - 1;
+    sp = Math.min(7.5, 2.6 + (st.length - 1) * .2);
+    cur = { x: Math.random() < .5 ? -nw * .3 : W - nw * .7, w: nw, c: st.length % COLS.length, d: Math.random() < .5 ? 1 : -1 };
+  };
+  $('twGo').onclick = drop; c.onclick = drop;
+  frame();
+}
+// 2) 런관장의 10초
+function gTen(run) {
+  const S = $('soS'); let t0 = 0, raf = 0, stopped = false;
+  const ticks = Array.from({ length: 12 }, (_, i) => { const a = i * Math.PI / 6; return `<line x1="${120 + 80 * Math.sin(a)}" y1="${140 - 80 * Math.cos(a)}" x2="${120 + 88 * Math.sin(a)}" y2="${140 - 88 * Math.cos(a)}" stroke="#153189" stroke-width="4" stroke-linecap="round"/>`; }).join('');
+  S.innerHTML = `<img src="./img/s_idle.png" alt="" style="position:absolute;left:18px;top:calc(76px + env(safe-area-inset-top));height:150px"><div class="sbub" style="left:150px;top:calc(110px + env(safe-area-inset-top))">딱 10초 되면 눌러보세요! 😎</div>
+<svg style="position:absolute;left:50%;top:calc(250px + env(safe-area-inset-top));transform:translateX(-50%)" width="250" height="260" viewBox="0 0 240 250"><defs><radialGradient id="tf" cx="45%" cy="40%" r="70%"><stop offset="0" stop-color="#fff"/><stop offset="1" stop-color="#DCE4F5"/></radialGradient><linearGradient id="tc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#F1F5F9"/><stop offset=".5" stop-color="#94A3B8"/><stop offset="1" stop-color="#E2E8F0"/></linearGradient></defs>
+<rect x="104" y="0" width="32" height="22" rx="6" fill="url(#tc)"/><rect x="96" y="14" width="48" height="12" rx="4" fill="#B91C32"/><circle cx="120" cy="140" r="104" fill="url(#tc)"/><circle cx="120" cy="140" r="92" fill="url(#tf)"/>${ticks}<line id="tHand" x1="120" y1="140" x2="120" y2="70" stroke="#B91C32" stroke-width="5" stroke-linecap="round"/><circle cx="120" cy="140" r="8" fill="#B91C32"/></svg>
+<div class="sbig" id="tNum" style="top:calc(418px + env(safe-area-inset-top));font-size:40px;color:#153189;text-shadow:none">0.00</div>
+<div class="sbig" id="tMsg" style="top:calc(530px + env(safe-area-inset-top));font-size:14px;color:#C7D4F5;font-weight:700">START를 누르면 시작해요. 3초 뒤 숫자가 사라져요!</div>
+<button class="scta" id="tGo">START</button>`;
+  const btn = $('tGo');
+  const tick = () => { if (run !== soloRun || stopped) return; const e = performance.now() - t0; $('tNum').innerHTML = e < 3000 ? (e / 1000).toFixed(2) : '?.<span style="color:#94A3B8">??</span>'; const a = (e / 1000) * Math.PI / 5; $('tHand').setAttribute('x2', 120 + 70 * Math.sin(a)); $('tHand').setAttribute('y2', 140 - 70 * Math.cos(a)); if (e > 20000) { stop(); return; } raf = requestAnimationFrame(tick); };
+  const stop = () => { stopped = true; cancelAnimationFrame(raf); const v = Math.round(performance.now() - t0), d = Math.abs(v - 10000); $('tNum').textContent = (v / 1000).toFixed(2); btn.style.display = 'none';
+    const m = d <= 30 ? '소름! 거의 완벽해요 😱' : d <= 150 ? '와 감각 최고! 👏' : d <= 500 ? '아깝다! 조금만 더 🔥' : v < 10000 ? '조금 성급했어요 😅' : '조금 늦었어요 🐢';
+    $('tMsg').textContent = `10초와 ${(d / 1000).toFixed(2)}초 차이 · ${m}`; setTimeout(() => soloResult('ten', d, v, m), 1100); };
+  btn.onclick = () => { if (!t0) { t0 = performance.now(); btn.textContent = 'STOP!'; btn.classList.add('red'); $('tMsg').textContent = '속으로 하나, 둘, 셋…'; tick(); } else if (!stopped) stop(); };
+}
+// 3) 몇 번 사물함이었지?
+function gLocker(run) {
+  const S = $('soS');
+  S.innerHTML = `<div class="sbig" id="lkM" style="top:calc(64px + env(safe-area-inset-top));font-size:17px;color:#93C5FD">잘 봐요! 파랑 불빛 순서대로 ✨</div>
+<div id="lkG" style="position:absolute;left:14px;right:14px;top:calc(100px + env(safe-area-inset-top));padding:10px;border-radius:14px;background:#1E293B;box-shadow:inset 0 0 0 3px #334155;display:grid;grid-template-columns:repeat(6,1fr);gap:5px">${Array.from({ length: 36 }, (_, i) => `<button class="lk" data-i="${i}"><span>${i + 1}</span></button>`).join('')}</div>
+<div class="sbig" id="lkD" style="top:auto;bottom:100px;font-size:14px;color:#C7D4F5"></div><button class="scta w" id="lkGo" disabled>잘 보고 기억해요…</button>`;
+  const L = [...S.querySelectorAll('.lk')], seq = []; let lv = 3, pos = 0, input = false;
+  const glow = (i, cls, ms) => { L[i].classList.add(cls); setTimeout(() => L[i].classList.remove(cls), ms); };
+  const add = () => { let n; do { n = Math.floor(Math.random() * 36); } while (n === seq[seq.length - 1]); seq.push(n); };
+  const show = async () => {
+    input = false; pos = 0; $('lkGo').disabled = true; $('lkGo').textContent = '잘 보고 기억해요…'; $('lkM').textContent = `${lv - 2}단계 · ${seq.length}개를 기억해요`; $('soB').textContent = `${lv - 2}단계`;
+    const on = Math.max(300, 620 - lv * 25), gap = Math.max(120, 220 - lv * 8);
+    await new Promise(r => setTimeout(r, 700));
+    for (const i of seq) { if (run !== soloRun) return; glow(i, 'on', on); await new Promise(r => setTimeout(r, on + gap)); }
+    input = true; $('lkGo').textContent = '기억한 순서대로 톡톡!'; $('lkM').textContent = '이제 순서대로 눌러요 👆';
+    $('lkD').innerHTML = seq.map(() => '<i style="display:inline-block;width:10px;height:10px;border-radius:50%;background:#334155;margin:0 3px"></i>').join('');
+  };
+  L.forEach(b => b.onclick = () => {
+    if (!input || run !== soloRun) return; const i = +b.dataset.i;
+    if (i === seq[pos]) { glow(i, 'on', 220); pos++; const ds = $('lkD').querySelectorAll('i'); if (ds[pos - 1]) ds[pos - 1].style.background = '#3B82F6';
+      if (pos === seq.length) { input = false; $('lkM').textContent = '정답! 👏 다음 단계'; lv++; add(); setTimeout(show, 700); } }
+    else { input = false; glow(i, 'bad', 700); glow(seq[pos], 'on', 900); $('lkM').textContent = `${seq[pos] + 1}번이었어요! 😵`; const done = lv - 3; setTimeout(() => soloResult('locker', done, null, done >= 8 ? '기억력 천재! 🧠' : '다음엔 더 멀리! 💪'), 1200); }
+  });
+  for (let k = 0; k < 3; k++) add();
+  show();
+}
 function hi5Anim(n, post) {
   toast(`${n.a.userData.name}님과 하이파이브! 🙌`);
   n.busy = 99; if (!n.restore) n.restore = { act: n.a.userData.act, rot: n.a.rotation.y };
