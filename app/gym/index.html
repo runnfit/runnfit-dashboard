@@ -1958,20 +1958,24 @@ function hhmm() { const d = new Date(); return String(d.getHours()).padStart(2, 
 function nameHtml(n, belt, staff) { if (staff === 'coach') return `<b class="co">${esc(n)}</b>`; if (staff || (staff === undefined && STAFF.has(n))) return `<b class="st">${esc(n)}</b>`; const b = belt !== undefined ? belt : n === myName ? MYBELT : BELTOF[n]; const c = BELTHEX[b] || '#F3F4F6'; return `<b style="border-bottom-color:${c}${b === '검' ? ';box-shadow:0 2px 0 #F5B301' : ''}">${esc(n)}</b>`; }
 // 지난 이야기: 위로 올리면 더 예전 이야기를 계속 불러옴
 let feedOldest = null, feedEnd = false, feedLoading = false;
-async function loadOlderFeed() {
+async function loadOlderFeed(all) {
   if (!LIVE || feedEnd || feedLoading || !feedOldest) return;
   feedLoading = true;
+  const el = $('feedAll'), h = el.scrollHeight, got = [];
   try {
-    const snap = await getDocs(query(collection(db, 'gym_feed'), orderBy('ts', 'desc'), startAfter(feedOldest), limit(80)));
-    if (snap.docs.length < 80) feedEnd = true;
-    if (snap.docs.length) feedOldest = snap.docs[snap.docs.length - 1];
-    const older = snap.docs.slice().reverse().map(dd => { const d = dd.data(); return { t: tsTime(d.ts), d: tsDay(d.ts), n: d.sys ? '' : d.nick, x: d.text, b: d.belt, s: d.staff }; });
-    const el = $('feedAll'), h = el.scrollHeight;
-    feedLog.unshift(...older);
-    renderFeedAll(true);
-    el.scrollTop = el.scrollHeight - h;
+    let n = 0, chats = 0;
+    while (!feedEnd && n < (all ? 40 : 6) && (all || chats < 30)) {
+      const snap = await getDocs(query(collection(db, 'gym_feed'), orderBy('ts', 'desc'), startAfter(feedOldest), limit(300)));
+      if (snap.docs.length < 300) feedEnd = true;
+      if (snap.docs.length) feedOldest = snap.docs[snap.docs.length - 1];
+      const older = snap.docs.slice().reverse().map(dd => { const d = dd.data(); return { t: tsTime(d.ts), d: tsDay(d.ts), n: d.sys ? '' : d.nick, x: d.text, b: d.belt, s: d.staff }; });
+      got.unshift(...older); chats += older.filter(f => f.n).length; n++;
+    }
   } catch (e) { feedEnd = true; }
+  feedLog.unshift(...got);
   feedLoading = false;
+  renderFeedAll(true);
+  el.scrollTop = all ? el.scrollHeight : el.scrollHeight - h;
 }
 $('feedAll').addEventListener('scroll', () => { if (chatOpen && $('feedAll').scrollTop < 40) loadOlderFeed(); });
 let actOpen = false, chatOpen = false;
@@ -1983,10 +1987,10 @@ function renderFeedAll(keep) {
   el.innerHTML = `<div class="sec"><b>활동</b><button type="button" id="actTg">${actOpen ? '접기 ▴' : '펼쳐보기 ▾'}</button></div>` +
     `<div style="${actOpen ? 'max-height:28vh;overflow-y:auto;-webkit-overflow-scrolling:touch' : ''}" id="actBox">${aList.map(row).join('') || '<div class="r sys"><div>아직 활동이 없어요</div></div>'}</div>` +
     `<div class="sec" style="margin-top:8px;border-top:1px solid rgba(255,255,255,.12);padding-top:8px"><b>한마디</b><button type="button" id="chTg">${chatOpen ? '접기 ▴' : '펼쳐보기 ▾'}</button></div>` +
-    (chatOpen && LIVE ? `<div class="more">${feedEnd ? '처음 이야기까지 다 봤어요' : '↑ 위로 올리면 예전 한마디가 더 나와요'}</div>` : '') +
+    (chatOpen && LIVE ? `<div class="more">${feedEnd ? '처음 한마디부터 다 보여요' : feedLoading ? '예전 한마디 불러오는 중…' : '↑ 위로 올리면 예전 한마디가 더 나와요'}</div>` : '') +
     (cList.map(f => (chatOpen && f.d && f.d !== pd ? (pd = f.d, `<div class="day"><span>${f.d}</span></div>`) : '') + row(f)).join('') || '<div class="r"><div>아직 한마디가 없어요. 첫 한마디를 남겨 보세요!</div></div>');
   $('actTg').onclick = () => { actOpen = !actOpen; renderFeedAll(true); };
-  $('chTg').onclick = () => { chatOpen = !chatOpen; renderFeedAll(); };
+  $('chTg').onclick = () => { chatOpen = !chatOpen; renderFeedAll(); if (chatOpen) loadOlderFeed(true); };
   if (actOpen) { const ab = $('actBox'); ab.scrollTop = ab.scrollHeight; }
   if (!keep) el.scrollTop = el.scrollHeight;
 }
@@ -2008,7 +2012,7 @@ function feed(name, txt, cls = '') {
   showFeed(name, txt, cls);
 }
 function showFeed(name, txt, cls = '', belt, staff, t, day) {
-  feedLog.push({ t: t || hhmm(), d: day || tsDay(), n: name, x: txt, b: belt, s: staff }); if (feedLog.length > 3000) feedLog.shift(); if ($('feedAll').style.display === 'block') renderFeedAll();
+  feedLog.push({ t: t || hhmm(), d: day || tsDay(), n: name, x: txt, b: belt, s: staff }); if (feedLog.length > 20000) feedLog.shift(); if ($('feedAll').style.display === 'block') renderFeedAll();
   const box = $('feed'), d = document.createElement('div'); if (cls) d.className = cls;
   d.innerHTML = name ? nameHtml(name, belt, staff) + esc(txt) : esc(txt);
   box.appendChild(d); while (box.children.length > 5) box.removeChild(box.firstChild);
