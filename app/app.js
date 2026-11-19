@@ -244,14 +244,14 @@ function renderHome(){
   let left;
   if(f30){
     const goal = 12, bar = Array.from({ length: goal }, (_, i)=> '<div class="seg ' + (i < f30.visits ? 'on' : '') + '"></div>').join('');
-    left = '<div class="card" style="padding:12px 10px;text-align:center"><div style="display:flex;align-items:center;justify-content:center;gap:5px;font-size:13px;font-weight:700">' + FLAG + '첫 30일 출석 도전</div>' +
+    left = '<div class="card" data-go="challenge" role="button" style="padding:12px 10px;text-align:center;cursor:pointer"><div style="display:flex;align-items:center;justify-content:center;gap:5px;font-size:13px;font-weight:700">' + FLAG + '첫 30일 출석 도전</div>' +
       '<div style="display:flex;align-items:baseline;justify-content:center;gap:4px;margin-top:8px"><span class="pxf" style="font-size:20px">' + f30.visits + '</span><span style="font-size:13px;font-weight:700;color:var(--muted)">/ 12회</span></div>' +
       '<div class="grid12" style="margin-top:8px">' + bar + '</div>' +
       '<div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5">30일 ' + f30.visits + '회 출석<br><b style="color:var(--ink)">' + (f30.visits >= goal ? '도전 성공! 🎉' : '목표까지 ' + (goal - f30.visits) + '회') + '</b></div></div>';
   } else {
     const w = weekInfo(), goal = w.goal, n = w.n, slots = goal || 7;
     const bar = Array.from({ length: slots }, (_, i)=> '<div class="seg ' + (i < n ? 'on' : '') + '"></div>').join('');
-    left = '<div class="card" style="padding:12px 10px;text-align:center"><div style="display:flex;align-items:center;justify-content:center;gap:5px;font-size:13px;font-weight:700">' + FLAG + '이번 주 출석</div>' +
+    left = '<div class="card" data-go="challenge" role="button" style="padding:12px 10px;text-align:center;cursor:pointer"><div style="display:flex;align-items:center;justify-content:center;gap:5px;font-size:13px;font-weight:700">' + FLAG + '이번 주 출석</div>' +
       '<div style="display:flex;align-items:baseline;justify-content:center;gap:4px;margin-top:8px"><span class="pxf" style="font-size:20px">' + n + '</span><span style="font-size:13px;font-weight:700;color:var(--muted)">' + (goal ? '/ 주 ' + goal + '회' : '회') + '</span></div>' +
       '<div style="display:grid;grid-template-columns:repeat(' + slots + ',minmax(0,1fr));gap:2px;margin-top:8px">' + bar + '</div>' +
       '<div style="font-size:12px;color:var(--muted);margin-top:6px;line-height:1.5">' + (goal ? (n >= goal ? '<b style="color:' + B + '">이번 주 목표 달성!</b>' : '내 목표 주 ' + goal + '회') + '<br><a href="#" id="goalBtn" style="font-weight:700">목표 바꾸기</a>' : '일주일에 몇 번 올까요?<br><a href="#" id="goalBtn" style="font-weight:700">목표 정하기</a>') + '</div></div>';
@@ -283,7 +283,7 @@ function renderHome(){
   bindWodHome();
   document.getElementById('helpToggle').onclick = ()=>{ helpOpen = !helpOpen; const y = window.scrollY; renderHome(); window.scrollTo(0, y); };
   $app.querySelectorAll('[data-help]').forEach((b)=> b.onclick = ()=>{ helpKind = b.dataset.help; go('help'); });
-  const gb = document.getElementById('goalBtn'); if(gb) gb.onclick = (e)=>{ e.preventDefault(); changeGoal(); };
+  const gb = document.getElementById('goalBtn'); if(gb) gb.onclick = (e)=>{ e.preventDefault(); e.stopPropagation(); changeGoal(); };
 }
 const noticeSeen = ()=>{ try{ return JSON.parse(localStorage.getItem('rfNotice.seen') || '[]'); }catch(e){ return []; } };
 function markNotices(ids){ try{ const s = noticeSeen(); localStorage.setItem('rfNotice.seen', JSON.stringify(s.concat(ids.filter((i)=> !s.includes(i))).slice(-200))); }catch(e){} const d = document.querySelector('#bellBtn .dot'); if(d && notices.every((n)=> noticeSeen().includes(n.id))) d.remove(); }
