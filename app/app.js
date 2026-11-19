@@ -975,7 +975,7 @@ async function renderCommunity(){
   paintFeed();
 }
 // 어제의 미니런앤핏 1등 (혼자 하기 미니게임)
-const CHAMP_G = { merge: ['🥏', '원판 합치기', false], desk: ['🛎️', '오늘은 내가 관장!', false], dog: ['🐶', '복덩이 찾기', false], tower: ['🏋️', '원판 탑 쌓기', false], ten: ['⏱️', '런관장의 10초', true], locker: ['🔵', '몇 번 사물함?', false] };
+const CHAMP_G = { merge: ['🥏', '원판 합치기', false], dog: ['🐶', '복덩이 찾기', false], tower: ['🏋️', '원판 탑 쌓기', false], ten: ['⏱️', '런관장의 10초', true], locker: ['🔵', '몇 번 사물함?', false] };
 let champCache = null;
 async function paintChamps(){
   const box = document.getElementById('cmChamp'); if(!box) return;
