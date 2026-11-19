@@ -1111,7 +1111,7 @@ async function submitPost(){
   let img = c.toDataURL('image/jpeg', .74); if(img.length > 360000) img = c.toDataURL('image/jpeg', .6);
   const p = { uid: auth.currentUser.uid, mid: me.id, nick: me.nickname, belt: Number(me.total) || 0, role: myRole(), text, img, style: W8.style, rec: W8.rec || null, date: today(), claps: 0, cmts: 0, ts: serverTimestamp() };
   try{ const ref = await addDoc(collection(db, 'posts'), p); posts.unshift(Object.assign({ id: ref.id }, p, { ts: { seconds: Date.now() / 1000 } })); W8 = null; toast('오운완을 올렸어요! 👏'); go('community'); }
-  catch(e){ console.warn(e); btn.disabled = false; btn.textContent = '올리기'; toast('올리지 못했어요. 인터넷 연결을 확인하고 다시 눌러 주세요.'); }
+  catch(e){ console.warn(e); btn.disabled = false; btn.textContent = '올리기'; const c = (e && e.code) || ''; toast(c.includes('permission') ? '올릴 권한이 없어요 (서버 규칙 확인 필요)' : c.includes('invalid') || c.includes('size') ? '사진이 너무 커요. 다른 사진으로 해주세요' : '올리지 못했어요 (' + (c || '연결') + ')'); }
 }
 
 // ---------- 시작 ----------
