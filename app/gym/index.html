@@ -1551,7 +1551,7 @@ function dogTap(cx, cy) {
 function dogClear() { if (DOGG) { DOGG.dogs.forEach(d => scene.remove(d.g)); DOGG = null; } document.body.classList.remove('dogmode'); }
 // 5) 원판 합치기 · 수박게임식 (같은 무게끼리 닿으면 다음 무게로)
 const PLT = [[1.25, '#9CA3AF', '#E5E7EB', '#111827'], [2.5, '#111827', '#4B5563', '#fff'], [5, '#E2E8F0', '#FFFFFF', '#111827'], [10, '#15803D', '#4ADE80', '#fff'], [15, '#CA8A04', '#FDE047', '#fff'], [20, '#1D4ED8', '#60A5FA', '#fff'], [25, '#B91C1C', '#F87171', '#fff'], ['BAR', '#B45309', '#FDE68A', '#153189']];
-const PR = [15, 19, 24, 31, 38, 46, 55, 64], PPT = [1, 3, 6, 10, 15, 21, 28, 50];
+const PR = [20, 26, 33, 42, 52, 63, 75, 88], PPT = [1, 3, 6, 10, 15, 21, 28, 50];
 function gMerge(run) {
   const S = $('soS');
   S.innerHTML = `<canvas id="mgC" style="position:absolute;inset:0;width:100%;height:100%;touch-action:none"></canvas><div class="sbig" style="top:calc(60px + env(safe-area-inset-top));font-size:42px"><span id="mgS">0</span><span style="font-size:16px">점</span></div><div class="sbig" id="mgK" style="top:calc(112px + env(safe-area-inset-top));font-size:20px;color:#FFD54A;opacity:0;transition:opacity .2s"></div><img src="./img/s_idle.png" id="mgR" alt="" style="position:absolute;right:2px;top:calc(56px + env(safe-area-inset-top));height:96px;pointer-events:none"><div class="sbub" id="mgB" style="display:none;right:70px;top:calc(70px + env(safe-area-inset-top))">들어볼게요! 💪</div><div class="sbig" style="top:auto;bottom:calc(16px + env(safe-area-inset-bottom));font-size:12.5px;color:#153189;text-shadow:none;font-weight:800">시간 제한 없어요 · 빨간 선 넘으면 끝! · 1.25→2.5→5→10→15→20→25kg→🏆</div>`;
