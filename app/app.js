@@ -975,7 +975,7 @@ async function renderCommunity(){
   paintFeed();
 }
 // 어제의 미니런앤핏 1등 (혼자 하기 미니게임)
-const CHAMP_G = { tower: ['🏋️', '원판 탑 쌓기', false], ten: ['⏱️', '런관장의 10초', true], locker: ['🔵', '몇 번 사물함?', false] };
+const CHAMP_G = { dog: ['🐶', '복덩이 찾기', false], tower: ['🏋️', '원판 탑 쌓기', false], ten: ['⏱️', '런관장의 10초', true], locker: ['🔵', '몇 번 사물함?', false] };
 let champCache = null;
 async function paintChamps(){
   const box = document.getElementById('cmChamp'); if(!box) return;
@@ -983,7 +983,7 @@ async function paintChamps(){
   if(!champCache || champCache.day !== yd){
     try{ const sn = await getDocs(query(collection(db, 'gym_daily'), where('day', '==', yd), limit(500))); champCache = { day: yd, rows: sn.docs.map((d)=> d.data()) }; }catch(e){ champCache = { day: yd, rows: [] }; }
   }
-  const fmt = (g, r)=> g === 'ten' ? (r.v / 1000).toFixed(2) + '초' : g === 'tower' ? r.score + '단' : r.score + '단계';
+  const fmt = (g, r)=> g === 'ten' ? (r.v / 1000).toFixed(2) + '초' : g === 'tower' ? r.score + '단' : g === 'dog' ? r.score + '마리' : r.score + '단계';
   const win = Object.keys(CHAMP_G).map((g)=>{ const L = champCache.rows.filter((r)=> r.g === g).sort((a, b)=> CHAMP_G[g][2] ? a.score - b.score : b.score - a.score); return L[0] ? [g, L[0]] : null; }).filter(Boolean);
   if(!win.length || !document.getElementById('cmChamp')) return;
   const d = new Date(Date.now() - 864e5 + KST);

@@ -67,6 +67,11 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 .sres .sr span{width:22px;font-weight:900;color:#153189}.sres .sr b{flex:1}.sres .sr i{font-style:normal;font-weight:900;color:#153189}
 .sb2{flex:1;height:50px;border:0;border-radius:14px;background:#153189;color:#fff;font-weight:900;font-size:16px;font-family:inherit;cursor:pointer}
 .sb3{flex:1;height:50px;border:2px solid #D5DCE8;border-radius:14px;background:#fff;color:#153189;font-weight:900;font-size:16px;font-family:inherit;cursor:pointer}
+#solo.clear{background:transparent;pointer-events:none}#solo.clear .sh,#solo.clear .sres,#solo.clear .dhud{pointer-events:auto}
+body.dogmode #bar,body.dogmode #feed,body.dogmode #feedBtn,body.dogmode #feedAll,body.dogmode #card,body.dogmode #cheerBtn,body.dogmode #top{display:none!important}
+.dhud{position:absolute;left:12px;top:calc(58px + env(safe-area-inset-top));background:rgba(11,20,48,.78);border-radius:14px;padding:6px 12px 6px 6px;display:flex;gap:8px;align-items:center;color:#fff}
+.dhud b{display:block;font-size:14px}.dhud small{font-size:12px;color:#FFD54A;font-weight:800}
+.dtip{position:absolute;left:12px;right:12px;bottom:calc(20px + env(safe-area-inset-bottom));background:rgba(11,20,48,.82);color:#fff;border-radius:16px;padding:11px 14px;font-size:13px;line-height:1.5;font-weight:700;text-align:center}
 .gtab{display:flex;background:#EEF2FB;border-radius:14px;padding:4px;margin:4px 0 12px}
 .gtab button{flex:1;border:0;background:none;padding:10px 0;border-radius:11px;font-weight:900;font-size:14px;color:#64748B;font-family:inherit;cursor:pointer}
 .gtab button.on{background:#153189;color:#fff;box-shadow:0 3px 8px rgba(21,49,137,.35)}
@@ -201,7 +206,7 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 <div class="gbl" id="gpS" style="display:none">
 <button data-solo="tower"><span class="i">🏋️</span><span class="t"><b>원판 탑 쌓기</b><small class="cr" id="crTower">오늘 첫 1등에 도전!</small></span><span class="go">도전</span></button>
 <button data-solo="ten"><span class="i">⏱️</span><span class="t"><b>런관장의 10초</b><small class="cr" id="crTen">오늘 첫 1등에 도전!</small></span><span class="go">도전</span></button>
-<button disabled><span class="i">🐶</span><span class="t"><b>복덩이 찾기</b><small class="cr">곧 열려요</small></span><span class="go">도전</span></button>
+<button data-solo="dog"><span class="i">🐶</span><span class="t"><b>복덩이 찾기</b><small class="cr" id="crDog">오늘 첫 1등에 도전!</small></span><span class="go">도전</span></button>
 <button disabled><span class="i">🥏</span><span class="t"><b>원판 합치기</b><small class="cr">곧 열려요</small></span><span class="go">도전</span></button>
 <button disabled><span class="i">🛎️</span><span class="t"><b>오늘은 내가 관장!</b><small class="cr">곧 열려요</small></span><span class="go">도전</span></button>
 <button data-solo="locker"><span class="i">🔵</span><span class="t"><b>몇 번 사물함?</b><small class="cr" id="crLocker">오늘 첫 1등에 도전!</small></span><span class="go">도전</span></button></div>
@@ -968,6 +973,7 @@ renderer.domElement.addEventListener('pointerup', e => { multi = Math.max(0, mul
 renderer.domElement.addEventListener('pointercancel', () => { multi = 0; down = null; });
 function onTap(cx, cy) {
   if (!entered) return;
+  if (DOGG && dogTap(cx, cy)) return;
   ndc.set(cx / innerWidth * 2 - 1, -(cy / innerHeight) * 2 + 1); ray.setFromCamera(ndc, camera);
   const hits = ray.intersectObjects(pickables, true);
   const ah = ray.intersectObjects(NPCS.map(n => n.a), true);
@@ -1009,7 +1015,7 @@ document.querySelectorAll('[data-close]').forEach(b => b.onclick = closeAll);
 document.querySelectorAll('.modal').forEach(m => m.addEventListener('pointerdown', e => { if (e.target === m) closeAll(); }));
 $('bFind').onclick = () => openM('mFind');
 $('bAct').onclick = () => openM('mAct');
-$('bGame').onclick = async () => { openM('mGames'); await loadDaily(); const d = kstDay(0); [['tower', 'crTower'], ['ten', 'crTen'], ['locker', 'crLocker']].forEach(([g, id]) => { const t = rankOf(g, d)[0]; if ($(id)) $(id).textContent = t ? '👑 오늘 1등 ' + t.nick + ' ' + soloFmt(g, t) : '오늘 첫 1등에 도전!'; }); };
+$('bGame').onclick = async () => { openM('mGames'); await loadDaily(); const d = kstDay(0); [['dog', 'crDog'], ['tower', 'crTower'], ['ten', 'crTen'], ['locker', 'crLocker']].forEach(([g, id]) => { const t = rankOf(g, d)[0]; if ($(id)) $(id).textContent = t ? '👑 오늘 1등 ' + t.nick + ' ' + soloFmt(g, t) : '오늘 첫 1등에 도전!'; }); };
 document.querySelectorAll('[data-solo]').forEach(b => b.onclick = () => { if (entered) soloOpen(b.dataset.solo); });
 document.querySelectorAll('[data-gt]').forEach(b => b.onclick = () => { document.querySelectorAll('[data-gt]').forEach(x => x.classList.toggle('on', x === b)); $('gpT').style.display = b.dataset.gt === 't' ? '' : 'none'; $('gpS').style.display = b.dataset.gt === 's' ? '' : 'none'; });
 $('gHall').onclick = () => { closeAll(); openHall(); };
@@ -1439,9 +1445,9 @@ function openHall() {
 }
 function tapRemote(r, t) { if (!GT || !t || t.id !== GT.id) return; const p = GT.ppl.get(r.uid) || { name: r.a.userData.name, n: 0 }; p.n = t.n; GT.ppl.set(r.uid, p); if (!GT.done) r.a.userData.act = TAPG[GT.k][4]; }
 // ── 혼자 하기 미니게임 · 오늘의 순위 · 1등 왕관
-const SOLO = { tower: { ic: '🏋️', nm: '원판 탑 쌓기', low: false }, ten: { ic: '⏱️', nm: '런관장의 10초', low: true }, locker: { ic: '🔵', nm: '몇 번 사물함?', low: false } };
+const SOLO = { dog: { ic: '🐶', nm: '복덩이 찾기', low: false }, tower: { ic: '🏋️', nm: '원판 탑 쌓기', low: false }, ten: { ic: '⏱️', nm: '런관장의 10초', low: true }, locker: { ic: '🔵', nm: '몇 번 사물함?', low: false } };
 const kstDay = (o = 0) => new Date(Date.now() + 9 * 3600e3 - o * 864e5).toISOString().slice(0, 10);
-const soloFmt = (g, r) => g === 'ten' ? (r.v / 1000).toFixed(2) + '초' : g === 'tower' ? r.score + '단' : r.score + '단계';
+const soloFmt = (g, r) => g === 'ten' ? (r.v / 1000).toFixed(2) + '초' : g === 'tower' ? r.score + '단' : g === 'dog' ? r.score + '마리' : r.score + '단계';
 let DAILY = [], soloRun = 0;
 async function loadDaily(force) {
   if (!LIVE) return DAILY;
@@ -1470,13 +1476,76 @@ async function soloSave(g, score, v) {
   applyCrowns();
   return { best: true, rank };
 }
+// 4) 복덩이 찾기 · 실제 센터 안에 숨은 복덩이(흰 털 + 까만 귀) 찾기
+function makeDog() {
+  const g = new THREE.Group(), M = c => new THREE.MeshLambertMaterial({ color: c, emissive: c, emissiveIntensity: .35 });
+  const B = (w, h, l, x, y, z, c) => { const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, l), M(c)); m.position.set(x, y, z); g.add(m); return m; };
+  B(.44, .3, .56, 0, .32, 0, 0xFFFFFF); B(.22, .14, .24, .1, .48, -.06, 0x1A1A1A); B(.16, .14, .2, -.13, .42, .14, 0x1A1A1A);
+  B(.46, .4, .38, 0, .62, .36, 0xFFFFFF); B(.5, .1, .42, 0, .84, .36, 0xF5F5F5); B(.22, .16, .14, 0, .52, .6, 0xFAFAFA); B(.08, .07, .05, 0, .57, .68, 0x111111);
+  B(.07, .08, .02, -.11, .68, .555, 0x111111); B(.07, .08, .02, .11, .68, .555, 0x111111);
+  const eL = B(.14, .3, .18, -.25, .6, .34, 0x111111), eR = B(.14, .3, .18, .25, .6, .34, 0x111111); B(.06, .05, .02, 0, .49, .67, 0xF472B6);
+  [[-.14, .18], [.14, .18], [-.14, -.18], [.14, -.18]].forEach(([x, z]) => B(.12, .2, .12, x, .1, z, 0xFFFFFF));
+  const tail = B(.1, .1, .24, 0, .52, -.34, 0xFFFFFF); tail.rotation.x = .8;
+  const hit = new THREE.Mesh(new THREE.BoxGeometry(1.3, 1.3, 1.3), new THREE.MeshBasicMaterial({ transparent: true, opacity: 0, depthWrite: false })); hit.position.y = .5; g.add(hit);
+  g.userData = { hit, tail, eL, eR };
+  return g;
+}
+let DOGG = null;
+function dogSpots() {
+  const P = [], dx = s(14.05), dz = s(13.3);
+  P.push({ x: dx + .75, z: dz - .32, y: .3, r: .25 }, { x: dx + 2.0, z: dz - .32, y: .3, r: -.3 });
+  treadmills.forEach(t => P.push({ x: t.x + .75, z: t.z + .5, y: 0, r: Math.random() * 6 }));
+  BIKES.forEach(b => P.push({ x: b.x - .55, z: b.z + .1, y: 0, r: Math.random() * 6 }));
+  STEPS.forEach(t => P.push({ x: t.x + .7, z: t.z - .4, y: 0, r: Math.random() * 6 }));
+  mats4.forEach(m => P.push({ x: m.x + .3, z: m.z - .5, y: .05, r: Math.random() * 6 }));
+  seats.slice(0, 12).forEach(t => P.push({ x: t.x + .35, z: t.z + .35, y: 0, r: Math.random() * 6 }));
+  P.push({ x: GX - .7, z: GZ + .3, y: 0, r: 1.2 }, { x: GX - .7, z: GZ + 1.6, y: 0, r: 2 });
+  return P.filter(p => !isBlocked(p.x, p.z, .15) || p.y > 0);
+}
+function dogSpawn() {
+  const G2 = DOGG; if (!G2) return;
+  const used = G2.dogs.map(d => d.spot), free = G2.spots.filter(p => !used.includes(p) && Math.hypot(p.x - me.position.x, p.z - me.position.z) > 3);
+  const spot = free[Math.floor(Math.random() * free.length)] || G2.spots[Math.floor(Math.random() * G2.spots.length)];
+  const d = makeDog(), lv = G2.found, sc = Math.max(.55, 1 - lv * .04);
+  d.scale.setScalar(sc); d.position.set(spot.x, spot.y - Math.min(.35, lv * .03), spot.z); d.rotation.y = spot.r; scene.add(d);
+  G2.dogs.push({ g: d, spot, born: performance.now() });
+}
+function dogStart(run) {
+  closeAll(); document.body.classList.add('dogmode');
+  const S = $('soS'); $('solo').classList.add('clear');
+  S.innerHTML = `<div class="dhud"><img src="./img/s_dogiso.png" alt="" style="height:44px"><div><b id="dgN">찾은 복덩이 0마리</b><small id="dgT">⏱ 60초</small></div></div>
+<div class="dtip" id="dgTip">💡 센터 곳곳에 숨은 복덩이를 찾아 톡! 화면을 돌리고 확대해 보세요. 바닥을 누르면 걸어가요</div>`;
+  DOGG = { run, found: 0, dogs: [], spots: dogSpots(), end: performance.now() + 60000, lastFind: performance.now(), lastBark: 0 };
+  for (let i = 0; i < 4; i++) dogSpawn();
+  const tick = () => {
+    const G2 = DOGG; if (!G2 || G2.run !== soloRun) { dogClear(); return; }
+    const now = performance.now(), left = Math.max(0, Math.ceil((G2.end - now) / 1000));
+    $('dgT').textContent = '⏱ ' + left + '초'; G2.dogs.forEach(d => { d.g.userData.tail.rotation.y = Math.sin(now / 120) * .6; d.g.userData.eL.rotation.z = Math.sin(now / 300) * .15; d.g.userData.eR.rotation.z = -Math.sin(now / 300) * .15; });
+    if (now - G2.lastFind > 12000 && now - G2.lastBark > 6000 && G2.dogs.length) { G2.lastBark = now; const d = G2.dogs[Math.floor(Math.random() * G2.dogs.length)]; burst(d.g.position.x, 1.4, d.g.position.z, ['🐾', '💭'], 4, '멍! 멍!'); $('dgTip').textContent = '🐾 어디선가 "멍! 멍!" 소리가 들려요…'; }
+    if (now >= G2.end) { const n = G2.found; dogClear(); $('solo').classList.remove('clear'); soloResult('dog', n, null, n >= 12 ? '복덩이 탐정 등극! 🕵️' : n >= 6 ? '눈썰미 최고! 👀' : '복덩이가 꼭꼭 숨었네요 🐶'); return; }
+    requestAnimationFrame(tick);
+  };
+  tick();
+}
+function dogTap(cx, cy) {
+  const G2 = DOGG; if (!G2) return false;
+  ndc.set(cx / innerWidth * 2 - 1, -(cy / innerHeight) * 2 + 1); ray.setFromCamera(ndc, camera);
+  const hits = ray.intersectObjects(G2.dogs.map(d => d.g.userData.hit), false); if (!hits.length) return false;
+  const i = G2.dogs.findIndex(d => d.g.userData.hit === hits[0].object), d = G2.dogs[i]; G2.dogs.splice(i, 1);
+  G2.found++; G2.lastFind = performance.now(); $('dgN').textContent = `찾은 복덩이 ${G2.found}마리`; $('dgTip').textContent = ['찾았다! 빼꼼 🐶', '멍! 들켰다 🐾', '복덩이 발견! 💙', '숨바꼭질 고수시네요 👀'][G2.found % 4];
+  burst(d.g.position.x, 1.3, d.g.position.z, ['🐶', '💙', '✨', '🐾'], 12, '멍!');
+  const t0 = performance.now(), g = d.g, y0 = g.position.y; const hop = () => { const k = (performance.now() - t0) / 600; if (k >= 1) { scene.remove(g); return; } g.position.y = y0 + Math.sin(k * Math.PI) * .9; g.rotation.y += .25; requestAnimationFrame(hop); }; hop();
+  setTimeout(() => { if (DOGG === G2) dogSpawn(); }, 500);
+  return true;
+}
+function dogClear() { if (DOGG) { DOGG.dogs.forEach(d => scene.remove(d.g)); DOGG = null; } document.body.classList.remove('dogmode'); }
 function soloOpen(g) {
   closeAll(); soloRun++; $('solo').style.display = 'block'; $('soT').textContent = SOLO[g].ic + ' ' + SOLO[g].nm;
   const day = kstDay(0), uid = myUid || 'me', mine = DAILY.find(r => r.g === g && r.day === day && r.uid === uid);
   $('soB').textContent = mine ? '오늘 최고 ' + soloFmt(g, mine) : '오늘 첫 도전!';
-  ({ tower: gTower, ten: gTen, locker: gLocker })[g](soloRun);
+  $('solo').classList.remove('clear'); dogClear(); ({ tower: gTower, ten: gTen, locker: gLocker, dog: dogStart })[g](soloRun);
 }
-$('soX').onclick = () => { soloRun++; $('solo').style.display = 'none'; $('soS').innerHTML = ''; };
+$('soX').onclick = () => { soloRun++; dogClear(); $('solo').classList.remove('clear'); $('solo').style.display = 'none'; $('soS').innerHTML = ''; };
 async function soloResult(g, score, v, msg) {
   const res = await soloSave(g, score, v), day = kstDay(0), L = rankOf(g, day).slice(0, 5), uid = myUid || 'me', row = { score, v: v == null ? score : v };
   const card = document.createElement('div'); card.className = 'sres';
