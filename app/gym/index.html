@@ -43,6 +43,23 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 #gB .row button:disabled:not(.on){opacity:.4}
 #gTap{width:100%;height:170px;border:0;border-radius:18px;font-size:30px;font-weight:900;font-family:inherit;background:#E5E7EB;color:#6B7280;margin-top:6px}
 #gTap.go{background:#153189;color:#fff}
+.gtab{display:flex;background:#EEF2FB;border-radius:14px;padding:4px;margin:4px 0 12px}
+.gtab button{flex:1;border:0;background:none;padding:10px 0;border-radius:11px;font-weight:900;font-size:14px;color:#64748B;font-family:inherit;cursor:pointer}
+.gtab button.on{background:#153189;color:#fff;box-shadow:0 3px 8px rgba(21,49,137,.35)}
+.gbl{display:flex;flex-direction:column;gap:9px}
+.gbl button{display:flex;align-items:center;gap:12px;border:0;border-left:6px solid #153189;border-radius:16px;padding:10px 12px;background:#fff;box-shadow:inset 0 0 0 1.5px #D5DCE8,0 4px 0 #D5DCE8;text-align:left;font-family:inherit;cursor:pointer}
+.gbl button:active{transform:translateY(2px);box-shadow:inset 0 0 0 1.5px #D5DCE8,0 2px 0 #D5DCE8}
+.gbl .i{width:44px;height:44px;border-radius:13px;background:#153189;display:flex;align-items:center;justify-content:center;font-size:23px;flex:none}
+.gbl .t{flex:1;min-width:0}.gbl b{display:block;font-size:15px;color:#153189}.gbl small{font-size:11.5px;color:#64748B}
+.gbl small.cr{display:inline-block;background:#FFD54A;color:#153189;font-weight:900;border-radius:999px;padding:1px 8px;font-size:10.5px;margin-top:2px}
+.gbl .go{background:#153189;color:#fff;font-weight:900;font-size:12.5px;border-radius:999px;padding:6px 13px;flex:none}
+.gbl button[disabled]{opacity:.55;cursor:default}
+.lbar{display:flex;justify-content:center;gap:6px;margin:6px 0 10px}.lbar i{width:26px;height:6px;border-radius:3px;background:#D5DCE8}.lbar i.on{background:#FFD54A}
+.lrow{display:flex;align-items:center;gap:10px;background:#F4F7FB;border-radius:12px;padding:8px 10px;margin-top:6px}
+.lrow .av{width:32px;height:32px;border-radius:50%;background:#153189;color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center;flex:none}
+.lrow b{flex:1;font-size:14px}.lrow .rd{background:#FFD54A;color:#153189;font-weight:900;font-size:12px;border-radius:999px;padding:4px 10px}.lrow .wt{background:#E2E8F0;color:#64748B;font-weight:900;font-size:12px;border-radius:999px;padding:4px 10px}
+.lgo{width:100%;height:52px;border:0;border-radius:14px;background:#FFD54A;color:#153189;font-weight:900;font-size:17px;margin-top:12px;box-shadow:0 5px 0 #C9A21C;font-family:inherit;cursor:pointer}.lgo:disabled{opacity:.7}
+.lnow{width:100%;height:44px;border:2px solid #153189;border-radius:12px;background:#fff;color:#153189;font-weight:900;font-size:14px;margin-top:10px;font-family:inherit;cursor:pointer}
 #gTap.go:active{transform:scale(.97)}
 #gB .tr{display:flex;align-items:center;gap:8px;margin:5px 0;font-size:13px;font-weight:800}
 #gB .tr .nm{width:72px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -149,14 +166,21 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 <div id="mFind" class="modal"><div class="sheet"><h3>어떤 기구로 갈까요?</h3><div class="grid" id="eqGrid"></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
 <div id="mPeople" class="modal"><div class="sheet"><h3>지금 함께 운동 중</h3><div style="font-size:12.5px;color:#4B5563;margin:-4px 0 6px">이름을 누르면 그 회원에게 가요</div><div id="peopleList" style="max-height:52vh;overflow-y:auto"></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
 <div id="mAct" class="modal"><div class="sheet"><h3>동작</h3><div class="acts" id="actGrid"></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
-<div id="mGames" class="modal"><div class="sheet"><h3>미니게임</h3><div style="font-size:12.5px;color:#4B5563;margin:-4px 0 4px">가까이 있는 회원과 함께해요</div>
-<div class="gsec">1:1</div><div class="gl">
-<button data-g="rps"><span class="i">✊</span><span><b>가위바위보</b><small>3초 승부! 진 사람은 스쿼트 5개</small></span></button>
-<button data-g="react"><span class="i">⚡</span><span><b>반응속도 대결</b><small>"지금!" 뜨면 먼저 누르기</small></span></button>
-<button data-g="num"><span class="i">🎯</span><span><b>숫자 맞히기</b><small>같은 숫자 고르면 통했다 💙</small></span></button></div>
-<div class="gsec">여럿이 · 연타</div><div class="gl">
-<button data-g="race"><span class="i">🏃</span><span><b>러닝머신 레이스</b><small>10초 동안 [달려!] 연타 · 혼자도 OK</small></span></button>
-<button data-g="sqt"><span class="i">🦵</span><span><b>스쿼트 많이 하기</b><small>10초 동안 [앉아!] 연타 · 혼자도 OK</small></span></button></div>
+<div id="mGames" class="modal"><div class="sheet"><h3>미니게임</h3>
+<div class="gtab"><button type="button" data-gt="t" class="on">👥 같이 하기</button><button type="button" data-gt="s">🙋 혼자 하기</button></div>
+<div class="gbl" id="gpT">
+<button data-g="rps"><span class="i">✊</span><span class="t"><b>가위바위보</b><small>1:1 · 3초 승부</small></span><span class="go">신청</span></button>
+<button data-g="react"><span class="i">⚡</span><span class="t"><b>반응속도 대결</b><small>1:1 · 먼저 누르기</small></span><span class="go">신청</span></button>
+<button data-g="num"><span class="i">🎯</span><span class="t"><b>숫자 맞히기</b><small>1:1 · 통했다!</small></span><span class="go">신청</span></button>
+<button data-g="race"><span class="i">🏃</span><span class="t"><b>러닝머신 레이스</b><small>여럿이 · 10초 연타</small></span><span class="go">신청</span></button>
+<button data-g="sqt"><span class="i">🦵</span><span class="t"><b>스쿼트 연타</b><small>여럿이 · 10초 연타</small></span><span class="go">신청</span></button></div>
+<div class="gbl" id="gpS" style="display:none">
+<button disabled><span class="i">🏋️</span><span class="t"><b>원판 탑 쌓기</b><small class="cr">곧 열려요</small></span><span class="go">도전</span></button>
+<button disabled><span class="i">⏱️</span><span class="t"><b>런관장의 10초</b><small class="cr">곧 열려요</small></span><span class="go">도전</span></button>
+<button disabled><span class="i">🐶</span><span class="t"><b>복덩이 찾기</b><small class="cr">곧 열려요</small></span><span class="go">도전</span></button>
+<button disabled><span class="i">🥏</span><span class="t"><b>원판 합치기</b><small class="cr">곧 열려요</small></span><span class="go">도전</span></button>
+<button disabled><span class="i">🛎️</span><span class="t"><b>오늘은 내가 관장!</b><small class="cr">곧 열려요</small></span><span class="go">도전</span></button>
+<button disabled><span class="i">🔵</span><span class="t"><b>몇 번 사물함?</b><small class="cr">곧 열려요</small></span><span class="go">도전</span></button></div>
 <button class="btn g" id="gHall" style="width:100%;margin-top:12px">🏆 명예의 전당 보기</button><button class="btn g" style="width:100%;margin-top:8px" data-close>닫기</button></div></div>
 <div id="mGame" class="modal"><div class="sheet"><h3 id="gT">미니게임</h3><div id="gB"></div><button class="btn g" style="width:100%;margin-top:12px" data-close id="gClose">닫기</button></div></div>
 <div id="mTalk" class="modal"><div class="sheet"><h3>접속한 회원에게 한마디</h3><div class="inrow"><input id="msg" maxlength="200" placeholder="예) 오늘도 파이팅!"><button class="btn p" id="send" style="width:76px">보내기</button></div><button class="btn g" style="width:100%;margin-top:10px" data-close>닫기</button></div></div>
@@ -961,6 +985,7 @@ document.querySelectorAll('.modal').forEach(m => m.addEventListener('pointerdown
 $('bFind').onclick = () => openM('mFind');
 $('bAct').onclick = () => openM('mAct');
 $('bGame').onclick = () => openM('mGames');
+document.querySelectorAll('[data-gt]').forEach(b => b.onclick = () => { document.querySelectorAll('[data-gt]').forEach(x => x.classList.toggle('on', x === b)); $('gpT').style.display = b.dataset.gt === 't' ? '' : 'none'; $('gpS').style.display = b.dataset.gt === 's' ? '' : 'none'; });
 $('gHall').onclick = () => { closeAll(); openHall(); };
 document.querySelectorAll('#mGames [data-g]').forEach(b => b.onclick = () => { closeAll(); if (entered) gameReq(b.dataset.g); });
 $('bTalk').onclick = () => { openM('mTalk'); setTimeout(() => $('msg').focus(), 50); };
@@ -1280,21 +1305,61 @@ function gCheck() {
 const TAPG = { race: ['🏃', '러닝머신 레이스', '참가!', '달려!', 'sprint', 'm'], sqt: ['🦵', '스쿼트 많이 하기', '참가!', '앉아!', 'squat', '개'] };
 let GT = null;
 function tapStart(k) {
-  const t0 = Date.now() + (k === 'race' ? 8000 : 5000), id = myUid + ':' + t0, [ic, nm] = TAPG[k];
+  const id = myUid + ':' + Date.now(), [ic, nm] = TAPG[k];
   const ppl = NPCS.filter(n => Math.hypot(n.a.position.x - me.position.x, n.a.position.z - me.position.z) < 10);
-  tapJoin(k, id, t0, true);
+  lobbyOpen(k, id, true);
   let idx = 0;
   ppl.forEach(n => {
-    if (n.remote) { addDoc(collection(db, 'gym_hi5'), { from: myUid, fromNick: myName, to: n.uid, st: 'req', k, gid: id, t0, ts: serverTimestamp() }).catch(() => {}); return; }
+    if (n.remote) { addDoc(collection(db, 'gym_hi5'), { from: myUid, fromNick: myName, to: n.uid, st: 'req', k, gid: id, t0: Date.now() + 20000, ts: serverTimestamp() }).catch(() => {}); return; }
     if (idx++ >= 3) return;
-    GT.ppl.set('npc' + idx, { name: n.a.userData.name, n: 0, npc: n, sp: 4 + Math.random() * 3 });
-    n.busy = 18; n.restore = n.restore || { act: n.a.userData.act, rot: n.a.rotation.y };
-    setTimeout(() => say(n.a, '저도 참가! ' + ic, 1.6), 400 + idx * 300);
+    const key = 'npc' + idx, e = { name: n.a.userData.name, ready: false, npc: n, sp: 4 + Math.random() * 3 }; LB.ppl.set(key, e);
+    setTimeout(() => { e.ready = true; say(n.a, '준비 완료! ' + ic, 1.6); }, 1200 + Math.random() * 2500);
   });
-  feed('', `${myName}님이 ${ic} ${nm}를 시작했어요! 근처 회원님 함께해요`, 'sys');
+  feed('', `${myName}님이 ${ic} ${nm} 대기실을 열었어요! 근처 회원님 함께해요`, 'sys');
 }
+// ── 같이 하기 대기실: 모두 준비 → 3·2·1 · 20초 지나면 준비한 사람끼리 · 방장은 바로 시작
+let LB = null;
+function lobbyOpen(k, id, host, hostUid) {
+  LB = { k, id, host, hostUid, ppl: new Map([['me', { name: myName, ready: false, me: true }]]), until: Date.now() + 20000 };
+  if (k === 'race' && !onTm) { const free = treadmills.filter(t => !NPCS.some(n => Math.hypot(n.a.position.x - t.x, n.a.position.z - t.z) < .3)), t = nearest(free); if (t) goTo(t.x, t.z + 1.4, () => { me.position.set(t.x, .27, t.z); me.rotation.y = Math.PI; }); }
+  const L = LB; L.iv = setInterval(() => { if (LB !== L) { clearInterval(L.iv); return; } if (L.host) { const all = [...L.ppl.values()]; if ((all.length > 1 && all.every(p => p.ready)) || (all.length === 1 && all[0].ready) || Date.now() > L.until) lobbyGo(); } lobbyPaint(); }, 400);
+  lobbyPaint();
+}
+function lobbyPaint() {
+  const L = LB; if (!L) return; const [ic, nm] = TAPG[L.k], all = [...L.ppl.values()], rd = all.filter(p => p.ready).length, left = Math.max(0, Math.ceil((L.until - Date.now()) / 1000)), mine = L.ppl.get('me');
+  const wait = all.filter(p => !p.ready).map(p => p.name);
+  if (!$('lReady') || L.drawn !== L.id) {
+    L.drawn = L.id;
+    gShow(`${ic} ${nm} 대기실`, `<div class="msg" style="font-size:13px;color:#4B5563;font-weight:700">모두 준비하면 3 · 2 · 1 후 시작해요</div><div class="lbar" id="lBar"></div><div id="lList"></div><div class="msg" id="lInfo" style="font-size:12.5px;color:#4B5563"></div>
+<button class="lgo" id="lReady">✔ 준비 완료!</button>${L.host ? '<button class="lnow" id="lNow"></button>' : ''}`);
+    $('lReady').onclick = () => { if (!LB) return; LB.ppl.get('me').ready = true; pubMe({ lobby: { id: LB.id, ready: true } }); say(me, '준비 완료! 🔥', 1.6, false, true); lobbyPaint(); };
+    if (L.host) $('lNow').onclick = () => { if (!LB) return; LB.ppl.get('me').ready = true; lobbyGo(); };
+  }
+  $('lBar').innerHTML = all.map(p => `<i class="${p.ready ? 'on' : ''}"></i>`).join('');
+  $('lList').innerHTML = all.map(p => `<div class="lrow"><span class="av">${esc(p.name.slice(0, 1))}</span><b>${esc(p.name)}${p.me ? ' (나)' : ''}</b><span class="${p.ready ? 'rd' : 'wt'}">${p.ready ? '✔ 준비 완료' : '준비 중…'}</span></div>`).join('');
+  $('lInfo').innerHTML = `${rd} / ${all.length}명 준비${wait.length ? ` · <b style="color:#153189">${esc(wait.join(', '))}님 기다리는 중</b>` : ''}<br>${L.host ? `⏱ ${left}초 뒤 준비한 사람끼리 자동 시작` : '방장이 시작하면 바로 카운트가 시작돼요'}`;
+  $('lReady').disabled = mine.ready; $('lReady').textContent = mine.ready ? '✔ 준비 완료! 기다리는 중…' : '✔ 준비 완료!';
+  if (L.host) $('lNow').textContent = `▶ 준비한 ${Math.max(1, rd + (mine.ready ? 0 : 1))}명으로 지금 시작`;
+}
+function lobbyGo() {
+  const L = LB; if (!L || L.started) return; L.started = true; clearInterval(L.iv);
+  const t0 = Date.now() + 3500; pubMe({ lobby: { id: L.id, ready: true, t0 } }); lobbyStart(L, t0);
+}
+function lobbyStart(L, t0) {
+  if (LB === L) LB = null; clearInterval(L.iv);
+  tapJoin(L.k, L.id, t0, L.host);
+  if (!GT) return;
+  for (const [key, p] of L.ppl) { if (key === 'me' || (!p.ready && !p.npc)) continue; GT.ppl.set(key, p.npc ? { name: p.name, n: 0, npc: p.npc, sp: p.sp } : { name: p.name, n: 0 }); if (p.npc) { p.npc.busy = 18; p.npc.restore = p.npc.restore || { act: p.npc.a.userData.act, rot: p.npc.a.rotation.y }; } }
+}
+function lobbyRemote(r, lb) {
+  if (!LB || !lb || lb.id !== LB.id) return;
+  LB.ppl.set(r.uid, { name: r.a.userData.name, ready: !!lb.ready });
+  if (!LB.host && lb.t0 && r.uid === LB.hostUid) { const L = LB; lobbyStart(L, lb.t0); return; }
+}
+
 function tapJoin(k, id, t0, host) {
   if (Date.now() > t0 + 3000) { toast('이미 시작했어요. 다음에 함께해요 🙂'); return; }
+  const onTm = treadmills.some(t => Math.hypot(t.x - me.position.x, t.z - me.position.z) < .4);
   const [ic, nm, , btn, act] = TAPG[k];
   GT = { k, id, t0, host, ppl: new Map([['me', { name: myName, n: 0, me: true }]]), last: -1, done: false };
   if (k === 'race') { const free = treadmills.filter(t => !NPCS.some(n => Math.hypot(n.a.position.x - t.x, n.a.position.z - t.z) < .3)), t = nearest(free);
@@ -1666,6 +1731,7 @@ function setFinal(r, f) { r.a.position.set(f.x, f.y, f.z); r.a.rotation.y = f.ro
 function applyRemote(r, d) {
   r.seen = Date.now();
   if (d.tap) tapRemote(r, d.tap);
+  if (d.lobby) lobbyRemote(r, d.lobby);
   if (d.game && d.game.id && d.game.id !== r.gameSeen) { r.gameSeen = d.game.id; gRemote(r, d.game); }
   if (d.cir && d.cir.t0 && (!r.cir || r.cir.t0 !== d.cir.t0) && Date.now() - d.cir.t0 < 12000) { r.cir = { cx: d.cir.cx, cz: d.cir.cz, t0: d.cir.t0, a0: d.cir.a0 }; r.route = null; r.final = null; }
   if (r.cir && r.init) { if (d.sayT && d.sayT !== r.sayT) { say(r.a, d.say || ''); r.sayT = d.sayT; } return; }
@@ -1763,13 +1829,13 @@ function startListeners() {
     const P = d.k && (PAIR[d.k] || GAMES[d.k] || TAPG[d.k]), q = P ? `${P[0]} ${esc(d.fromNick)}님이 ${P[1]}${d.k === 'circle' || TAPG[d.k] ? '에 초대했어요' : GAMES[d.k] ? '을 신청했어요' : '를 요청했어요'}` : `🙌 ${esc(d.fromNick)}님이 하이파이브를 요청했어요`;
     box.innerHTML = `<div style="font-size:14px;font-weight:900">${q}</div><div style="display:flex;gap:6px;margin-top:8px"><button class="btn p" style="flex:1;height:40px" id="rOk">${P ? P[2] : '하이파이브!'}</button><button class="btn g" style="flex:1;height:40px" id="rNo">나중에</button></div>`;
     document.body.appendChild(box);
-    $('rOk').onclick = () => { box.remove(); updateDoc(ch.doc.ref, { st: 'ok' }).catch(() => {}); const rr = remotes.get(d.from); if (d.k === 'circle') joinCircle(d); else if (TAPG[d.k]) { tapJoin(d.k, d.gid, d.t0, false); const rr2 = remotes.get(d.from); if (GT && rr2) GT.ppl.set(d.from, { name: rr2.a.userData.name, n: 0 }); } else if (GAMES[d.k]) { if (rr) { faceEach(rr); startGame(d.k, ch.doc.id, rr, false); } } else if (rr) { if (d.k && PAIR[d.k]) pairAnim(rr, d.k, false, true); else hi5Anim(rr, true); } };
+    $('rOk').onclick = () => { box.remove(); updateDoc(ch.doc.ref, { st: 'ok' }).catch(() => {}); const rr = remotes.get(d.from); if (d.k === 'circle') joinCircle(d); else if (TAPG[d.k]) { lobbyOpen(d.k, d.gid, false, d.from); const rr2 = remotes.get(d.from); if (LB && rr2) LB.ppl.set(d.from, { name: rr2.a.userData.name, ready: false }); } else if (GAMES[d.k]) { if (rr) { faceEach(rr); startGame(d.k, ch.doc.id, rr, false); } } else if (rr) { if (d.k && PAIR[d.k]) pairAnim(rr, d.k, false, true); else hi5Anim(rr, true); } };
     $('rNo').onclick = () => { box.remove(); updateDoc(ch.doc.ref, { st: 'no' }).catch(() => {}); };
     setTimeout(() => { if (box.isConnected) box.remove(); }, 15000);
   }), () => {});
   onSnapshot(query(collection(db, 'gym_hi5'), where('from', '==', myUid), limit(20)), snap => snap.docChanges().forEach(ch => {
     if (ch.type !== 'modified') return; const d = ch.doc.data(), r = remotes.get(d.to);
-    if (TAPG[d.k]) { if (d.st === 'ok' && r) { toast(`${r.a.userData.name}님 참가! ${TAPG[d.k][0]}`); if (GT && GT.id === d.gid && !GT.ppl.has(d.to)) GT.ppl.set(d.to, { name: r.a.userData.name, n: 0 }); } return; }
+    if (TAPG[d.k]) { if (d.st === 'ok' && r) { toast(`${r.a.userData.name}님 참가! ${TAPG[d.k][0]}`); if (LB && LB.id === d.gid && !LB.ppl.has(d.to)) LB.ppl.set(d.to, { name: r.a.userData.name, ready: false }); } return; }
     if (GAMES[d.k]) { if (!GM || GM.wait !== ch.doc.id) return; if (d.st === 'ok' && r) startGame(d.k, ch.doc.id, r, true); else if (d.st === 'no') { GM = null; closeAll(); toast('다음에 같이 해요 🙂'); } return; }
     if (d.k === 'circle') { if (d.st === 'ok' && r) toast(`${r.a.userData.name}님이 함께 돌아요! 💃`); return; }
     if (d.st === 'ok' && r) { if (d.k && PAIR[d.k]) pairAnim(r, d.k, true, false); else hi5Anim(r, false); } else if (d.st === 'no') toast(d.k ? '다음에 함께해요 🙂' : '다음에 하이파이브해요 🙂');
