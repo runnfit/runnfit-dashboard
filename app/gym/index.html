@@ -108,6 +108,9 @@ html,body{margin:0;height:100%;overflow:hidden;background:#7DB7F0;font-family:'N
 #feedAll .r i{font-style:normal;color:#94A3B8;font-size:11px;flex:none;min-width:36px}
 #feedAll .day{display:flex;align-items:center;gap:8px;color:#94A3B8;font-size:11px;font-weight:700;margin:10px 0 6px}
 #feedAll .day::before,#feedAll .day::after{content:'';flex:1;height:1px;background:rgba(148,163,184,.35)}
+#feedAll .sec{display:flex;justify-content:space-between;align-items:center;margin:2px 0 4px;font-size:12px;color:#CBD5E1}
+#feedAll .sec b{font-weight:800}
+#feedAll .sec button{background:none;border:0;color:#9DB8FF;font-weight:800;font-size:12px;font-family:inherit;cursor:pointer;padding:2px 0}
 #feedAll .more{text-align:center;color:#94A3B8;font-size:11.5px;padding:6px 0}
 #feedAll .r b{color:#fff;margin-right:6px;border-bottom:3px solid #F3F4F6;padding-bottom:1px}
 .wish{background:#F8FAFC;border-radius:12px;padding:10px;margin-bottom:8px}
@@ -289,7 +292,7 @@ let hourOverride = null;
 function nowHour() { if (hourOverride !== null) return hourOverride; const d = new Date(); const kst = new Date(d.getTime() + (d.getTimezoneOffset() + 540) * 60000); return kst.getHours() + kst.getMinutes() / 60; }
 function lerpKey(h, idx) { let i = 0; while (i < KEYS.length - 1 && KEYS[i + 1][0] <= h) i++; const A = KEYS[i], Bk = KEYS[Math.min(i + 1, KEYS.length - 1)]; const t = Bk[0] === A[0] ? 0 : (h - A[0]) / (Bk[0] - A[0]); return new THREE.Color(A[idx]).lerp(new THREE.Color(Bk[idx]), t); }
 function updateSky() {
-  const h = nowHour();
+  const realH = nowHour(), h = hourOverride !== null ? hourOverride : 13;
   skyMat.uniforms.top.value.copy(lerpKey(h, 1)); skyMat.uniforms.mid.value.copy(lerpKey(h, 2)); skyMat.uniforms.bot.value.copy(lerpKey(h, 3));
   scene.fog.color.copy(skyMat.uniforms.mid.value);
   const rise = 6.9, set = 17.4, day = Math.max(0, Math.min(1, (h - rise) / (set - rise)));
@@ -304,8 +307,8 @@ function updateSky() {
   hemi.intensity = night ? 1.25 : 1.5 + el * .4;
   const dusk = !night && el < .3 && h > 12;
   if (cloudMat) cloudMat.color.set(night ? 0x46507A : dusk ? 0xFFD6C9 : 0xffffff); if (cloudMat) { cloudMat.emissive.set(night ? 0x1E2547 : dusk ? 0xFF9E80 : 0xffffff); cloudMat.emissiveIntensity = night ? .3 : dusk ? .3 : .35; }
-  const hh = Math.floor(h), mm = Math.floor((h - hh) * 60);
-  $('clock').textContent = `${night ? '🌙' : (h > set - .6 ? '🌇' : '☀️')} ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
+  const hh = Math.floor(realH), mm = Math.floor((realH - hh) * 60);
+  $('clock').textContent = `${realH < 6 || realH >= 19 ? '🌙' : '☀️'} ${String(hh).padStart(2, '0')}:${String(mm).padStart(2, '0')}`;
 }
 updateSky(); setInterval(updateSky, 30000);
 
@@ -1322,7 +1325,7 @@ function tapEnd(g) {
   if (rank === 1) { me.userData.act = 'hooray'; burst(me.position.x, 2.3, me.position.z, ['🎉', '🏆', '✨'], 14, '1등!'); setTimeout(() => { if (me.userData.act === 'hooray') me.userData.act = null; }, 2500); }
   say(me, `${mine}${unit}! ${rank === 1 ? '🏆' : '💪'}`, 2.5, false, true);
   for (const p of list) if (p.npc) { p.npc.a.userData.act = p === list[0] ? 'hooray' : null; p.npc.busy = 2.5; }
-  if (g.host) { feed.raw = true; feed('', list.length > 1 ? `${ic} ${nm} 결과 · ` + list.slice(0, 3).map((p, i) => `${i + 1}등 ${p.name} ${score(p)}${unit}`).join(' · ') : `${myName}님 ${ic} ${nm} ${mine}${unit}!`, 'sys'); feed.raw = false; }
+  if (g.host) { feed.raw = true; const LZ = list.filter(p => p.n > 0); feed('', LZ.length > 1 ? `${ic} ${nm} 결과 · ` + LZ.slice(0, 3).map((p, i) => `${i + 1}등 ${p.name} ${score(p)}${unit}`).join(' · ') : `${myName}님 ${ic} ${nm} ${mine}${unit}!`, 'sys'); feed.raw = false; }
   const uidK = myUid || 'me', prevBest = (hall[g.k].find(r => r.u === uidK) || { sc: 0 }).sc;
   if (mine > 0) { if (LIVE) addDoc(collection(db, 'gym_rec_' + g.k), { uid: myUid, nick: myName, belt: MYBELT, score: mine, ts: serverTimestamp() }).catch(() => {});
     hallSet(g.k, [...hall[g.k], { u: uidK, n: myName, sc: mine }]); }
@@ -1579,8 +1582,23 @@ async function loadOlderFeed() {
   } catch (e) { feedEnd = true; }
   feedLoading = false;
 }
-$('feedAll').addEventListener('scroll', () => { if ($('feedAll').scrollTop < 40) loadOlderFeed(); });
-function renderFeedAll(keep) { const el = $('feedAll'); let pd = ''; el.innerHTML = feedLog.map(f => (f.d && f.d !== pd ? (pd = f.d, `<div class="day"><span>${f.d}</span></div>`) : '') + `<div class="r${f.n ? '' : ' sys'}"><i>${f.t}</i><div>${f.n ? nameHtml(f.n, f.b, f.s) : ''}${esc(f.x)}</div></div>`).join('') || '<div class="r">아직 이야기가 없어요</div>'; if (LIVE) el.insertAdjacentHTML('afterbegin', `<div class="more">${feedEnd ? '처음 이야기까지 다 봤어요' : '↑ 위로 올리면 예전 이야기가 더 나와요'}</div>`); if (!keep) el.scrollTop = el.scrollHeight; }
+$('feedAll').addEventListener('scroll', () => { if (chatOpen && $('feedAll').scrollTop < 40) loadOlderFeed(); });
+let actOpen = false, chatOpen = false;
+function renderFeedAll(keep) {
+  const el = $('feedAll'), acts = feedLog.filter(f => !f.n), chats = feedLog.filter(f => f.n);
+  const row = f => `<div class="r${f.n ? '' : ' sys'}"><i>${f.t}</i><div>${f.n ? nameHtml(f.n, f.b, f.s) : ''}${esc(f.x)}</div></div>`;
+  const aList = actOpen ? acts.slice(-100) : acts.slice(-3), cList = chatOpen ? chats : chats.slice(-8);
+  let pd = '';
+  el.innerHTML = `<div class="sec"><b>활동</b><button type="button" id="actTg">${actOpen ? '접기 ▴' : '펼쳐보기 ▾'}</button></div>` +
+    `<div style="${actOpen ? 'max-height:28vh;overflow-y:auto;-webkit-overflow-scrolling:touch' : ''}" id="actBox">${aList.map(row).join('') || '<div class="r sys"><div>아직 활동이 없어요</div></div>'}</div>` +
+    `<div class="sec" style="margin-top:8px;border-top:1px solid rgba(255,255,255,.12);padding-top:8px"><b>한마디</b><button type="button" id="chTg">${chatOpen ? '접기 ▴' : '펼쳐보기 ▾'}</button></div>` +
+    (chatOpen && LIVE ? `<div class="more">${feedEnd ? '처음 이야기까지 다 봤어요' : '↑ 위로 올리면 예전 한마디가 더 나와요'}</div>` : '') +
+    (cList.map(f => (chatOpen && f.d && f.d !== pd ? (pd = f.d, `<div class="day"><span>${f.d}</span></div>`) : '') + row(f)).join('') || '<div class="r"><div>아직 한마디가 없어요. 첫 한마디를 남겨 보세요!</div></div>');
+  $('actTg').onclick = () => { actOpen = !actOpen; renderFeedAll(true); };
+  $('chTg').onclick = () => { chatOpen = !chatOpen; renderFeedAll(); };
+  if (actOpen) { const ab = $('actBox'); ab.scrollTop = ab.scrollHeight; }
+  if (!keep) el.scrollTop = el.scrollHeight;
+}
 $('feedBtn').onclick = () => { const el = $('feedAll'), open = el.style.display !== 'block'; el.style.display = open ? 'block' : 'none'; $('feed').style.display = open ? 'none' : 'flex'; $('feedBtn').textContent = open ? '💬 접기 ▾' : '💬 지난 이야기 ▴'; if (open) renderFeedAll(); };
 // 내 동작 안내 + 자동으로 나온 말은 한 줄로 묶어서 보냄
 let pendMine = null;
