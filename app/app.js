@@ -993,9 +993,12 @@ async function paintChamps(){
   const win = Object.keys(CHAMP_G).map((g)=>{ const L = champCache.rows.filter((r)=> r.g === g).sort((a, b)=> CHAMP_G[g][2] ? a.score - b.score : b.score - a.score); return L[0] ? [g, L[0]] : null; }).filter(Boolean);
   if(!win.length || !document.getElementById('cmChamp')) return;
   const d = new Date(Date.now() - 864e5 + KST);
-  box.innerHTML = '<div class="card m" style="padding:12px 14px"><div style="display:flex;justify-content:space-between;align-items:center"><b style="color:' + B + ';font-size:15px">👑 어제의 미니런앤핏 1등</b><span style="font-size:11.5px;color:#8A94A8">' + (d.getUTCMonth() + 1) + '.' + d.getUTCDate() + ' (' + '일월화수목금토'[d.getUTCDay()] + ')</span></div>' +
-    win.map(([g, r])=> '<div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-top:1px solid #F0F2F7"><span>' + CHAMP_G[g][0] + ' ' + CHAMP_G[g][1] + '</span><b>' + esc(r.nick || '회원') + ' <span style="color:' + B + '">' + fmt(g, r) + '</span></b></div>').join('') +
-    '<button type="button" class="cmchip" id="chGo" style="width:100%;margin-top:8px">🎮 나도 도전하기 · 미니런앤핏</button></div>';
+  const ds = (d.getUTCMonth() + 1) + '.' + d.getUTCDate() + ' (' + '일월화수목금토'[d.getUTCDay()] + ')';
+  box.innerHTML = '<div class="card m" style="padding:12px 14px">' +
+    '<button type="button" id="chTg" style="all:unset;box-sizing:border-box;width:100%;display:flex;align-items:center;gap:6px;cursor:pointer"><b style="color:' + B + ';font-size:15px">👑 어제의 미니런앤핏 1등</b><span style="font-size:11.5px;color:#8A94A8">' + ds + '</span><span style="margin-left:auto;font-size:12.5px;font-weight:800;color:' + B + '" id="chAr">' + win.length + '종목 보기 ▾</span></button>' +
+    '<div id="chList" style="display:none;margin-top:6px">' + win.map(([g, r])=> '<div style="display:flex;justify-content:space-between;font-size:13px;padding:6px 0;border-top:1px solid #F0F2F7"><span>' + CHAMP_G[g][0] + ' ' + CHAMP_G[g][1] + '</span><b>' + esc(r.nick || '회원') + ' <span style="color:' + B + '">' + fmt(g, r) + '</span></b></div>').join('') + '</div>' +
+    '<button type="button" class="cmchip" id="chGo" style="width:100%;margin-top:10px">🎮 나도 도전하기</button></div>';
+  document.getElementById('chTg').onclick = ()=>{ const L = document.getElementById('chList'), on = L.style.display === 'none'; L.style.display = on ? 'block' : 'none'; document.getElementById('chAr').textContent = on ? '접기 ▴' : win.length + '종목 보기 ▾'; };
   document.getElementById('chGo').onclick = ()=> go('pixel');
 }
 function paintFeed(){
