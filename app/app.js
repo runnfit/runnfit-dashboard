@@ -617,6 +617,11 @@ function bindWodHome(){
   if(!WOD) loadWod().then(()=>{ const r = document.getElementById('wodRange'); if(r) r.textContent = wodRange(); });
 }
 
+const GUIDE = [['워밍업', '점핑잭 15~20회 × 3세트'], ['반복', '10~15회'], ['세트', '3~5세트'], ['휴식', '60~90초'], ['고중량', '휴식 2~3분']];
+const guideHtml = ()=> '<div class="m" style="margin-top:12px;background:#fff;border-radius:12px;box-shadow:inset 0 0 0 2px ' + B + ';overflow:hidden">' +
+  '<div style="background:' + B + ';color:#fff;padding:7px 12px;display:flex;align-items:baseline;gap:6px"><b style="font-size:13.5px">운동 가이드</b><span style="font-size:11px;color:var(--y);font-weight:700">모든 띠 공통</span></div>' +
+  '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;padding:10px 12px 4px">' + GUIDE.map((g, i)=> '<div style="display:flex;gap:6px;align-items:baseline;font-size:13px' + (i === 0 ? ';grid-column:1 / -1' : '') + '"><b style="color:' + B + ';flex:none">' + g[0] + '</b><b style="color:var(--ink)">' + g[1] + '</b></div>').join('') + '</div>' +
+  '<div style="padding:4px 12px 10px;font-size:12px;color:var(--muted);font-weight:700">기구가 비어 있는 운동부터 해도 OK!</div></div>';
 // 프로그램 고르기 (P1)
 async function renderWod(){
   $app.innerHTML = topbar('이번 주 운동 프로그램') + '<div class="loading">불러오는 중…</div>';
@@ -632,10 +637,10 @@ async function renderWod(){
       '<div style="margin-top:6px">' + items.map((it)=> '<div style="display:flex;gap:8px;align-items:center;padding:4px 0;font-size:14px">' + tagHtml(it.t) + '<span style="flex:1">' + esc(it.n) + '</span>' + (it.x ? '<span style="font-size:12.5px;color:' + B + ';font-weight:700">' + esc(it.x) + '</span>' : '') + '</div>').join('') + '</div>' +
       '<button type="button" data-start="' + p + '" class="btn' + (first ? '' : ' ghost') + '" style="width:100%;margin-top:8px;height:44px;font-size:14px' + (first ? '' : ';box-shadow:none;background:#E3E9FF') + '">' + pn(p) + ' 운동 시작하기</button></div>'; };
   $app.innerHTML = '<div class="top" style="justify-content:flex-start;gap:6px;padding-left:12px"><button class="back" type="button" data-go="home" aria-label="뒤로">' + BACK + '</button><div class="ttl">이번 주 운동 프로그램</div><span style="margin-left:auto;font-size:12px;color:var(--muted)">' + wodRange() + '</span></div>' +
-    '<div class="m" style="font-size:13px;color:#4B5563;line-height:1.6"><b style="color:var(--ink)">내 띠는 추천!</b><br>다른 띠 프로그램도 자유롭게 도전해봐도 좋아요!<br>1 · 2 · 3회차 중 선택해서 진행해보세요!</div>' +
-    '<div class="m" style="margin-top:18px;display:flex;gap:4px;background:#fff;border-radius:12px;padding:4px;box-shadow:0 1px 3px rgba(0,0,0,.06)">' + tabs + '</div>' +
+    '<div class="m" style="font-size:13px;color:#4B5563;line-height:1.6"><b style="color:var(--ink)">내 띠는 추천!</b><br>다른 띠 프로그램도 자유롭게 도전해봐도 좋아요!<br>1 · 2 · 3회차 중 선택해서 진행해보세요!</div>' + guideHtml() +
+    '<div class="m" style="margin-top:14px;display:flex;gap:4px;background:#fff;border-radius:12px;padding:4px;box-shadow:0 1px 3px rgba(0,0,0,.06)">' + tabs + '</div>' +
     card('A', true) + card('B') + card('C') +
-    '<div class="m" style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:6px">워밍업 점핑잭 15~20회 × 3세트<br>반복 10~15회 · 3~5세트 · 휴식 60~90초 · 고중량은 휴식 2~3분<br>기구가 비어 있는 운동부터 해도 OK!</div><div style="height:18px"></div>';
+    '<div style="height:18px"></div>';
   $app.querySelectorAll('[data-belt]').forEach((b)=> b.onclick = ()=>{ wodBelt = b.dataset.belt; renderWod(); });
   $app.querySelectorAll('[data-start]').forEach((b)=> b.onclick = ()=> startSession(wodBelt, b.dataset.start));
 }
