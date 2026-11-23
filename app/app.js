@@ -546,21 +546,22 @@ const WBELTS = [
   { k: '빨', name: '빨간 띠', bg: '#B91C32', fg: '#fff', soft: '#FDE8EC' },
   { k: '검', name: '검은 띠', bg: '#111827', fg: '#fff', soft: '#E9EBEF' },
 ];
-const WPROG = { A: '스쿼트 중심 전신', B: '힙힌지·밀기 중심 전신', C: '당기기·한쪽 하체 전신' };
+const WPROG = { A: '하체 중심 전신운동', B: '당기기 중심 전신운동', C: '밀기 중심 전신운동' };
+const PN = { A: '1회차', B: '2회차', C: '3회차' }, pn = (p)=> PN[p] || p || '';
 // 11월 셋째 주 (센터 모니터판과 같은 내용). 직원 관리 화면에서 매주 바꾸면 wods/current 가 이걸 덮어씀
-const DEFAULT_WOD = { start: '2026-11-16', end: '2026-11-22', programs: {
-  노: { A: [['01', '레그프레스'], ['12', '체스트프레스'], ['08', '랫풀다운'], ['맨몸', '스쿼트'], ['13', '암컬'], ['체력', '스텝박스 기본 스텝', '20회×3']],
-        B: [['03', '레그컬'], ['14', '숄더프레스'], ['06', '롱풀'], ['맨몸', '힙힌지'], ['11', '팩덱플라이'], ['체력', '제자리 피칭', '30초×3']],
-        C: [['19', '레그프레스'], ['09', '시티드로우'], ['12', '체스트프레스'], ['04', '레그익스텐션'], ['21', '케이블 삼두 푸시다운'], ['체력', '스텝박스 사이드 스텝', '20회×3']] },
-  파: { A: [['덤벨', '덤벨 스쿼트'], ['덤벨', '덤벨 벤치프레스'], ['09', '시티드로우'], ['KB', '케틀벨 데드리프트'], ['덤벨', '덤벨 레터럴 레이즈'], ['체력', '점핑잭', '30회×3']],
-        B: [['KB', '케틀벨 데드리프트'], ['덤벨', '덤벨 숄더프레스'], ['08', '랫풀다운'], ['덤벨', '덤벨 리버스 런지'], ['21', '케이블 삼두 푸시다운'], ['체력', '스텝박스 교차 스텝', '20회×3']],
-        C: [['덤벨', '덤벨 스플릿 스쿼트'], ['덤벨', '원암 덤벨로우'], ['덤벨', '덤벨 인클라인 프레스'], ['03', '레그컬'], ['덤벨', '덤벨 레터럴 레이즈'], ['체력', '마운틴클라이머', '20회×3']] },
-  빨: { A: [['23', '바벨 백스쿼트'], ['18', '바벨 벤치프레스'], ['07', '어시스트 풀업'], ['덤벨', '덤벨 루마니안 데드리프트'], ['21', '케이블 삼두 푸시다운'], ['체력', '스텝업', '20회×3']],
-        B: [['24', '바벨 데드리프트'], ['14', '숄더프레스'], ['09', '시티드로우'], ['덤벨', '덤벨 리버스 런지'], ['13', '암컬'], ['체력', '버피', '10회×3']],
-        C: [['22', '스미스 스쿼트'], ['바벨', '바벨 벤트오버로우'], ['덤벨', '덤벨 인클라인 프레스'], ['03', '레그컬'], ['덤벨', '덤벨 레터럴 레이즈'], ['체력', 'A스킵', '30회×3']] },
-  검: { A: [['23', '바벨 백스쿼트'], ['덤벨', '덤벨 벤치프레스'], ['맨몸', '풀업'], ['덤벨', '덤벨 워킹 런지'], ['덤벨', '덤벨 레터럴 레이즈'], ['체력', '스쿼트 점프', '10회×3']],
-        B: [['24', '바벨 데드리프트'], ['바벨', '바벨 오버헤드프레스'], ['맨몸', '풀업'], ['덤벨', '덤벨 리버스 런지'], ['덤벨', '덤벨 암컬'], ['체력', '버피', '15회×3']],
-        C: [['덤벨', '덤벨 불가리안 스플릿 스쿼트'], ['덤벨', '원암 덤벨로우'], ['덤벨', '덤벨 인클라인 프레스'], ['바벨', '바벨 데드리프트'], ['덤벨', '덤벨 레터럴 레이즈'], ['체력', '마운틴클라이머', '20회×3']] },
+const DEFAULT_WOD = { start: '2026-11-23', end: '2026-11-29', programs: {
+  노: { A: [['01', '레그프레스'], ['맨몸', '스쿼트'], ['12', '체스트프레스'], ['08', '랫풀다운'], ['13', '암컬'], ['코어', '크런치', '15회×3'], ['체력', '스텝박스 기본 스텝', '20회×3']],
+        B: [['08', '랫풀다운'], ['09', '시티드로우'], ['03', '레그컬'], ['14', '숄더프레스'], ['맨몸', '힙힌지'], ['코어', '레그레이즈', '15회×3'], ['체력', '제자리 피칭', '30초×3']],
+        C: [['12', '체스트프레스'], ['14', '숄더프레스'], ['19', '레그프레스'], ['06', '롱풀'], ['21', '케이블 삼두 푸시다운'], ['코어', '플랭크', '30초×3'], ['체력', '스텝박스 사이드 스텝', '20회×3']] },
+  파: { A: [['덤벨', '덤벨 스쿼트'], ['KB', '케틀벨 루마니안 데드리프트'], ['덤벨', '덤벨 벤치프레스'], ['09', '시티드로우'], ['덤벨', '덤벨 레터럴 레이즈'], ['코어', '크런치', '15회×3'], ['체력', '점핑잭', '30회×3']],
+        B: [['07', '어시스트 풀업'], ['덤벨', '원암 덤벨로우'], ['KB', '케틀벨 데드리프트'], ['14', '숄더프레스'], ['13', '암컬'], ['코어', '레그레이즈', '15회×3'], ['체력', '스텝박스 교차 스텝', '20회×3']],
+        C: [['덤벨', '덤벨 벤치프레스'], ['덤벨', '덤벨 숄더프레스'], ['덤벨', '덤벨 스플릿 스쿼트'], ['08', '랫풀다운'], ['21', '케이블 삼두 푸시다운'], ['코어', '플랭크', '40초×3'], ['체력', '마운틴클라이머', '20회×3']] },
+  빨: { A: [['20', 'V스쿼트'], ['덤벨', '덤벨 루마니안 데드리프트'], ['18', '바벨 벤치프레스'], ['07', '어시스트 풀업'], ['21', '케이블 삼두 푸시다운'], ['코어', '크런치', '20회×4'], ['체력', '스텝업', '20회×3']],
+        B: [['07', '어시스트 풀업'], ['바벨', '바벨 벤트오버로우'], ['24', '바벨 데드리프트'], ['덤벨', '덤벨 숄더프레스'], ['13', '암컬'], ['코어', '레그레이즈', '20회×4'], ['체력', '버피', '10회×3']],
+        C: [['18', '바벨 벤치프레스'], ['바벨', '바벨 오버헤드프레스'], ['22', '스미스 스쿼트'], ['10', '와이드 풀다운'], ['덤벨', '덤벨 레터럴 레이즈'], ['코어', '플랭크', '50초×3'], ['체력', '에이스킵', '30초×3']] },
+  검: { A: [['23', '바벨 백스쿼트'], ['덤벨', '덤벨 워킹 런지'], ['덤벨', '덤벨 인클라인 프레스'], ['10', '와이드 풀다운'], ['14', '숄더프레스'], ['코어', '크런치', '20회×4'], ['체력', '스쿼트 점프', '10회×3']],
+        B: [['맨몸', '풀업 or 어시스트 풀업'], ['덤벨', '원암 덤벨로우'], ['24', '바벨 데드리프트'], ['덤벨', '덤벨 아놀드 프레스'], ['덤벨', '덤벨 컬'], ['코어', '레그레이즈', '20회×4'], ['체력', '버피', '15회×3']],
+        C: [['18', '바벨 벤치프레스'], ['바벨', '바벨 오버헤드프레스'], ['덤벨', '덤벨 불가리안 스플릿 스쿼트'], ['덤벨', '원암 덤벨로우'], ['03', '레그컬'], ['코어', '플랭크', '60초×3'], ['체력', '마운틴클라이머', '40회×3']] },
 } };
 let WOD = null;          // { start, end, programs: { 노: { A: [{t,n,x}] } } }
 let wodBelt = null;      // 프로그램 화면에서 보고 있는 띠
@@ -578,7 +579,7 @@ function normWod(w){
 }
 async function loadWod(){
   if(WOD) return WOD;
-  try{ const s = await getDoc(doc(db, 'wods', 'current')); if(s.exists() && s.data().programs) { WOD = normWod(s.data()); return WOD; } }catch(e){}
+  try{ const s = await getDoc(doc(db, 'wods', 'current')); if(s.exists() && s.data().programs && (s.data().start || '') >= DEFAULT_WOD.start) { WOD = normWod(s.data()); return WOD; } }catch(e){}
   WOD = normWod(DEFAULT_WOD); return WOD;
 }
 const wodRange = ()=> WOD ? dotDate(WOD.start).slice(5) + ' – ' + dotDate(WOD.end).slice(5) : '';
@@ -591,7 +592,7 @@ function kindOf(t){
 const weighted = (k)=> k === 'machine' || k === 'bar' || k === 'db' || k === 'kb';
 const kgStep = (k)=> k === 'db' ? 1 : k === 'kb' ? 2 : k === 'bar' ? 2.5 : 5;
 function tagHtml(t){
-  const st = t === '체력' ? 'background:#FFD54A;color:#3A2A00' : /^\d+$/.test(t) ? 'background:' + B + ';color:#fff' : 'background:#fff;color:#6B7280;box-shadow:inset 0 0 0 1px #D5DCE8';
+  const st = t === '체력' ? 'background:#FFD54A;color:#3A2A00' : t === '코어' ? 'background:#E3E9FF;color:' + B : /^\d+$/.test(t) ? 'background:' + B + ';color:#fff' : 'background:#fff;color:#6B7280;box-shadow:inset 0 0 0 1px #D5DCE8';
   return '<span style="min-width:36px;text-align:center;border-radius:5px;font-size:11px;font-weight:900;padding:1px 4px;flex:none;' + st + '">' + esc(t) + '</span>';
 }
 const ARROW = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
@@ -608,7 +609,7 @@ function wodHomeCard(){
     '<div style="margin-top:10px;background:rgba(255,255,255,.12);border-radius:10px;padding:9px 12px;font-size:13px;line-height:1.5">' +
       (white ? '<b style="color:var(--y)">흰 띠는 기본 머신 사용법부터!</b><br>노란 띠 프로그램으로 천천히 시작해 보세요' : '<b style="color:var(--y)">내 띠 추천 ' + mb.name + '!</b><br>다른 띠 프로그램도 자유롭게 도전해봐도 좋아요') + '</div>' +
     '<button type="button" id="wodGo" style="width:100%;margin-top:10px;height:44px;border:0;border-radius:10px;background:#fff;color:' + B + ';font-weight:900;font-size:14.5px;display:flex;align-items:center;justify-content:center;gap:4px;cursor:pointer;font-family:inherit">' +
-      (s ? wBelt(s.belt).name + ' ' + s.prog + ' 이어서 하기 ' : '이번 주 운동 프로그램 보기 ') + ARROW + '</button></div>';
+      (s ? wBelt(s.belt).name + ' ' + pn(s.prog) + ' 이어서 하기 ' : '이번 주 운동 프로그램 보기 ') + ARROW + '</button></div>';
 }
 function bindWodHome(){
   const b = document.getElementById('wodGo'); if(!b) return;
@@ -627,14 +628,14 @@ async function renderWod(){
     (b.k === mk ? '<i style="position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:' + B + ';color:#fff;font-style:normal;font-size:9.5px;border-radius:4px;padding:0 5px;white-space:nowrap">내 띠 추천</i>' : '') + '</button>').join('');
   const card = (p, first)=>{ const items = WOD.programs[wodBelt][p] || [];
     return '<div class="card m" style="padding:12px 14px">' +
-      '<div style="display:flex;align-items:center;gap:10px"><b style="width:34px;height:34px;border-radius:8px;background:' + B + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-style:italic">' + p + '</b><b style="font-size:15px">' + WPROG[p] + '</b></div>' +
+      '<div style="display:flex;align-items:center;gap:10px"><b style="width:34px;height:34px;border-radius:8px;background:' + B + ';color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-style:italic">' + p.replace('A', '1').replace('B', '2').replace('C', '3') + '</b><b style="font-size:15px">' + WPROG[p] + '</b></div>' +
       '<div style="margin-top:6px">' + items.map((it)=> '<div style="display:flex;gap:8px;align-items:center;padding:4px 0;font-size:14px">' + tagHtml(it.t) + '<span style="flex:1">' + esc(it.n) + '</span>' + (it.x ? '<span style="font-size:12.5px;color:' + B + ';font-weight:700">' + esc(it.x) + '</span>' : '') + '</div>').join('') + '</div>' +
-      '<button type="button" data-start="' + p + '" class="btn' + (first ? '' : ' ghost') + '" style="width:100%;margin-top:8px;height:44px;font-size:14px' + (first ? '' : ';box-shadow:none;background:#E3E9FF') + '">' + p + '로 운동 시작하기</button></div>'; };
+      '<button type="button" data-start="' + p + '" class="btn' + (first ? '' : ' ghost') + '" style="width:100%;margin-top:8px;height:44px;font-size:14px' + (first ? '' : ';box-shadow:none;background:#E3E9FF') + '">' + pn(p) + ' 운동 시작하기</button></div>'; };
   $app.innerHTML = '<div class="top" style="justify-content:flex-start;gap:6px;padding-left:12px"><button class="back" type="button" data-go="home" aria-label="뒤로">' + BACK + '</button><div class="ttl">이번 주 운동 프로그램</div><span style="margin-left:auto;font-size:12px;color:var(--muted)">' + wodRange() + '</span></div>' +
-    '<div class="m" style="font-size:13px;color:#4B5563;line-height:1.6"><b style="color:var(--ink)">내 띠는 추천!</b><br>다른 띠 프로그램도 자유롭게 도전해봐도 좋아요!<br>A · B · C 중 선택해서 진행해보세요!</div>' +
+    '<div class="m" style="font-size:13px;color:#4B5563;line-height:1.6"><b style="color:var(--ink)">내 띠는 추천!</b><br>다른 띠 프로그램도 자유롭게 도전해봐도 좋아요!<br>1 · 2 · 3회차 중 선택해서 진행해보세요!</div>' +
     '<div class="m" style="margin-top:18px;display:flex;gap:4px;background:#fff;border-radius:12px;padding:4px;box-shadow:0 1px 3px rgba(0,0,0,.06)">' + tabs + '</div>' +
     card('A', true) + card('B') + card('C') +
-    '<div class="m" style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:6px">반복 10~15회 · 3~5세트 · 휴식 60~90초 · 고중량은 휴식 2~3분<br>기구가 비어 있는 운동부터 해도 OK!</div><div style="height:18px"></div>';
+    '<div class="m" style="font-size:12px;color:var(--muted);line-height:1.6;margin-bottom:6px">워밍업 점핑잭 15~20회 × 3세트<br>반복 10~15회 · 3~5세트 · 휴식 60~90초 · 고중량은 휴식 2~3분<br>기구가 비어 있는 운동부터 해도 OK!</div><div style="height:18px"></div>';
   $app.querySelectorAll('[data-belt]').forEach((b)=> b.onclick = ()=>{ wodBelt = b.dataset.belt; renderWod(); });
   $app.querySelectorAll('[data-start]').forEach((b)=> b.onclick = ()=> startSession(wodBelt, b.dataset.start));
 }
@@ -653,7 +654,7 @@ function lastOf(name){
 }
 async function startSession(belt, prog){
   const old = getSession();
-  if(old && !confirm('하던 운동(' + wBelt(old.belt).name + ' ' + old.prog + ')이 있어요. 새로 시작할까요?')){ go('session'); return; }
+  if(old && !confirm('하던 운동(' + wBelt(old.belt).name + ' ' + pn(old.prog) + ')이 있어요. 새로 시작할까요?')){ go('session'); return; }
   await loadMyLogs();
   const items = (WOD.programs[belt][prog] || []).map((it)=>{
     const kind = kindOf(it.t), last = lastOf(it.n);
@@ -684,7 +685,7 @@ function renderSession(){
     '<span style="width:50px"><b style="display:block;font-size:14px;color:#374151">' + (i + 1) + '세트</b>' + (z.prev ? '<span style="font-size:10.5px;color:#9CA3AF">지난번 ' + esc(z.prev) + '</span>' : '') + '</span>' +
     (w ? box(z.kg, 'kg', i, 'kg') + '<span style="color:#9CA3AF">×</span>' : '') + box(z.reps, it.unit, i, 'reps') + '<span style="flex:1"></span>' +
     '<button type="button" data-done="' + i + '" aria-label="' + (i + 1) + '세트 완료" style="width:46px;height:46px;border:0;border-radius:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;' + (z.done ? 'background:' + B : 'background:#fff;box-shadow:inset 0 0 0 2px #C7D3EE') + '">' + (z.done ? CHK() : '') + '</button></div>').join('');
-  $app.innerHTML = '<div class="top" style="justify-content:flex-start;gap:6px;padding-left:12px"><button class="back" type="button" id="sBack" aria-label="뒤로">' + BACK + '</button><div class="ttl" style="font-size:17px">' + bl.name + ' ' + s.prog + ' · ' + WPROG[s.prog] + '</div><span style="margin-left:auto;font-size:12.5px;color:' + B + ';font-weight:900;white-space:nowrap">' + nDone + ' / ' + s.items.length + ' 완료</span></div>' +
+  $app.innerHTML = '<div class="top" style="justify-content:flex-start;gap:6px;padding-left:12px"><button class="back" type="button" id="sBack" aria-label="뒤로">' + BACK + '</button><div class="ttl" style="font-size:17px">' + bl.name + ' ' + pn(s.prog) + ' · ' + WPROG[s.prog] + '</div><span style="margin-left:auto;font-size:12.5px;color:' + B + ';font-weight:900;white-space:nowrap">' + nDone + ' / ' + s.items.length + ' 완료</span></div>' +
     '<div class="m" style="display:flex;gap:5px">' + strip + '</div><div class="m" style="margin-top:6px;font-size:11.5px;color:var(--muted)">번호를 누르면 그 운동으로 이동 · 순서는 자유예요</div>' +
     '<div class="card m" style="padding:14px 16px"><div style="display:flex;align-items:center;gap:10px">' + tagHtml(it.t) + '<b style="font-size:19px">' + esc(it.n) + '</b></div>' +
       '<div style="font-size:12.5px;color:#4B5563;margin-top:4px">' + (it.x ? esc(it.x) : '10~15회 × 3세트') + ' · 휴식 60~90초</div>' + '<div style="display:flex;justify-content:flex-end;margin-top:8px;font-size:11.5px;font-weight:700;color:' + B + '">완료하면 체크해 주세요 ↓</div>' + rows +
@@ -774,7 +775,7 @@ function doneHero(r){
   return '<div style="background:' + B + ';color:#fff;padding:22px 22px;border-radius:0 0 28px 28px">' +
     '<div style="display:flex;align-items:center;justify-content:space-between"><img src="./logo-white.png" alt="RUN N FIT" style="width:120px"><span style="font-size:13px;opacity:.85">' + dotDate(r.date) + ' (' + wd + ')</span></div>' +
     '<div style="text-align:center;margin-top:20px"><span style="width:56px;height:56px;border-radius:16px;background:var(--y);display:inline-flex;align-items:center;justify-content:center">' + CHK(B, 30) + '</span>' +
-    '<div style="font-size:25px;font-weight:900;margin-top:10px">오늘 운동 완료! 짱!</div><div style="font-size:13px;opacity:.85;margin-top:4px"><b style="color:var(--y)">' + wBelt(r.belt).name + ' ' + r.prog + '</b> · ' + WPROG[r.prog] + ' · ' + r.total + '번째 출석</div></div>' +
+    '<div style="font-size:25px;font-weight:900;margin-top:10px">오늘 운동 완료! 짱!</div><div style="font-size:13px;opacity:.85;margin-top:4px"><b style="color:var(--y)">' + wBelt(r.belt).name + ' ' + pn(r.prog) + '</b> · ' + WPROG[r.prog] + ' · ' + r.total + '번째 출석</div></div>' +
     '<div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:16px">' + st.map(([v, l])=> '<div style="border-radius:12px;padding:10px 12px;background:rgba(255,255,255,.12)"><b style="font-size:22px">' + v + '</b><div style="font-size:12px;opacity:.8">' + l + '</div></div>').join('') + '</div>' +
     (r.grow ? '<div style="margin-top:10px;background:rgba(255,213,74,.16);border-radius:10px;padding:9px 12px;font-size:13px"><b style="color:var(--y)">' + esc(r.grow) + '</b> ' + (/kg!$/.test(r.grow) ? '지난번보다 무거워졌어요' : '멋진 도전이에요') + '</div>' : '') + '</div>';
 }
@@ -802,7 +803,7 @@ async function shareDone(r){
   g.textAlign = 'center'; g.fillStyle = '#FFD54A'; g.beginPath(); g.roundRect ? g.roundRect(W / 2 - 75, 230, 150, 150, 40) : g.rect(W / 2 - 75, 230, 150, 150); g.fill();
   g.strokeStyle = B; g.lineWidth = 16; g.lineCap = 'round'; g.lineJoin = 'round'; g.beginPath(); g.moveTo(W / 2 - 38, 308); g.lineTo(W / 2 - 10, 336); g.lineTo(W / 2 + 42, 280); g.stroke();
   g.fillStyle = '#fff'; g.font = F(900, 92); g.fillText('오늘 운동 완료! 짱!', W / 2, 500);
-  g.font = F(500, 38); g.fillStyle = '#FFD54A'; g.fillText(wBelt(r.belt).name + ' ' + r.prog + ' · ' + WPROG[r.prog] + ' · ' + r.total + '번째 출석', W / 2, 570);
+  g.font = F(500, 38); g.fillStyle = '#FFD54A'; g.fillText(wBelt(r.belt).name + ' ' + pn(r.prog) + ' · ' + WPROG[r.prog] + ' · ' + r.total + '번째 출석', W / 2, 570);
   const st = [[r.exDone + '/' + r.exTotal, '운동'], [String(r.sets), '세트'], [r.kg.toLocaleString(), 'kg 들었어요'], [String(r.minutes), '분']];
   st.forEach(([v, l], i)=>{ const x = 80 + (i % 2) * 470, y = 640 + Math.floor(i / 2) * 230; g.fillStyle = 'rgba(255,255,255,.12)'; g.beginPath(); g.roundRect ? g.roundRect(x, y, 450, 200, 32) : g.rect(x, y, 450, 200); g.fill();
     g.textAlign = 'left'; g.fillStyle = '#fff'; g.font = F(900, 80); g.fillText(v, x + 40, y + 105); g.font = F(500, 34); g.fillStyle = 'rgba(255,255,255,.8)'; g.fillText(l, x + 40, y + 160); });
@@ -820,13 +821,13 @@ async function paintMyWod(){
   const byDay = {}; (myLogs || []).forEach((l)=>{ (byDay[l.date] = byDay[l.date] || []).push(l); });
   document.querySelectorAll('[data-day]').forEach((cell)=>{ const ls = byDay[cell.dataset.day]; if(!ls) return;
     cell.style.cursor = 'pointer'; cell.style.flexDirection = 'column'; cell.style.lineHeight = '1.05';
-    if(!cell.querySelector('.wl')) cell.insertAdjacentHTML('beforeend', '<i class="wl" style="font-style:normal;font-size:9px;font-weight:900;color:#FFD54A">' + ls.map((l)=> l.prog).join('') + '</i>');
+    if(!cell.querySelector('.wl')) cell.insertAdjacentHTML('beforeend', '<i class="wl" style="font-style:normal;font-size:9px;font-weight:900;color:#FFD54A">' + ls.map((l)=> ({ A: '1', B: '2', C: '3' })[l.prog] || l.prog).join('') + '</i>');
     if(cell.dataset.day === wodSel) cell.style.outline = '3px solid #FFD54A'; else cell.style.outline = '';
     cell.onclick = ()=>{ wodSel = cell.dataset.day; paintMyWod(); }; });
   if(!myLogs.length){ box.innerHTML = '<div class="card m" style="padding:14px;font-size:13.5px;line-height:1.6;color:#374151"><b style="color:' + B + '">아직 운동 기록이 없어요</b><br>홈의 \'이번 주 런앤핏 운동 프로그램\'에서 운동을 시작하면 여기에 쌓여요!</div>'; return; }
   if(!wodSel || !byDay[wodSel]) wodSel = myLogs[0].date;
   const dl = byDay[wodSel];
-  const dayHtml = dl.map((r)=> '<div class="m" style="background:' + B + ';color:#fff;border-radius:14px;padding:12px 14px"><div style="display:flex;justify-content:space-between;font-size:12.5px;gap:8px"><b><span style="color:var(--y)">' + dotDate(r.date).slice(5) + '</span> · ' + wBelt(r.belt).name + ' ' + r.prog + '</b><span style="opacity:.85">' + r.minutes + '분 · ' + (r.kg || 0).toLocaleString() + 'kg</span></div>' +
+  const dayHtml = dl.map((r)=> '<div class="m" style="background:' + B + ';color:#fff;border-radius:14px;padding:12px 14px"><div style="display:flex;justify-content:space-between;font-size:12.5px;gap:8px"><b><span style="color:var(--y)">' + dotDate(r.date).slice(5) + '</span> · ' + wBelt(r.belt).name + ' ' + pn(r.prog) + '</b><span style="opacity:.85">' + r.minutes + '분 · ' + (r.kg || 0).toLocaleString() + 'kg</span></div>' +
     (r.cheer ? '<div style="margin-top:6px;background:rgba(255,213,74,.16);border-radius:8px;padding:6px 10px;font-size:12.5px"><b style="color:var(--y)">런앤핏이 응원해요!</b> 오늘도 정말 잘했어요</div>' : '') +
     '<div style="margin-top:6px">' + r.items.map((x)=> '<div style="display:flex;gap:8px;align-items:center;font-size:12.5px;padding:3px 0">' + tagHtml(x.t).replace('background:' + B + ';color:#fff', 'background:#fff;color:' + B) + '<span style="flex:1">' + esc(x.n) + '</span><span style="opacity:.85">' + (x.sets[0].kg != null ? x.sets[0].kg + '×' + x.sets[0].reps : x.sets[0].reps + (x.unit || '회')) + ' · ' + x.sets.length + '</span></div>').join('') + '</div></div>').join('');
   // 운동별 성장: 처음 무게 → 최근 무게, 최고 기록
@@ -1029,7 +1030,7 @@ async function renderPost(){
 let LOGO_IMG = null;
 function logoImg(){ return LOGO_IMG ? Promise.resolve(LOGO_IMG) : new Promise((res)=>{ const im = new Image(); im.onload = ()=>{ LOGO_IMG = im; res(im); }; im.onerror = ()=> res(null); im.src = './logo-white.png'; }); }
 function recFromLog(r){
-  return { beltName: wBelt(r.belt).name, prog: r.prog || '', total: r.total || 0, exDone: r.exDone || 0, exTotal: r.exTotal || 0, sets: r.sets || 0, kg: r.kg || 0, minutes: r.minutes || 0,
+  return { beltName: wBelt(r.belt).name, prog: pn(r.prog), total: r.total || 0, exDone: r.exDone || 0, exTotal: r.exTotal || 0, sets: r.sets || 0, kg: r.kg || 0, minutes: r.minutes || 0,
     items: (r.items || []).slice(0, 8).map((x)=> ({ n: x.n, kg: x.sets && x.sets[0] ? x.sets[0].kg : null, reps: x.sets && x.sets[0] ? x.sets[0].reps : 0, sets: (x.sets || []).length })) };
 }
 function drawCard(g, W, H, img, st, rec){
