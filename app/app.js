@@ -623,6 +623,11 @@ const guideHtml = ()=> '<div class="m" style="margin-top:12px;background:#fff;bo
   '<div style="background:' + B + ';color:#fff;padding:7px 12px;display:flex;align-items:baseline;gap:6px"><b style="font-size:13.5px">운동 가이드</b><span style="font-size:11px;color:var(--y);font-weight:700">모든 띠 공통</span></div>' +
   '<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px 10px;padding:10px 12px 4px">' + GUIDE.map((g, i)=> '<div style="display:flex;gap:6px;align-items:baseline;font-size:13px' + (i === 0 ? ';grid-column:1 / -1' : '') + '"><b style="color:' + B + ';flex:none">' + g[0] + '</b><b style="color:var(--ink)">' + g[1] + '</b></div>').join('') + '</div>' +
   '<div style="padding:4px 12px 10px;font-size:12px;color:var(--muted);font-weight:700">기구가 비어 있는 운동부터 해도 OK!</div></div>';
+const BINFO = { 노: ['10~29회', '머신 중심의 기본 움직임 학습', '운동 기초', '기초 전신운동 · 머신 4 + 맨몸 1'], 파: ['30~49회', '다양한 운동 학습 및 운동 능력 향상', '운동 숙련', '응용 전신운동 · 머신 3 + 프리웨이트 2'],
+  빨: ['50~99회', '부위별 운동량 증가 및 근육 발달', '근육 성장', '부위별 강조운동 · 머신 2 + 프리웨이트 3'], 검: ['100회 이상', '하체·당기기·밀기 부위별 집중', '운동 심화', '3분할 운동 · 해당 부위 5종목 집중'] };
+const beltInfo = (k)=>{ const b = wBelt(k), i = BINFO[k]; if(!i) return ''; return '<div class="m" style="margin-top:8px;background:' + b.bg + ';color:' + b.fg + ';border-radius:12px;padding:10px 12px">' +
+  '<div style="font-size:12.5px;font-weight:700;opacity:.9">' + i[0] + ' · ' + i[1] + '</div>' +
+  '<div style="display:flex;align-items:center;gap:7px;margin-top:5px;font-size:13.5px;font-weight:900"><span style="background:' + (k === '노' ? '#fff' : 'rgba(255,255,255,.18)') + ';border-radius:6px;padding:1px 7px;font-size:12px">' + i[2] + '</span>' + i[3] + '</div></div>'; };
 // 프로그램 고르기 (P1)
 async function renderWod(){
   $app.innerHTML = topbar('이번 주 운동 프로그램') + '<div class="loading">불러오는 중…</div>';
@@ -639,7 +644,7 @@ async function renderWod(){
       '<button type="button" data-start="' + p + '" class="btn' + (first ? '' : ' ghost') + '" style="width:100%;margin-top:8px;height:44px;font-size:14px' + (first ? '' : ';box-shadow:none;background:#E3E9FF') + '">' + pn(p) + ' 운동 시작하기</button></div>'; };
   $app.innerHTML = '<div class="top" style="justify-content:flex-start;gap:6px;padding-left:12px"><button class="back" type="button" data-go="home" aria-label="뒤로">' + BACK + '</button><div class="ttl">이번 주 운동 프로그램</div><span style="margin-left:auto;font-size:12px;color:var(--muted)">' + wodRange() + '</span></div>' +
     '<div class="m" style="font-size:13px;color:#4B5563;line-height:1.6"><b style="color:var(--ink)">내 띠는 추천!</b><br>다른 띠 프로그램도 자유롭게 도전해봐도 좋아요!<br>1 · 2 · 3회차 중 선택해서 진행해보세요!</div>' + guideHtml() +
-    '<div class="m" style="margin-top:14px;display:flex;gap:4px;background:#fff;border-radius:12px;padding:4px;box-shadow:0 1px 3px rgba(0,0,0,.06)">' + tabs + '</div>' +
+    '<div class="m" style="margin-top:14px;display:flex;gap:4px;background:#fff;border-radius:12px;padding:4px;box-shadow:0 1px 3px rgba(0,0,0,.06)">' + tabs + '</div>' + beltInfo(wodBelt) +
     card('A', true) + card('B') + card('C') +
     '<div style="height:18px"></div>';
   $app.querySelectorAll('[data-belt]').forEach((b)=> b.onclick = ()=>{ wodBelt = b.dataset.belt; renderWod(); });
