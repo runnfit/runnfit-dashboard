@@ -993,6 +993,7 @@
   // ================= 출석 축하음료 (10회 단위 출석) =================
   // 전달 기록은 다짐매니저 회원 메모에 남긴다: 제목 '⭐ 출석 축하음료 N회' · 쓴 사람 = 지금 로그인한 계정
   const DRINK_TITLE = '⭐ 출석 축하음료 ';
+  const DRINK_SINCE = CFG.DRINK_SINCE || '2026-11-26';   // 이 날부터 기록 (그 전은 '놓침'으로 세지 않음)
   const DRINK_NOTES_Q = (ids)=> 'query RunFitDrinkNotes { ' + ids.map((id, x)=> 'a' + x + ': managerMembers { notesPaged(memberId: "' + String(id).replace(/[^\w-]/g, '') + '", paging: {limit: 50, offset: 0}, sortField: createdAt, sortType: DESC) { data { id title createdAt account { name } } } }').join(' ') + ' }';
   const DRINK_CREATE_Q = 'mutation RunFitDrinkGive($id: String!, $in: NoteCreateInput!) { managerMembers { createNote(memberId: $id, input: $in) { id title createdAt account { name } } } }';
   var drinkNotes = new Map();   // memberId → { at, map: Map(n → { at, by }) }
@@ -1066,7 +1067,8 @@
     const rk = await gql(RANK_Q, { s: new Date(dayStart(first)).toISOString(), e: new Date(dayEnd(end)).toISOString() });
     const mem = ((rk && rk.dashboard && rk.dashboard.attendanceMemberRanking) || []).filter((m)=> m && !m.isDeleted && m.value > 0);
     const names = new Map(mem.map((m)=> [m.id, (m.name || '').trim()]));
-    const ids = mem.map((m)=> m.id), targets = [];
+    if(ym === today.slice(0, 7) && viewDate === today) cards.forEach((c)=>{ if(!names.has(c.id)){ names.set(c.id, c.name || ''); mem.push({ id: c.id }); } });   // 오늘 출석은 다짐 순위에 늦게 잡힘
+    const ids = [...new Set(mem.map((m)=> m.id))], targets = [];
     const gte = new Date(dayStart(first)).toISOString(), lte = new Date(Date.now() + 36e5).toISOString();
     for(let i = 0; i < ids.length; i += 40){
       const part = ids.slice(i, i + 40);
@@ -1075,7 +1077,7 @@
         const mm = r && r['a' + x]; if(!mm || !mm.by || mm.by.totalAttendCount == null) return;
         const at = (mm.attendances || []).filter((a)=> a && a.status === 'ATTEND' && a.attendAt).map((a)=> Date.parse(a.attendAt)).sort((a, b)=> b - a);
         at.forEach((t, k)=>{ const n = mm.by.totalAttendCount - k; const day = kstDate(t);
-          if(n > 0 && n % MILESTONE_EVERY === 0 && day >= first && day <= end) targets.push({ id, name: names.get(id) || '', n, day, t }); });
+          if(n > 0 && n % MILESTONE_EVERY === 0 && day >= first && day <= end && day >= DRINK_SINCE) targets.push({ id, name: names.get(id) || '', n, day, t }); });
       });
     }
     await fetchDrinkNotes([...new Set(targets.map((x)=> x.id))]);
@@ -1112,10 +1114,11 @@
     const staff = ['성민', '혜민', '동수', '최고'].map((n)=> '<span style="background:' + STAFF_COL[n] + '">' + n + ' ' + (by.get(n) || 0) + '</span>').join('') +
       [...by.keys()].filter((n)=> !STAFF_COL[n]).map((n)=> '<span style="background:#9aa1b2">' + esc(n) + ' ' + by.get(n) + '</span>').join('');
     const selT = T.filter((x)=> x.day === sel);
+    if(data.end < DRINK_SINCE) h += '<div class="popempty" style="margin:0 4px 12px">축하음료 기록은 ' + Number(DRINK_SINCE.slice(5, 7)) + '월 ' + Number(DRINK_SINCE.slice(8)) + '일부터 시작했어요</div>';
     h += '<div class="dkcols"><div><div class="dkcal">' + cal + '</div><div class="dkstaff">' + staff + '</div></div><div>' +
       '<h3>' + Number(sel.slice(5, 7)) + '.' + Number(sel.slice(8)) + ' · 대상 ' + selT.length + '명</h3>' + (selT.length ? selT.map((x)=> row(x)).join('') : '<div class="popempty">10회 단위 출석이 없었어요</div>') +
       '<h3 style="margin-top:14px">놓친 회원 · ' + missed.length + '명</h3>' + (missed.length ? missed.map((x)=> row(x, ' · ' + Number(x.day.slice(5, 7)) + '.' + Number(x.day.slice(8)))).join('') : '<div class="popempty">놓친 회원이 없어요 👏</div>') +
-      '</div></div><p class="dknote">드린 기록은 다짐매니저 회원 메모(⭐ 출석 축하음료 N회)에 남아요 · 놓친 회원은 다음 출석 때 카드에 버튼이 다시 떠요 (2번 안에 오면)</p>';
+      '</div></div><p class="dknote">' + Number(DRINK_SINCE.slice(5, 7)) + '.' + Number(DRINK_SINCE.slice(8)) + '부터 기록 · 드린 기록은 다짐매니저 회원 메모(⭐ 출석 축하음료 N회)에 남아요 · 놓친 회원은 다음 출석 때 카드에 버튼이 다시 떠요 (2번 안에 오면)</p>';
     drinkPop.innerHTML = h;
   }
   async function openDrinkPop(ym){
