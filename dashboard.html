@@ -501,7 +501,8 @@
   .dkcols{ display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:14px; margin:0 4px; } .dkcols h3{ margin:0 0 6px; font-size:15px; }
   .dkcal{ display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:3px; } .dkcal .w{ font-size:11.5px; font-weight:800; color:#7a8295; text-align:center; }
   .dkd{ background:#fff; border:1px solid #e3e7f0; border-radius:8px; height:50px; padding:3px 5px; font:inherit; font-size:12px; font-weight:800; color:#5d6782; text-align:left; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; } .dkd:disabled{ opacity:.45; cursor:default; } .dkd.today{ outline:2px solid #18338c; } .dkd.sel{ background:#e8edfb; }
-  .dkd em{ display:flex; flex-wrap:wrap; gap:2px; } .dkd i{ width:8px; height:8px; border-radius:50%; } .dkd i.ok{ background:#18338c; } .dkd i.no{ background:#e5484d; } .dkd i.wait{ background:#b6bcc6; }
+  .dkd em{ display:flex; flex-wrap:wrap; gap:2px; font-style:normal; } .dkd em b{ font-size:11px; font-weight:900; border-radius:5px; padding:0 4px; line-height:16px; white-space:nowrap; } .dkd em b.ok{ background:#e8edfb; color:#18338c; } .dkd em b.no{ background:#fdecee; color:#b4232f; } .dkd em b.wait{ background:#eef0f3; color:#4b5563; } .dkd.sel em b.ok{ background:#fff; }
+  .dkd{ height:58px !important; }
   .dkstaff{ display:flex; gap:5px; margin-top:8px; } .dkstaff span{ flex:1; border-radius:9px; padding:5px; text-align:center; color:#fff; font-weight:900; font-size:12.5px; }
   .dkrow{ display:flex; align-items:center; gap:7px; padding:6px 6px; border-bottom:1px solid #eef1f6; font-size:13.5px; background:#fff; } .dkrow i{ width:11px; height:11px; border-radius:3px; box-shadow:0 0 0 1px rgba(0,0,0,.15); flex:none; } .dkrow .c{ color:#7a8295; font-size:12px; font-weight:700; } .dkrow .s{ margin-left:auto; font-size:12px; border-radius:6px; padding:2px 8px; font-weight:900; white-space:nowrap; } .dkrow .s.ok{ background:#e8edfb; color:#18338c; } .dkrow .s.no{ background:#fdecee; color:#b4232f; } .dkrow .s.wait{ background:#eef1f7; color:#5d6782; }
   .dknote{ margin:12px 4px 2px; font-size:12px; color:#7a8295; }
@@ -1111,8 +1112,9 @@
     let cal = ['월', '화', '수', '목', '금', '토', '일'].map((w)=> '<span class="w">' + w + '</span>').join('') + '<span></span>'.repeat(startDow);
     for(let d = 1; d <= days; d++){
       const key = ym + '-' + String(d).padStart(2, '0'), dt = T.filter((x)=> x.day === key);
-      cal += '<button type="button" class="dkd' + (key === today ? ' today' : '') + (key === sel ? ' sel' : '') + '" data-day="' + key + '"' + (key > today ? ' disabled' : '') + '><span>' + d + '</span><em>' +
-        dt.map((x)=> '<i class="' + (x.got ? 'ok' : x.day === today ? 'wait' : 'no') + '"></i>').join('') + '</em></button>';
+      const nOk = dt.filter((x)=> x.got).length, nWait = dt.filter((x)=> !x.got && x.day === today).length, nNo = dt.length - nOk - nWait;
+      cal += '<button type="button" class="dkd' + (key === today ? ' today' : '') + (key === sel ? ' sel' : '') + '" data-day="' + key + '"' + (key > today ? ' disabled' : '') + '><span>' + d + (key === today ? ' 오늘' : '') + '</span><em>' +
+        (nOk ? '<b class="ok">드림 ' + nOk + '</b>' : '') + (nNo ? '<b class="no">놓침 ' + nNo + '</b>' : '') + (nWait ? '<b class="wait">아직 ' + nWait + '</b>' : '') + '</em></button>';
     }
     const by = new Map(); given.forEach((x)=> by.set(x.got.by || '?', (by.get(x.got.by || '?') || 0) + 1));
     const staff = ['성민', '혜민', '동수', '최고'].map((n)=> '<span style="background:' + STAFF_COL[n] + '">' + n + ' ' + (by.get(n) || 0) + '</span>').join('') +
