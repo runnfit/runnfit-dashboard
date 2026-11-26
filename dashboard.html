@@ -1018,6 +1018,10 @@
     if(d.count % MILESTONE_EVERY === 0) return { n: d.count, late: false };
     const prev = Math.floor(d.count / MILESTONE_EVERY) * MILESTONE_EVERY;
     if(d.count - prev > 2) return null;
+    // 기록 시작(DRINK_SINCE) 전에 지난 10회 단위는 이미 드린 걸로 본다
+    if(d.gap.kind !== 'days') return null;
+    const lastDay = addDays(kstDate(c.t), -d.gap.days);
+    if(d.count - prev === 1 ? lastDay < DRINK_SINCE : lastDay <= DRINK_SINCE) return null;
     const rec = drinkNotes.get(c.id);
     if(!rec || rec.map.has(prev)) return null;   // 기록을 모르면 띄우지 않음, 이미 드렸으면 끝
     return { n: prev, late: true };
