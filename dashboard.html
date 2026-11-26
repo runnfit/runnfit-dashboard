@@ -488,6 +488,23 @@
   .msr mark{ background:#fff1b8; color:inherit; border-radius:3px; padding:0 1px; }
   .msr-empty{ padding:12px; color:#5d6782; font-size:13.5px; font-weight:700; }
   .searchpop{ padding:14px; z-index:60; }
+  .tools .drinkbtn{ background:#fff; color:#18338c; border:1.5px solid #18338c; font-weight:900; }
+  :is(.right,.exppop) .main.hasdrink{ padding-right:220px; }
+  .main .drink{ position:absolute; right:16px; top:50%; transform:translateY(-38%); width:190px; min-height:80px; border:0; border-radius:12px; background:#18338c; color:#fff; font:inherit; font-size:16px; font-weight:900; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px; text-align:center; padding:8px; cursor:pointer; line-height:1.25; z-index:2; }
+  .main .drink small{ font-size:12px; font-weight:700; opacity:.88; }
+  .main button.drink:hover{ background:#0f2470; } .main button.drink:disabled{ opacity:.7; cursor:default; }
+  .main .drink.done{ background:#e8edfb; color:#18338c; border:2px solid #18338c; cursor:default; }
+  .main .drink.wait{ background:#eef1f7; color:#7a8295; cursor:default; }
+  #drinkPop .pophead{ align-items:center; } #drinkPop .pophead > small{ margin-left:4px; }
+  .dkseg{ display:inline-flex; background:#eef1f7; border-radius:10px; padding:3px; margin-left:10px; } .dkseg button{ border:0; background:transparent; font:inherit; font-size:13px; font-weight:800; color:#5d6782; padding:4px 12px; border-radius:8px; cursor:pointer; } .dkseg button.on{ background:#18338c; color:#fff; }
+  .dkkpi{ display:grid; grid-template-columns:repeat(4, minmax(0,1fr)); gap:8px; margin:0 4px 12px; } .dkkpi div{ background:#fff; border:1px solid var(--line); border-radius:12px; padding:8px; text-align:center; font-size:12px; font-weight:800; color:#5d6782; } .dkkpi b{ display:block; font-size:26px; color:#16213d; line-height:1.15; } .dkkpi .g{ background:#e8edfb; border-color:#c9d4f5; } .dkkpi .g b{ color:#18338c; } .dkkpi .r{ background:#fdecee; border-color:#f6cfd3; } .dkkpi .r b{ color:#b4232f; }
+  .dkcols{ display:grid; grid-template-columns:minmax(0,1.15fr) minmax(0,1fr); gap:14px; margin:0 4px; } .dkcols h3{ margin:0 0 6px; font-size:15px; }
+  .dkcal{ display:grid; grid-template-columns:repeat(7, minmax(0,1fr)); gap:3px; } .dkcal .w{ font-size:11.5px; font-weight:800; color:#7a8295; text-align:center; }
+  .dkd{ background:#fff; border:1px solid #e3e7f0; border-radius:8px; height:50px; padding:3px 5px; font:inherit; font-size:12px; font-weight:800; color:#5d6782; text-align:left; display:flex; flex-direction:column; justify-content:space-between; cursor:pointer; } .dkd:disabled{ opacity:.45; cursor:default; } .dkd.today{ outline:2px solid #18338c; } .dkd.sel{ background:#e8edfb; }
+  .dkd em{ display:flex; flex-wrap:wrap; gap:2px; } .dkd i{ width:8px; height:8px; border-radius:50%; } .dkd i.ok{ background:#18338c; } .dkd i.no{ background:#e5484d; } .dkd i.wait{ background:#b6bcc6; }
+  .dkstaff{ display:flex; gap:5px; margin-top:8px; } .dkstaff span{ flex:1; border-radius:9px; padding:5px; text-align:center; color:#fff; font-weight:900; font-size:12.5px; }
+  .dkrow{ display:flex; align-items:center; gap:7px; padding:6px 6px; border-bottom:1px solid #eef1f6; font-size:13.5px; background:#fff; } .dkrow i{ width:11px; height:11px; border-radius:3px; box-shadow:0 0 0 1px rgba(0,0,0,.15); flex:none; } .dkrow .c{ color:#7a8295; font-size:12px; font-weight:700; } .dkrow .s{ margin-left:auto; font-size:12px; border-radius:6px; padding:2px 8px; font-weight:900; white-space:nowrap; } .dkrow .s.ok{ background:#e8edfb; color:#18338c; } .dkrow .s.no{ background:#fdecee; color:#b4232f; } .dkrow .s.wait{ background:#eef1f7; color:#5d6782; }
+  .dknote{ margin:12px 4px 2px; font-size:12px; color:#7a8295; }
   .cfilter{ flex:1 1 100%; display:flex; align-items:center; gap:5px; background:#fff; border:1px solid var(--line); border-radius:13px; padding:6px 10px; overflow-x:auto; white-space:nowrap; scrollbar-width:none; }
   .cfilter::-webkit-scrollbar{ display:none; }
   .cfilter .cfchips{ display:flex; align-items:center; gap:5px; flex:none; }
@@ -603,6 +620,7 @@
       <div class="chartcard popchart"><div id="monthly" class="monthly"></div></div>
     </div>
     <div id="beltPop" class="right exppop hidden" role="dialog" aria-label="흰 띠·노란 띠 회원"></div>
+    <div id="drinkPop" class="right exppop hidden" role="dialog" aria-label="출석 축하음료"></div>
     <div id="todayPop" class="right exppop hidden" role="dialog" aria-label="최근 30일 출석">
       <div class="pophead">📊 최근 30일 출석<button class="popx" aria-label="닫기">✕</button></div>
       <div class="chartcard popchart">
@@ -622,6 +640,7 @@
         <div class="date" id="dateText"></div>
       </div>
       <div class="tools">
+        <button id="btnDrink" type="button" class="drinkbtn">⭐ 출석 축하음료</button>
         <button id="btnToday" class="on">오늘</button>
         <button id="btnYesterday">어제</button>
         <label class="sr" for="datePick">날짜 선택</label>
@@ -959,7 +978,7 @@
         '<div class="beltname">' + (!d ? '확인 중…' : belt ? esc(belt.name) : NA) + '</div>' +
         '<div class="who">' + (milestone ? '🎉' : '') + esc(c.name || '이름 확인 불가') + '</div>' + holdBand(c.id) +
       '</div>' +
-      '<div class="main">' +
+      '<div class="main' + (drinkTarget(c) ? ' hasdrink' : '') + '">' + drinkHtml(c) +
         '<div class="head2"><div class="time">' + hhmm(c.t) + '</div><div class="regbox">' + lights + '<span class="reg">' + regText + '</span></div></div>' +
         (msgs.length || holdInfo(c.id) ? '<div class="msgs">' + holdLine(c.id) + msgs.map((m)=> '<p class="' + m.k + '">' + esc(m.t) + '</p>').join('') + '</div>' : '') +
         '<div class="boxes"><div class="box"><span>' + count + '</span><span class="sep"></span><span>' + (!d ? wait : '30일 <b>' + (d.n30 != null ? d.n30 : '-') + '</b>회') + '</span><span class="sep"></span><span>' + (!d ? wait : '주 평균 <b>' + (d.n30 != null ? Math.round(d.n30 / 30 * 7 * 10) / 10 : '-') + '</b>회') + '</span></div>' +
@@ -968,6 +987,156 @@
           '<span>헬스 만료 ' + (c.expiry ? dot(c.expiry.date) : NA) + '</span></div>' +
       '</div>' +
     '</article>';
+  }
+
+
+  // ================= 출석 축하음료 (10회 단위 출석) =================
+  // 전달 기록은 다짐매니저 회원 메모에 남긴다: 제목 '⭐ 출석 축하음료 N회' · 쓴 사람 = 지금 로그인한 계정
+  const DRINK_TITLE = '⭐ 출석 축하음료 ';
+  const DRINK_NOTES_Q = (ids)=> 'query RunFitDrinkNotes { ' + ids.map((id, x)=> 'a' + x + ': managerMembers { notesPaged(memberId: "' + String(id).replace(/[^\w-]/g, '') + '", paging: {limit: 50, offset: 0}, sortField: createdAt, sortType: DESC) { data { id title createdAt account { name } } } }').join(' ') + ' }';
+  const DRINK_CREATE_Q = 'mutation RunFitDrinkGive($id: String!, $in: NoteCreateInput!) { managerMembers { createNote(memberId: $id, input: $in) { id title createdAt account { name } } } }';
+  var drinkNotes = new Map();   // memberId → { at, map: Map(n → { at, by }) }
+  function parseDrinkNotes(list){
+    const m = new Map();
+    (list || []).forEach((n)=>{ if(!n || !n.title || n.title.indexOf(DRINK_TITLE) !== 0) return;
+      const k = parseInt(n.title.slice(DRINK_TITLE.length), 10); if(!(k > 0) || m.has(k)) return;
+      m.set(k, { at: Date.parse(n.createdAt), by: (n.account && n.account.name) || '' }); });
+    return m;
+  }
+  async function fetchDrinkNotes(ids){
+    for(let i = 0; i < ids.length; i += 40){
+      const part = ids.slice(i, i + 40);
+      const r = await gql(DRINK_NOTES_Q(part), {});
+      part.forEach((id, x)=>{ const np = r && r['a' + x] && r['a' + x].notesPaged; drinkNotes.set(id, { at: Date.now(), map: parseDrinkNotes(np && np.data) }); });
+    }
+  }
+  // 이 카드에서 챙길 축하음료: 오늘 10회 단위면 그 횟수, 아니면 지난 10회 단위를 놓친 채 2번 안에 다시 온 경우
+  function drinkTarget(c){
+    if(!drinkNotes) return null;
+    const d = c.detail; if(!d || d.count == null || d.count < MILESTONE_EVERY) return null;
+    if(d.count % MILESTONE_EVERY === 0) return { n: d.count, late: false };
+    const prev = Math.floor(d.count / MILESTONE_EVERY) * MILESTONE_EVERY;
+    if(d.count - prev > 2) return null;
+    const rec = drinkNotes.get(c.id);
+    if(!rec || rec.map.has(prev)) return null;   // 기록을 모르면 띄우지 않음, 이미 드렸으면 끝
+    return { n: prev, late: true };
+  }
+  function drinkHtml(c){
+    const t = drinkTarget(c); if(!t) return '';
+    const rec = drinkNotes.get(c.id), got = rec && rec.map.get(t.n);
+    if(got) return '<div class="drink done" title="다짐 메모에 기록됨">✓ 축하음료 전달<small>' + (t.late ? t.n + '회 · ' : '') + hhmm(got.at) + (got.by ? ' · ' + esc(got.by) : '') + '</small></div>';
+    if(!rec) return '<div class="drink wait">⭐ 출석 축하음료 ⭐<small>확인 중…</small></div>';
+    return '<button type="button" class="drink" data-drink="' + esc(c.id) + '" data-n="' + t.n + '">⭐ 출석 축하음료 드리기 ⭐<small>' + (t.late ? '지난번 ' + t.n + '회 못 드림 · ' : '') + '누르면 완료</small></button>';
+  }
+  async function loadDrinks(list){
+    const ids = [...new Set(list.filter((c)=> c.detail && c.detail.count >= MILESTONE_EVERY && (c.detail.count % MILESTONE_EVERY <= 2)).map((c)=> c.id))]
+      .filter((id)=>{ const r = drinkNotes.get(id); return !r || Date.now() - r.at > 2 * 60e3; });
+    if(!ids.length) return;
+    try{ await fetchDrinkNotes(ids); }catch(e){ if(e instanceof AuthError){ lockScreen(); return; } }
+    list.forEach((c)=>{ if(ids.indexOf(c.id) >= 0) patchCard(c); });
+  }
+  document.addEventListener('click', async (e)=>{
+    const b = e.target.closest('button.drink[data-drink]'); if(!b) return;
+    e.stopPropagation();
+    const id = b.getAttribute('data-drink'), n = +b.getAttribute('data-n');
+    b.disabled = true; b.innerHTML = '기록하는 중…';
+    try{
+      const now = Date.now(), dd = todayKst();
+      const r = await gql(DRINK_CREATE_Q, { id, in: { title: DRINK_TITLE + n + '회', content: n + '회 출석 축하음료 전달 · ' + Number(dd.slice(5, 7)) + '.' + Number(dd.slice(8)) + ' ' + hhmm(now) } });
+      const note = r && r.managerMembers && r.managerMembers.createNote;
+      const rec = drinkNotes.get(id) || { at: Date.now(), map: new Map() };
+      rec.map.set(n, { at: note ? Date.parse(note.createdAt) : now, by: (note && note.account && note.account.name) || '' });
+      drinkNotes.set(id, rec);
+      drinkMonth.clear();
+      cards.filter((c)=> c.id === id).forEach(patchCard);
+    }catch(err){
+      if(err instanceof AuthError){ lockScreen(); return; }
+      b.disabled = false; b.innerHTML = '⭐ 출석 축하음료 드리기 ⭐<small>기록 실패 · 다시 눌러주세요</small>';
+    }
+  }, true);
+
+  // ---------- 출석 축하음료 누적 (일별 달력 · 그날 명단 · 놓친 회원 · 직원별) ----------
+  var drinkMonth = new Map();   // 'YYYY-MM' → { at, data }
+  const DRINK_ATT_Q = (ms, gte, lte)=> 'query RunFitDrinkAtt { ' + ms.map((id, x)=> 'a' + x + ': managerMembers { by(id: "' + String(id).replace(/[^\w-]/g, '') + '") { totalAttendCount } attendances(memberId: "' + String(id).replace(/[^\w-]/g, '') + '", date: {gte: "' + gte + '", lte: "' + lte + '"}, paging: {limit: 1000, offset: 0}) { status attendAt } }').join(' ') + ' }';
+  async function loadDrinkMonth(ym){
+    const c = drinkMonth.get(ym); if(c && Date.now() - c.at < 5 * 60e3) return c.data;
+    const first = ym + '-01', today = todayKst();
+    const lastDay = addDays(kstDate(dayStart(ym + '-28') + 5 * 864e5).slice(0, 7) + '-01', -1);
+    const end = lastDay < today ? lastDay : today;
+    const rk = await gql(RANK_Q, { s: new Date(dayStart(first)).toISOString(), e: new Date(dayEnd(end)).toISOString() });
+    const mem = ((rk && rk.dashboard && rk.dashboard.attendanceMemberRanking) || []).filter((m)=> m && !m.isDeleted && m.value > 0);
+    const names = new Map(mem.map((m)=> [m.id, (m.name || '').trim()]));
+    const ids = mem.map((m)=> m.id), targets = [];
+    const gte = new Date(dayStart(first)).toISOString(), lte = new Date(Date.now() + 36e5).toISOString();
+    for(let i = 0; i < ids.length; i += 40){
+      const part = ids.slice(i, i + 40);
+      const r = await gql(DRINK_ATT_Q(part, gte, lte), {});
+      part.forEach((id, x)=>{
+        const mm = r && r['a' + x]; if(!mm || !mm.by || mm.by.totalAttendCount == null) return;
+        const at = (mm.attendances || []).filter((a)=> a && a.status === 'ATTEND' && a.attendAt).map((a)=> Date.parse(a.attendAt)).sort((a, b)=> b - a);
+        at.forEach((t, k)=>{ const n = mm.by.totalAttendCount - k; const day = kstDate(t);
+          if(n > 0 && n % MILESTONE_EVERY === 0 && day >= first && day <= end) targets.push({ id, name: names.get(id) || '', n, day, t }); });
+      });
+    }
+    await fetchDrinkNotes([...new Set(targets.map((x)=> x.id))]);
+    targets.forEach((x)=>{ const g = drinkNotes.get(x.id); const got = g && g.map.get(x.n); x.got = got || null; });
+    targets.sort((a, b)=> b.t - a.t);
+    const data = { ym, first, end, targets };
+    drinkMonth.set(ym, { at: Date.now(), data });
+    return data;
+  }
+  const drinkPop = $('drinkPop');
+  let drinkYm = null, drinkSel = null;
+  const STAFF_COL = { '성민': '#6b7280', '혜민': '#22a06b', '동수': '#6b4fbf', '최고': '#3b5bd6' };
+  function drawDrinkPop(data){
+    const T = data.targets, today = todayKst();
+    const given = T.filter((x)=> x.got), missed = T.filter((x)=> !x.got && x.day < today), todayT = T.filter((x)=> x.day === today);
+    const pct = T.length ? Math.round(given.length * 100 / T.length) : 0;
+    const ym = data.ym, thisYm = today.slice(0, 7);
+    const sel = drinkSel && drinkSel.slice(0, 7) === ym ? drinkSel : (ym === thisYm ? today : data.end);
+    const beltOf = (x)=>{ const b = getBelt(x.n); return b ? b.bg : '#ddd'; };
+    const row = (x, extra)=> '<div class="dkrow"><i style="background:' + esc(beltOf(x)) + '"></i><b>' + esc(x.name) + '</b><span class="c">' + x.n + '회' + (extra || '') + '</span>' +
+      (x.got ? '<span class="s ok">✓ ' + hhmm(x.got.at) + (x.got.by ? ' ' + esc(x.got.by) : '') + '</span>' : x.day === today ? '<span class="s wait">오늘 아직</span>' : '<span class="s no">못 드림</span>') + '</div>';
+    let h = '<div class="pophead">⭐ 출석 축하음료 드리기 ⭐<span class="dkseg"><button type="button" data-ym="' + thisYm + '" class="' + (ym === thisYm ? 'on' : '') + '">이번 달</button><button type="button" data-ym="' + addDays(thisYm + '-01', -1).slice(0, 7) + '" class="' + (ym !== thisYm ? 'on' : '') + '">지난달</button></span><small>' + Number(ym.slice(5)) + '월</small><button class="popx" aria-label="닫기">✕</button></div>';
+    h += '<div class="dkkpi"><div>대상<b>' + T.length + '</b>10회 단위 출석</div><div class="g">전달<b>' + given.length + '</b>' + pct + '%</div><div class="r">놓침<b>' + missed.length + '</b>다음 출석 때 챙기기</div><div>오늘<b>' + todayT.filter((x)=> x.got).length + ' / ' + todayT.length + '</b>전달 / 대상</div></div>';
+    // 달력
+    const startDow = (new Date(dayStart(ym + '-01') + 9 * 3600e3).getUTCDay() + 6) % 7;
+    const days = Number(addDays(kstDate(dayStart(ym + '-28') + 5 * 864e5).slice(0, 7) + '-01', -1).slice(8));
+    let cal = ['월', '화', '수', '목', '금', '토', '일'].map((w)=> '<span class="w">' + w + '</span>').join('') + '<span></span>'.repeat(startDow);
+    for(let d = 1; d <= days; d++){
+      const key = ym + '-' + String(d).padStart(2, '0'), dt = T.filter((x)=> x.day === key);
+      cal += '<button type="button" class="dkd' + (key === today ? ' today' : '') + (key === sel ? ' sel' : '') + '" data-day="' + key + '"' + (key > today ? ' disabled' : '') + '><span>' + d + '</span><em>' +
+        dt.map((x)=> '<i class="' + (x.got ? 'ok' : x.day === today ? 'wait' : 'no') + '"></i>').join('') + '</em></button>';
+    }
+    const by = new Map(); given.forEach((x)=> by.set(x.got.by || '?', (by.get(x.got.by || '?') || 0) + 1));
+    const staff = ['성민', '혜민', '동수', '최고'].map((n)=> '<span style="background:' + STAFF_COL[n] + '">' + n + ' ' + (by.get(n) || 0) + '</span>').join('') +
+      [...by.keys()].filter((n)=> !STAFF_COL[n]).map((n)=> '<span style="background:#9aa1b2">' + esc(n) + ' ' + by.get(n) + '</span>').join('');
+    const selT = T.filter((x)=> x.day === sel);
+    h += '<div class="dkcols"><div><div class="dkcal">' + cal + '</div><div class="dkstaff">' + staff + '</div></div><div>' +
+      '<h3>' + Number(sel.slice(5, 7)) + '.' + Number(sel.slice(8)) + ' · 대상 ' + selT.length + '명</h3>' + (selT.length ? selT.map((x)=> row(x)).join('') : '<div class="popempty">10회 단위 출석이 없었어요</div>') +
+      '<h3 style="margin-top:14px">놓친 회원 · ' + missed.length + '명</h3>' + (missed.length ? missed.map((x)=> row(x, ' · ' + Number(x.day.slice(5, 7)) + '.' + Number(x.day.slice(8)))).join('') : '<div class="popempty">놓친 회원이 없어요 👏</div>') +
+      '</div></div><p class="dknote">드린 기록은 다짐매니저 회원 메모(⭐ 출석 축하음료 N회)에 남아요 · 놓친 회원은 다음 출석 때 카드에 버튼이 다시 떠요 (2번 안에 오면)</p>';
+    drinkPop.innerHTML = h;
+  }
+  async function openDrinkPop(ym){
+    drinkYm = ym || todayKst().slice(0, 7);
+    const L = leftBox();
+    drinkPop.style.left = Math.round(L.right + 14) + 'px'; drinkPop.style.top = '70px';
+    drinkPop.classList.remove('hidden');
+    if(!drinkMonth.get(drinkYm)) drinkPop.innerHTML = '<div class="pophead">⭐ 출석 축하음료 드리기 ⭐<small>불러오는 중… (한 달 출석을 세느라 몇 초 걸려요)</small><button class="popx" aria-label="닫기">✕</button></div>';
+    try{ const data = await loadDrinkMonth(drinkYm); if(!drinkPop.classList.contains('hidden') && drinkYm === data.ym) drawDrinkPop(data); }
+    catch(e){ if(e instanceof AuthError){ lockScreen(); drinkPop.classList.add('hidden'); return; }
+      drinkPop.innerHTML = '<div class="pophead">⭐ 출석 축하음료 드리기 ⭐<button class="popx" aria-label="닫기">✕</button></div><div class="popempty">' + NA + ' · 잠시 후 다시 눌러주세요</div>'; }
+  }
+  if(drinkPop){
+    const btn = $('btnDrink');
+    if(btn) btn.addEventListener('click', ()=>{ if(!drinkPop.classList.contains('hidden')) drinkPop.classList.add('hidden'); else openDrinkPop(); });
+    drinkPop.addEventListener('click', (e)=>{
+      if(e.target.closest('.popx')){ drinkPop.classList.add('hidden'); return; }
+      const sb = e.target.closest('.dkseg button[data-ym]'); if(sb){ drinkSel = null; openDrinkPop(sb.getAttribute('data-ym')); return; }
+      const db = e.target.closest('.dkd[data-day]'); if(db && !db.disabled){ drinkSel = db.getAttribute('data-day'); const c = drinkMonth.get(drinkYm); if(c) drawDrinkPop(c.data); }
+    });
+    document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape' && !drinkPop.classList.contains('hidden')) drinkPop.classList.add('hidden'); });
   }
 
   // ---------- 오늘 출석 필터 (띠 · 출석 신호등 · 등록) : 같은 묶음은 '또는', 묶음끼리는 '그리고' ----------
@@ -1103,6 +1272,7 @@
       }
     };
     await Promise.all(Array.from({ length: DETAIL_PARALLEL }, worker));
+    if(date === viewDate) loadDrinks(cards);
   }
 
   function patchCard(c){
